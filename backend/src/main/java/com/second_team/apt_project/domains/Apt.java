@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Apt {
+public class Apt { //아파트
 
     @Id
     @Column(length = 50, unique = true)
