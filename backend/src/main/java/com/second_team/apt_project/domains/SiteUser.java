@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SiteUser {
+public class SiteUser { //사이트 유저
 
     @Id
     @Column(length = 24, unique = true)
