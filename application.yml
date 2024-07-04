@@ -24,7 +24,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://ls-6a6167099f1b8b918a180513a70146a343e9ff7c.cps8so0e8jyp.ap-northeast-2.rds.amazonaws.com:3306/apt_project?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: dbmasteruser
-    password: '85-j;#!!8vag<Qo2KSm4gF{6:x#wK+$u';
+    password: '85-j;#!!8vag<Qo2KSm4gF{6:x#wK+$u'
 jwt:
   secret: fa6f44df76295a0a50ca08d947fc2552370d6d71ba4d045253fac165753b20f2a69b83f6830343bbd22aa33e2e6e0ff4169510fd829ada5f0bfec40251cc233d
   accessTokenExpirationTime: 3600000
