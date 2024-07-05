@@ -21,6 +21,8 @@ public class QApt extends EntityPathBase<Apt> {
 
     public final StringPath aptName = createString("aptName");
 
+    public final NumberPath<Long> id = createNumber("id", Long.class);
+
     public final StringPath roadAddress = createString("roadAddress");
 
     public final NumberPath<Double> x = createNumber("x", Double.class);
