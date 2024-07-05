@@ -16,7 +16,9 @@ public class AptController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody AptRequestDto aptRequestDto,@RequestHeader("Authorization") String accessToken) {
+    public ResponseEntity<?> create(@RequestBody AptRequestDto aptRequestDto,
+                                    @RequestHeader("Authorization") String accessToken) {
+                                        
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         if (tokenRecord.isOK()) {
             String username = tokenRecord.username();
