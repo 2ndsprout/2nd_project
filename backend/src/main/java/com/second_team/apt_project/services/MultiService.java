@@ -1,11 +1,15 @@
 package com.second_team.apt_project.services;
 
+import com.second_team.apt_project.Exception.DataDuplicateException;
 import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
+import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
+import com.second_team.apt_project.services.module.AptService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class MultiService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AptService aptService;
 
     /**
      * Auth
@@ -64,4 +69,12 @@ public class MultiService {
         return AuthResponseDTO.builder().tokenType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
+    @Transactional
+    public void saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
+        SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN)
+            throw new DataDuplicateException("not role");
+
+        aptService.save(roadAddress, aptName, x, y);
+    }
 }
