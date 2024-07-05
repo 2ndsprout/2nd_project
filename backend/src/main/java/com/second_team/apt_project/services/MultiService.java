@@ -1,6 +1,9 @@
 package com.second_team.apt_project.services;
 
 import com.second_team.apt_project.Exception.DataDuplicateException;
+import com.second_team.apt_project.Exception.DataNotFoundException;
+import com.second_team.apt_project.domains.Apt;
+
 import com.second_team.apt_project.domains.SiteUser;
 import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
@@ -13,6 +16,7 @@ import com.second_team.apt_project.services.module.AptService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.aot.AotServices;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -69,6 +73,26 @@ public class MultiService {
         return AuthResponseDTO.builder().tokenType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
+    /**
+     * User
+     */
+
+    @Transactional
+    public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
+        SiteUser user = userService.get(username);
+        Apt apt = aptService.get(aptId);
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("role is not admin");
+        if (apt == null)
+            throw new DataNotFoundException("apt not found");
+        userService.userEmailCheck(email);
+        userService.save(name, password, email, aptNumber, role, apt);
+    }
+      
+     /**
+     * Apt
+     */
+
     @Transactional
     public void saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
@@ -76,5 +100,6 @@ public class MultiService {
             throw new DataDuplicateException("not role");
 
         aptService.save(roadAddress, aptName, x, y);
+
     }
 }

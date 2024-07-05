@@ -1,6 +1,9 @@
 package com.second_team.apt_project.services.module;
 
+import com.second_team.apt_project.Exception.DataDuplicateException;
+import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,5 +24,19 @@ public class UserService {
 
     public boolean isMatch(String password1, String password2) {
         return passwordEncoder.matches(password1, password2);
+    }
+
+    public void userEmailCheck(String email) {
+        if (userRepository.isDuplicateEmail(email).size()>1) throw new DataDuplicateException("email");
+    }
+
+    public void save(String name, String password, String email, int aptNumber, int role, Apt apt) {
+        userRepository.save(SiteUser.builder()
+                .username(name)
+                .password(passwordEncoder.encode(password))
+                .email(email)
+                .aptNum(aptNumber)
+                .role(UserRole.values()[role])
+                .apt(apt).build());
     }
 }

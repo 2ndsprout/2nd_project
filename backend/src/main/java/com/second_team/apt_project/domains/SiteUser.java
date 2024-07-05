@@ -26,7 +26,7 @@ public class SiteUser { //사이트 유저
     private String email;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Apt apt; // 도로명 주소
+    private Apt apt;
 
     private UserRole role;
 
