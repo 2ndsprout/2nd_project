@@ -2,9 +2,11 @@ package com.second_team.apt_project.repositories.customs.impls;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.Apt;
+
 import com.second_team.apt_project.domains.QApt;
 import com.second_team.apt_project.repositories.customs.AptRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+
 
 import java.util.Optional;
 
@@ -18,4 +20,5 @@ public class AptRepositoryImpl implements AptRepositoryCustom {
     public Optional<Apt> get(Long aptId) {
         return Optional.ofNullable(jpaQueryFactory.selectFrom(qApt).where(qApt.id.eq(aptId)).fetchOne());
     }
+
 }

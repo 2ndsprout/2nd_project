@@ -27,7 +27,8 @@ public class Apt { //아파트
     private Double y; // 경도
 
     @Builder
-    public Apt(String aptName, Double x, Double y) {
+    public Apt(String roadAddress, String aptName, Double x, Double y) {
+        this.roadAddress = roadAddress;
         this.aptName = aptName;
         this.x = x;
         this.y = y;

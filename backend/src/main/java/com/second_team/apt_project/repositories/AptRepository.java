@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AptRepository extends JpaRepository<Apt, Long>, AptRepositoryCustom {
+
 }
