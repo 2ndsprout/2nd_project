@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",   
+            "name": "main",
+            "request": "launch",
+            "url": "http://localhost:3000",
+
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": "off",
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+              ],
+              "outFiles": ["${workspaceFolder}/**"],
+              "runtimeArgs": [
+                "--remote-debugging-port=9229",
+                "--incognito"
+              ],
+              "env": {
+                "NODE_ENV": "development"
+              }
+        }
+    ]
+}
