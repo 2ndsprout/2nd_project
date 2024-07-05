@@ -39,7 +39,8 @@ public class SecurityConfig {
         return http.sessionManagement(manage -> manage.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 // CSRF
                 .csrf((csrf) -> csrf //
-                        .ignoringRequestMatchers(new AntPathRequestMatcher("/api/**")).ignoringRequestMatchers(new AntPathRequestMatcher("/ws-stomp/**"))//
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/api/**"))
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/ws-stomp/**"))//
                 ).authorizeHttpRequests(request -> request //
                         .anyRequest().//
                                 permitAll()//
