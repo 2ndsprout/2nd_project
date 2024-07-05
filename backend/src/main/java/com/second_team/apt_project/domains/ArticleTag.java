@@ -8,26 +8,27 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Category { //카테고리
-
+@Entity
+public class ArticleTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 50)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Article article;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Tag tag;
 
     private LocalDateTime createDate;
 
-    private LocalDateTime modifyDate;
-
     @Builder
-    public Category(String name) {
+    public ArticleTag(Article article, Tag tag) {
         this.createDate = LocalDateTime.now();
-        this.name = name;
+        this.article = article;
+        this.tag = tag;
     }
 }

@@ -1,33 +1,33 @@
 package com.second_team.apt_project.domains;
 
+
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Category { //카테고리
+@Entity
+public class MultiKey {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(length = 50)
-    private String name;
+    private String k;
 
-    private LocalDateTime createDate;
-
-    private LocalDateTime modifyDate;
+    @Column(length = 200)
+    private List<String> vs;
 
     @Builder
-    public Category(String name) {
-        this.createDate = LocalDateTime.now();
-        this.name = name;
+    public MultiKey(String k, List<String> vs) {
+        this.k = k;
+        this.vs = vs;
     }
 }

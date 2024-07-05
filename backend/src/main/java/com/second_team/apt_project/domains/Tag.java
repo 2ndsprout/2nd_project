@@ -8,12 +8,11 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Category { //카테고리
-
+@Entity
+public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,10 +22,8 @@ public class Category { //카테고리
 
     private LocalDateTime createDate;
 
-    private LocalDateTime modifyDate;
-
     @Builder
-    public Category(String name) {
+    public Tag(String name) {
         this.createDate = LocalDateTime.now();
         this.name = name;
     }

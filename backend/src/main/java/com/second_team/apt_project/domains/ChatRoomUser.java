@@ -6,28 +6,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Category { //카테고리
+@Entity
+public class ChatRoomUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 50)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ChatRoom chatRoom;
 
-    private LocalDateTime createDate;
-
-    private LocalDateTime modifyDate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Profile profile;
 
     @Builder
-    public Category(String name) {
-        this.createDate = LocalDateTime.now();
-        this.name = name;
+    public ChatRoomUser(ChatRoom chatRoom, Profile profile) {
+        this.chatRoom = chatRoom;
+        this.profile = profile;
     }
 }

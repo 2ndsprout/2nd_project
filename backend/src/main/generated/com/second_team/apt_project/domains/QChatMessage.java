@@ -11,47 +11,46 @@ import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
- * QNotification is a Querydsl query type for Notification
+ * QChatMessage is a Querydsl query type for ChatMessage
  */
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
-public class QNotification extends EntityPathBase<Notification> {
+public class QChatMessage extends EntityPathBase<ChatMessage> {
 
-    private static final long serialVersionUID = 47314220L;
+    private static final long serialVersionUID = 1245354286L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
-    public static final QNotification notification = new QNotification("notification");
+    public static final QChatMessage chatMessage = new QChatMessage("chatMessage");
 
-    public final BooleanPath active = createBoolean("active");
-
-    public final EnumPath<com.second_team.apt_project.enums.ChatType> chatType = createEnum("chatType", com.second_team.apt_project.enums.ChatType.class);
-
-    public final StringPath content = createString("content");
+    public final QChatRoom chatRoom;
 
     public final DateTimePath<java.time.LocalDateTime> createDate = createDateTime("createDate", java.time.LocalDateTime.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final StringPath message = createString("message");
+
     public final QProfile profile;
 
-    public QNotification(String variable) {
-        this(Notification.class, forVariable(variable), INITS);
+    public QChatMessage(String variable) {
+        this(ChatMessage.class, forVariable(variable), INITS);
     }
 
-    public QNotification(Path<? extends Notification> path) {
+    public QChatMessage(Path<? extends ChatMessage> path) {
         this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
-    public QNotification(PathMetadata metadata) {
+    public QChatMessage(PathMetadata metadata) {
         this(metadata, PathInits.getFor(metadata, INITS));
     }
 
-    public QNotification(PathMetadata metadata, PathInits inits) {
-        this(Notification.class, metadata, inits);
+    public QChatMessage(PathMetadata metadata, PathInits inits) {
+        this(ChatMessage.class, metadata, inits);
     }
 
-    public QNotification(Class<? extends Notification> type, PathMetadata metadata, PathInits inits) {
+    public QChatMessage(Class<? extends ChatMessage> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.chatRoom = inits.isInitialized("chatRoom") ? new QChatRoom(forProperty("chatRoom")) : null;
         this.profile = inits.isInitialized("profile") ? new QProfile(forProperty("profile"), inits.get("profile")) : null;
     }
 

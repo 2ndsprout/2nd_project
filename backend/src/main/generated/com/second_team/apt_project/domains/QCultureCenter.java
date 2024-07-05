@@ -23,6 +23,8 @@ public class QCultureCenter extends EntityPathBase<CultureCenter> {
 
     public final TimePath<java.sql.Time> closeTime = createTime("closeTime", java.sql.Time.class);
 
+    public final DateTimePath<java.time.LocalDateTime> createDate = createDateTime("createDate", java.time.LocalDateTime.class);
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final TimePath<java.sql.Time> openTime = createTime("openTime", java.sql.Time.class);
