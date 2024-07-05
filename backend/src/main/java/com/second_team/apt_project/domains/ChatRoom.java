@@ -8,26 +8,23 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @Setter
+@Entity
 @NoArgsConstructor
-public class Category { //카테고리
-
+public class ChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 50)
-    private String name;
+    @Column(columnDefinition = "TEXT")
+    private String title;
 
     private LocalDateTime createDate;
 
-    private LocalDateTime modifyDate;
-
     @Builder
-    public Category(String name) {
+    public ChatRoom(String title) {
+        this.title = title;
         this.createDate = LocalDateTime.now();
-        this.name = name;
     }
 }

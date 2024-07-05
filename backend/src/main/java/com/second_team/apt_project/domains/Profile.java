@@ -17,6 +17,6 @@ public class Profile { // 프로필
 
     @ManyToOne(fetch = FetchType.LAZY)
     private SiteUser user;
-
+    @Column(length = 50, unique = true)
     private String name;
 }

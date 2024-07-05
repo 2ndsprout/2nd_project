@@ -11,22 +11,18 @@ import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
- * QNotification is a Querydsl query type for Notification
+ * QLove is a Querydsl query type for Love
  */
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
-public class QNotification extends EntityPathBase<Notification> {
+public class QLove extends EntityPathBase<Love> {
 
-    private static final long serialVersionUID = 47314220L;
+    private static final long serialVersionUID = -1346960205L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
-    public static final QNotification notification = new QNotification("notification");
+    public static final QLove love = new QLove("love");
 
-    public final BooleanPath active = createBoolean("active");
-
-    public final EnumPath<com.second_team.apt_project.enums.ChatType> chatType = createEnum("chatType", com.second_team.apt_project.enums.ChatType.class);
-
-    public final StringPath content = createString("content");
+    public final QArticle article;
 
     public final DateTimePath<java.time.LocalDateTime> createDate = createDateTime("createDate", java.time.LocalDateTime.class);
 
@@ -34,24 +30,25 @@ public class QNotification extends EntityPathBase<Notification> {
 
     public final QProfile profile;
 
-    public QNotification(String variable) {
-        this(Notification.class, forVariable(variable), INITS);
+    public QLove(String variable) {
+        this(Love.class, forVariable(variable), INITS);
     }
 
-    public QNotification(Path<? extends Notification> path) {
+    public QLove(Path<? extends Love> path) {
         this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
-    public QNotification(PathMetadata metadata) {
+    public QLove(PathMetadata metadata) {
         this(metadata, PathInits.getFor(metadata, INITS));
     }
 
-    public QNotification(PathMetadata metadata, PathInits inits) {
-        this(Notification.class, metadata, inits);
+    public QLove(PathMetadata metadata, PathInits inits) {
+        this(Love.class, metadata, inits);
     }
 
-    public QNotification(Class<? extends Notification> type, PathMetadata metadata, PathInits inits) {
+    public QLove(Class<? extends Love> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.article = inits.isInitialized("article") ? new QArticle(forProperty("article"), inits.get("article")) : null;
         this.profile = inits.isInitialized("profile") ? new QProfile(forProperty("profile"), inits.get("profile")) : null;
     }
 
