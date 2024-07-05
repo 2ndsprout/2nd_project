@@ -65,6 +65,18 @@ export const deleteUser = async () => {
     await UserApi.delete('/api/user');
 }
 
+interface postApt {
+    roadAddress: string,
+    aptName: string,
+    x: number,
+    y: number;
+}
+
+export const postPayment = async (data: postApt) => {
+    const response = await UserApi.post('/api/apt', data);
+    return response.data;
+}
+
 
 // interface postPayment {
 //     cartItemIdList: number[];
