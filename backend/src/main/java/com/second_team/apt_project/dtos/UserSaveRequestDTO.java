@@ -7,7 +7,7 @@ import lombok.Getter;
 public class UserSaveRequestDTO {
     private String name;
     private Long aptId;
-    private int aptNumber;
+    private int aptNum;
     private String password;
     @Email
     private String email;
