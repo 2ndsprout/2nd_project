@@ -12,4 +12,7 @@ public class UserSaveRequestDTO {
     @Email
     private String email;
     private int role;
+
+    private int h;
+    private int w;
 }
