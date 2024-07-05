@@ -63,7 +63,7 @@ export default function Page() {
 
                 <div className='flex justify-evenly w-[396px] mt-[12px]'>
                     <a>관리자 문의</a>
-                    <a>비밀번호찾기</a>
+                    <a>비밀번호 변경</a>
                 </div>
                 <label className='text-gray-400 text-sm mt-[50px]'>Copyright © 2024 Honeydanji Co.,Ltd. All Rights Reserved.</label>
             </div>
