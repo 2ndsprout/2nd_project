@@ -16,7 +16,6 @@ public class Apt { //아파트
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(length = 50, unique = true)
     private String roadAddress; // 도로명주소
 
