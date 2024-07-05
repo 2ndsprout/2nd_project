@@ -30,4 +30,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
     }
+    @PostMapping("/security")
+    public ResponseEntity<?> saveSecurity(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
+        try {
+            TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.saveSecurity(requestDTO.getName(),
+                        requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptNumber(),
+                        requestDTO.getRole(), requestDTO.getAptId(), username);
+            }
+            return tokenRecord.getResponseEntity("문제 없음");
+        } catch (DataDuplicateException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+    }
 }
