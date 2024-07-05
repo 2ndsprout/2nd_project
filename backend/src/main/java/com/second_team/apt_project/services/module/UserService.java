@@ -40,8 +40,8 @@ public class UserService {
                 .apt(apt).build());
     }
 
-    public void saveGroup(String name, int aptNumber, Apt apt) {
-        userRepository.save(SiteUser.builder()
+    public SiteUser saveGroup(String name, int aptNumber, Apt apt) {
+        return userRepository.save(SiteUser.builder()
                 .username(String.valueOf(apt.getId()) + "_" + name)
                 .password(passwordEncoder.encode(name))
                 .aptNum(aptNumber)

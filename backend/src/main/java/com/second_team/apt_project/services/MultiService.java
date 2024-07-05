@@ -3,8 +3,10 @@ package com.second_team.apt_project.services;
 import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
+import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
@@ -16,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -94,17 +99,51 @@ public class MultiService {
         userService.save(name, password, email, aptNumber, role, apt);
     }
 
+    @Transactional
+    public List<UserResponseDTO> saveUserGroup(int aptNumber, Long aptId, String username, int h, int w) {
+        SiteUser user = userService.get(username);
+        Apt apt = aptService.get(aptId);
+        List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
+        if (user.getRole() == UserRole.SECURITY || user.getRole() == UserRole.ADMIN) {
+            for (int i = 1; h >= i; i++)
+                for (int j = 1; w >= j; j++) {
+                    String jKey = String.valueOf(j);
+                    if (j < 10)
+                        jKey =  "0" + jKey;
+                    String name = String.valueOf(aptNumber) +  String.valueOf(i) + jKey;
+                    SiteUser _user = userService.saveGroup(name, aptNumber, apt);
+                    userResponseDTOList.add(UserResponseDTO.builder()
+                                    .username(_user.getUsername())
+                                    .aptNum(_user.getAptNum())
+                                    .email(_user.getEmail())
+                                    .aptResponseDto(this.getAptResponseDTO(apt))
+                            .build());
+                }
+            return userResponseDTOList;
+        }else
+            throw new IllegalArgumentException("not role");
+    }
+
     /**
      * Apt
      */
 
+    private AptResponseDto getAptResponseDTO(Apt apt) {
+        return AptResponseDto.builder()
+                .aptId(apt.getId())
+                .aptName(apt.getAptName())
+                .roadAddress(apt.getRoadAddress())
+                .x(apt.getX())
+                .y(apt.getY())
+                .build();
+    }
+
     @Transactional
-    public void saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
+    public AptResponseDto saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
-
-        aptService.save(roadAddress, aptName, x, y);
-
+        Apt apt = aptService.save(roadAddress, aptName, x, y);
+        return this.getAptResponseDTO(apt);
     }
 
     @Transactional
@@ -115,20 +154,5 @@ public class MultiService {
         aptService.update(apt, aptName);
     }
 
-    @Transactional
-    public void saveUserGroup(int aptNumber, Long aptId, String username, int h, int w) {
-        SiteUser user = userService.get(username);
-        Apt apt = aptService.get(aptId);
-        if (user.getRole() == UserRole.SECURITY || user.getRole() == UserRole.ADMIN) {
-            for (int i = 1; h >= i; i++)
-                for (int j = 1; w >= j; j++) {
-                    String jKey = String.valueOf(j);
-                    if (j < 10)
-                        jKey =  "0" + jKey;
-                    String name = String.valueOf(aptNumber) +  String.valueOf(i) + jKey;
-                    userService.saveGroup(name, aptNumber, apt);
-                }
-        }else
-            throw new IllegalArgumentException("not role");
-    }
+
 }
