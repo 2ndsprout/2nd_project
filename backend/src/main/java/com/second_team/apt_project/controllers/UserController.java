@@ -1,6 +1,7 @@
 package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.Exception.DataDuplicateException;
+import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.dtos.UserSaveRequestDTO;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
@@ -26,7 +27,7 @@ public class UserController {
                         requestDTO.getRole(), requestDTO.getAptId(), username);
             }
             return tokenRecord.getResponseEntity("문제 없음");
-        } catch (DataDuplicateException ex) {
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
     }
@@ -41,7 +42,20 @@ public class UserController {
                         requestDTO.getRole(), requestDTO.getAptId(), username);
             }
             return tokenRecord.getResponseEntity("문제 없음");
-        } catch (DataDuplicateException ex) {
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+    }
+    @PostMapping("/group")
+    public ResponseEntity<?> saveGroup(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
+        try {
+            TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.saveUserGroup(requestDTO.getAptNumber(), requestDTO.getAptId(), username, requestDTO.getH(), requestDTO.getW());
+            }
+            return tokenRecord.getResponseEntity("문제 없음");
+        }  catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
     }

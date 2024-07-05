@@ -39,4 +39,14 @@ public class UserService {
                 .role(UserRole.values()[role])
                 .apt(apt).build());
     }
+
+    public void saveGroup(String name, int aptNumber, Apt apt) {
+        userRepository.save(SiteUser.builder()
+                .username(String.valueOf(apt.getId()) + "_" + name)
+                .password(passwordEncoder.encode(name))
+                .aptNum(aptNumber)
+                .role(UserRole.values()[3])
+                .apt(apt)
+                .build());
+    }
 }
