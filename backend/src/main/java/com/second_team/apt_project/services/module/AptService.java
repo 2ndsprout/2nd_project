@@ -33,4 +33,10 @@ public class AptService {
                 .y(y)
                 .build());
     }
+
+    public void update(Apt apt, String aptName) {
+        apt.setAptName(aptName);
+        aptRepository.save(apt);
+
+    }
 }

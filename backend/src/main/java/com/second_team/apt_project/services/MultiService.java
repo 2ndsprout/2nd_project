@@ -109,9 +109,18 @@ public class MultiService {
     public void saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
         if (user.getRole() != UserRole.ADMIN)
-            throw new DataDuplicateException("not role");
+            throw new IllegalArgumentException("role is not admin");
 
         aptService.save(roadAddress, aptName, x, y);
 
     }
+    @Transactional
+    public void updateApt(Long aptId, String aptName, String username) {
+        SiteUser user = userService.get(username);
+        Apt apt = aptService.get(aptId);
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("role is not admin");
+        aptService.update(apt, aptName);
+    }
+
 }
