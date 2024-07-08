@@ -155,4 +155,19 @@ public class MultiService {
     }
 
 
+    public List<AptResponseDto> getAptList(String username) {
+        SiteUser user = userService.get(username);
+        List<Apt> aptList = aptService.getAptList();
+        List<AptResponseDto> responseDTOList = new ArrayList<>();
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        for (Apt apt : aptList) {
+            AptResponseDto aptResponseDTO = this.getApt(apt);
+            responseDTOList.add(aptResponseDTO);
+        }
+        return responseDTOList;
+    }
+
+    private AptResponseDto getApt(Apt apt) {
+        return getAptResponseDTO(apt);
+    }
 }
