@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -48,5 +50,10 @@ public class UserService {
                 .role(UserRole.values()[3])
                 .apt(apt)
                 .build());
+    }
+
+    @Transactional
+    public List<SiteUser> getUserList(UserRole userRole) {
+        return this.userRepository.findByUser(userRole);
     }
 }
