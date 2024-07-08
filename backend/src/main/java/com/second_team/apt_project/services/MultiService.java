@@ -79,6 +79,16 @@ public class MultiService {
      */
 
     @Transactional
+    private UserResponseDTO getUserResponseDTO(SiteUser siteUser) {
+        return UserResponseDTO.builder()
+                .aptNum(siteUser.getAptNum())
+                .username(siteUser.getUsername())
+                .email(siteUser.getEmail())
+                .aptResponseDto(this.getAptResponseDTO(siteUser.getApt()))
+                .build();
+    }
+
+    @Transactional
     public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
@@ -122,6 +132,26 @@ public class MultiService {
             return userResponseDTOList;
         }else
             throw new IllegalArgumentException("not role");
+    }
+
+    @Transactional
+    public List<UserResponseDTO> getUserList(String username) {
+        SiteUser user = userService.get(username);
+
+        List<SiteUser> userList = userService.getUserList(UserRole.USER);
+        List<UserResponseDTO> responseDTOList = new ArrayList<>();
+
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not admin or security");
+        for (SiteUser siteUser : userList) {
+            UserResponseDTO userResponseDTO = getUser(siteUser);
+           responseDTOList.add(userResponseDTO);
+        }
+        return responseDTOList;
+    }
+
+    @Transactional
+    private UserResponseDTO getUser(SiteUser siteUser) {
+        return getUserResponseDTO(siteUser);
     }
 
     /**
