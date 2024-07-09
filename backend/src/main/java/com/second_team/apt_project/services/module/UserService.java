@@ -53,7 +53,7 @@ public class UserService {
     }
 
     @Transactional
-    public List<SiteUser> getUserList(UserRole userRole) {
-        return this.userRepository.findByUser(userRole);
+    public List<SiteUser> getUserList(Long aptId, UserRole userRole) {
+        return this.userRepository.findByUser(aptId, userRole);
     }
 }
