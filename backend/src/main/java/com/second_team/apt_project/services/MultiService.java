@@ -21,6 +21,10 @@ import com.second_team.apt_project.services.module.ProfileService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -129,10 +133,9 @@ public class MultiService {
                     String name = String.valueOf(aptNumber) + String.valueOf(i) + jKey;
                     SiteUser _user = userService.saveGroup(name, aptNumber, apt);
                     userResponseDTOList.add(UserResponseDTO.builder()
-                            .username(_user.getUsername())
-                            .aptNum(_user.getAptNum())
-                            .email(_user.getEmail())
-                            .aptResponseDto(this.getAptResponseDTO(apt))
+                                    .username(_user.getUsername())
+                                    .aptNum(_user.getAptNum())
+                                    .aptResponseDto(this.getAptResponseDTO(apt))
                             .build());
                 }
             return userResponseDTOList;
@@ -141,10 +144,10 @@ public class MultiService {
     }
 
     @Transactional
-    public List<UserResponseDTO> getUserList(Long aptId, String username) {
+    public Page<UserResponseDTO> getUserList(int page, Long aptId, String username) {
         SiteUser user = userService.get(username);
-
-        List<SiteUser> userList = userService.getUserList(aptId, UserRole.USER);
+        Pageable pageable = PageRequest.of(page, 20);
+        Page<SiteUser> userList = userService.getUserList(pageable, aptId);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
@@ -153,7 +156,29 @@ public class MultiService {
             UserResponseDTO userResponseDTO = getUser(siteUser);
             responseDTOList.add(userResponseDTO);
         }
-        return responseDTOList;
+        return new PageImpl<>(responseDTOList, pageable, userList.getTotalElements());
+    }
+
+    @Transactional
+    public UserResponseDTO getUserDetail(String userId, String username) {
+        SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security");
+        SiteUser user1 = userService.getUser(userId);
+        UserResponseDTO userResponseDTO = getUser(user1);
+
+        return userResponseDTO;
+    }
+
+
+    public UserResponseDTO updateUser(String username, String name, String password, String email, Long aptId, int aptNum, String loginId) {
+        SiteUser user = userService.get(username);
+        Apt apt = aptService.get(aptId);
+        SiteUser updateUser = userService.get(loginId);
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security or not login user");
+        if (email != null)
+            userService.userEmailCheck(email);
+        SiteUser siteUser = userService.update(updateUser, name, password, email, aptNum, apt);
+        return this.getUser(siteUser);
     }
 
     @Transactional

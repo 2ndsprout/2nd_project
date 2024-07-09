@@ -3,10 +3,14 @@ package com.second_team.apt_project.services.module;
 import com.second_team.apt_project.exceptions.DataDuplicateException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +57,21 @@ public class UserService {
     }
 
     @Transactional
-    public List<SiteUser> getUserList(Long aptId, UserRole userRole) {
-        return this.userRepository.findByUser(aptId, userRole);
+    public Page<SiteUser> getUserList(Pageable pageable, Long aptId) {
+
+        return this.userRepository.findByUserList(pageable,aptId);
+    }
+
+    public SiteUser getUser(String userId) {
+        return this.userRepository.findByUser(userId);
+    }
+
+    public SiteUser update(SiteUser updateUser, String name, String password, String email, int aptNum, Apt apt) {
+        updateUser.setApt(apt);
+        updateUser.setEmail(email);
+        updateUser.setUsername(name);
+        updateUser.setPassword(passwordEncoder.encode(password));
+        updateUser.setAptNum(aptNum);
+        return userRepository.save(updateUser);
     }
 }

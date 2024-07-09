@@ -1,5 +1,7 @@
 package com.second_team.apt_project.repositories.customs.impls;
 
+import com.querydsl.core.QueryResults;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.QSiteUser;
 import com.second_team.apt_project.domains.SiteUser;
@@ -7,6 +9,13 @@ import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.repositories.customs.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,9 +32,18 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<SiteUser> findByUser(Long aptId, UserRole userRole) {
-        List<SiteUser> siteUser = jpaQueryFactory.selectFrom(qSiteUser)
-                .where(qSiteUser.role.eq(userRole).and(qSiteUser.apt.id.eq(aptId))).fetch();
-        return siteUser;
+    public Page<SiteUser> findByUserList(Pageable pageable, Long aptId) {
+        JPAQuery<SiteUser> query = jpaQueryFactory.selectFrom(qSiteUser)
+                .where(qSiteUser.apt.id.eq(aptId))
+                .orderBy(qSiteUser.role.asc())
+                .orderBy(qSiteUser.username.asc());
+
+        QueryResults<SiteUser> results = query.fetchResults();
+        return new PageImpl<>(results.getResults(), pageable, results.getTotal());
+    }
+
+    @Override
+    public SiteUser findByUser(String userId) {
+        return jpaQueryFactory.selectFrom(qSiteUser).where(qSiteUser.username.eq(userId)).fetchOne();
     }
 }
