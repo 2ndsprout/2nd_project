@@ -1,6 +1,5 @@
 package com.second_team.apt_project.services;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.SiteUser;
 import com.second_team.apt_project.dtos.AptResponseDto;

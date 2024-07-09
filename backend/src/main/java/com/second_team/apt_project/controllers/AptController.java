@@ -1,11 +1,10 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.dtos.AptRequestDto;
 import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
