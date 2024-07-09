@@ -11,14 +11,14 @@ import lombok.Setter;
 public class ProfileResponseDTO {
     private Long id;
     private String name;
-    private String userName;
+    private String username;
     private String url;
 
     @Builder
-    public ProfileResponseDTO(Long id, String name, String userName, String url) {
+    public ProfileResponseDTO(Long id, String name, String username, String url) {
         this.id = id;
         this.name = name;
-        this.userName = userName;
+        this.username = username;
         this.url = url;
     }
 }

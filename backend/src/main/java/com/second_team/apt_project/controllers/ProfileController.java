@@ -1,8 +1,8 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.dtos.ProfileResponseDTO;
 import com.second_team.apt_project.dtos.ProfileSaveRequestDTO;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +24,8 @@ public class ProfileController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                multiService.saveProfile(requestDTO.getName(), requestDTO.getUrl(), username);
-                return tokenRecord.getResponseEntity("문제 없음");
+                ProfileResponseDTO profileResponseDTO = multiService.saveProfile(requestDTO.getName(), requestDTO.getUrl(), username);
+                return tokenRecord.getResponseEntity(profileResponseDTO);
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
