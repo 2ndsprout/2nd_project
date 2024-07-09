@@ -8,5 +8,5 @@ import java.util.List;
 public interface UserRepositoryCustom {
     List<SiteUser> isDuplicateEmail(String email);
 
-    List<SiteUser> findByUser(UserRole userRole);
+    List<SiteUser> findByUser(Long aptId, UserRole userRole);
 }

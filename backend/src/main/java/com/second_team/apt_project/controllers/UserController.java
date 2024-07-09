@@ -34,22 +34,6 @@ public class UserController {
         }
         return tokenRecord.getResponseEntity();
     }
-    @PostMapping("/security")
-    public ResponseEntity<?> saveSecurity(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
-        try {
-            if (tokenRecord.isOK()) {
-                String username = tokenRecord.username();
-                multiService.saveSecurity(requestDTO.getName(),
-                        requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptNum(),
-                        requestDTO.getRole(), requestDTO.getAptId(), username);
-                return tokenRecord.getResponseEntity("문제 없음");
-            }
-        } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-        }
-        return tokenRecord.getResponseEntity();
-    }
     @PostMapping("/group")
     public ResponseEntity<?> saveGroup(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
 
@@ -66,17 +50,20 @@ public class UserController {
         return tokenRecord.getResponseEntity("문제 없음");
     }
 
-    @GetMapping
-    public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken) {
+
+
+    @GetMapping("/list")
+    public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken,
+                                      @RequestHeader("AptId") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<UserResponseDTO> userResponseDTOList = multiService.getUserList(username);
+                List<UserResponseDTO> userResponseDTOList = multiService.getUserList(aptId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not admin or security");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

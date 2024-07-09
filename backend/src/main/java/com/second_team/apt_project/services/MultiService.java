@@ -1,25 +1,35 @@
 package com.second_team.apt_project.services;
 
+import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.domains.Apt;
+import com.second_team.apt_project.domains.FileSystem;
 import com.second_team.apt_project.domains.SiteUser;
-import com.second_team.apt_project.dtos.AptResponseDto;
+import com.second_team.apt_project.dtos.AptResponseDTO;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
 import com.second_team.apt_project.dtos.UserResponseDTO;
+import com.second_team.apt_project.dtos.*;
+import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.AptService;
+import com.second_team.apt_project.services.module.FileSystemService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +37,7 @@ public class MultiService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AptService aptService;
+    private final FileSystemService fileSystemService;
 
     /**
      * Auth
@@ -91,18 +102,7 @@ public class MultiService {
     public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not security");
-        if (email != null)
-            userService.userEmailCheck(email);
-        userService.save(name, password, email, aptNumber, role, apt);
-    }
-
-    @Transactional
-    public void saveSecurity(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
-        SiteUser user = userService.get(username);
-        Apt apt = null;
-        if (aptId != null) apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not");
         if (email != null)
             userService.userEmailCheck(email);
         userService.save(name, password, email, aptNumber, role, apt);
@@ -134,10 +134,10 @@ public class MultiService {
     }
 
     @Transactional
-    public List<UserResponseDTO> getUserList(String username) {
+    public List<UserResponseDTO> getUserList(Long aptId, String username) {
         SiteUser user = userService.get(username);
 
-        List<SiteUser> userList = userService.getUserList(UserRole.USER);
+        List<SiteUser> userList = userService.getUserList(aptId, UserRole.USER);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not admin or security");
@@ -157,8 +157,8 @@ public class MultiService {
      * Apt
      */
 
-    private AptResponseDto getAptResponseDTO(Apt apt) {
-        return AptResponseDto.builder()
+    private AptResponseDTO getAptResponseDTO(Apt apt) {
+        return AptResponseDTO.builder()
                 .aptId(apt.getId())
                 .aptName(apt.getAptName())
                 .roadAddress(apt.getRoadAddress())
@@ -168,7 +168,7 @@ public class MultiService {
     }
 
     @Transactional
-    public AptResponseDto saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
+    public AptResponseDTO saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
         Apt apt = aptService.save(roadAddress, aptName, x, y);
@@ -184,19 +184,63 @@ public class MultiService {
     }
 
 
-    public List<AptResponseDto> getAptList(String username) {
+    public List<AptResponseDTO> getAptList(String username) {
         SiteUser user = userService.get(username);
         List<Apt> aptList = aptService.getAptList();
-        List<AptResponseDto> responseDTOList = new ArrayList<>();
+        List<AptResponseDTO> responseDTOList = new ArrayList<>();
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
         for (Apt apt : aptList) {
-            AptResponseDto aptResponseDTO = this.getApt(apt);
+            AptResponseDTO aptResponseDTO = this.getApt(apt);
             responseDTOList.add(aptResponseDTO);
         }
         return responseDTOList;
     }
 
-    private AptResponseDto getApt(Apt apt) {
+    private AptResponseDTO getApt(Apt apt) {
         return getAptResponseDTO(apt);
+    }
+
+
+    public AptResponseDTO getAptDetail(Long aptId, String username) {
+        SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        Apt apt = aptService.get(aptId);
+        AptResponseDTO aptResponseDTO = this.getApt(apt);
+        return aptResponseDTO;
+    }
+    /**
+     * Image
+     */
+
+    @Transactional
+    public ImageResponseDTO tempUpload(MultipartFile fileUrl, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new IllegalArgumentException("username");
+        if (!fileUrl.isEmpty()) {
+            try {
+                String path = AptProjectApplication.getOsType().getLoc();
+                Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username));
+                if (_fileSystem.isPresent()) {
+                    FileSystem fileSystem = _fileSystem.get();
+                    File file = new File(path + fileSystem.getV());
+                    if (file.exists()) file.delete();
+                }
+                UUID uuid = UUID.randomUUID();
+                String fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                if (fileLoc != null) {
+                    fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
+                }
+                return ImageResponseDTO.builder().url(fileLoc).build();
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+
+
     }
 }

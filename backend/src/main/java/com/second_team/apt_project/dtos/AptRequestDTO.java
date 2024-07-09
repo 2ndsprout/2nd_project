@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AptRequestDto {
+public class AptRequestDTO {
     private Long aptId;
     private String roadAddress; // 도로명주소
     private String aptName; // 아파트 이름
