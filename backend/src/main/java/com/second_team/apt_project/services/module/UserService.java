@@ -54,6 +54,10 @@ public class UserService {
 
     @Transactional
     public List<SiteUser> getUserList(Long aptId, UserRole userRole) {
-        return this.userRepository.findByUser(aptId, userRole);
+        return this.userRepository.findByUserList(aptId, userRole);
+    }
+
+    public SiteUser getUser(String userId) {
+        return this.userRepository.findByUser(userId);
     }
 }

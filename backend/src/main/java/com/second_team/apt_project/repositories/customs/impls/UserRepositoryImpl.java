@@ -23,9 +23,14 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<SiteUser> findByUser(Long aptId, UserRole userRole) {
+    public List<SiteUser> findByUserList(Long aptId, UserRole userRole) {
         List<SiteUser> siteUser = jpaQueryFactory.selectFrom(qSiteUser)
                 .where(qSiteUser.role.eq(userRole).and(qSiteUser.apt.id.eq(aptId))).fetch();
         return siteUser;
+    }
+
+    @Override
+    public SiteUser findByUser(String userId) {
+        return jpaQueryFactory.selectFrom(qSiteUser).where(qSiteUser.username.eq(userId)).fetchOne();
     }
 }

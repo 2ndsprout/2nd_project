@@ -149,6 +149,16 @@ public class MultiService {
     }
 
     @Transactional
+    public UserResponseDTO getUserDetail(String userId, String username) {
+        SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not admin or security");
+        SiteUser user1 = userService.getUser(userId);
+        UserResponseDTO userResponseDTO = getUser(user1);
+
+        return userResponseDTO;
+    }
+
+    @Transactional
     private UserResponseDTO getUser(SiteUser siteUser) {
         return getUserResponseDTO(siteUser);
     }

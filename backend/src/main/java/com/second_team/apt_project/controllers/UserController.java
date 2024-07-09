@@ -50,7 +50,21 @@ public class UserController {
         return tokenRecord.getResponseEntity("문제 없음");
     }
 
-
+    @GetMapping
+    public ResponseEntity<?> UserDetail(@RequestHeader("Authorization") String accessToken,
+                                    @RequestHeader("username") String userId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                UserResponseDTO userResponseDTO = multiService.getUserDetail(userId, username);
+                return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 
     @GetMapping("/list")
     public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken,
