@@ -1,10 +1,7 @@
 package com.second_team.apt_project.services;
 
 import com.second_team.apt_project.AptProjectApplication;
-import com.second_team.apt_project.domains.Apt;
-import com.second_team.apt_project.domains.FileSystem;
-import com.second_team.apt_project.domains.Profile;
-import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.dtos.AptResponseDTO;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
@@ -16,10 +13,7 @@ import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
-import com.second_team.apt_project.services.module.AptService;
-import com.second_team.apt_project.services.module.FileSystemService;
-import com.second_team.apt_project.services.module.ProfileService;
-import com.second_team.apt_project.services.module.UserService;
+import com.second_team.apt_project.services.module.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,6 +43,7 @@ public class MultiService {
     private final AptService aptService;
     private final FileSystemService fileSystemService;
     private final ProfileService profileService;
+    private final CategoryService categoryService;
 
     /**
      * Auth
@@ -410,5 +405,18 @@ public class MultiService {
                 .username(user.getUsername())
                 .url(fileSystem.getV())
                 .id(profile.getId()).build()).orElse(null);
+    }
+
+    public CategoryResponseDTO saveCategory(String username, String name) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
+            throw new IllegalArgumentException("requires admin or security role");
+        Category category = this.categoryService.save(name);
+        return CategoryResponseDTO.builder()
+                .id(category.getId())
+                .name(category.getName()).build();
+
     }
 }
