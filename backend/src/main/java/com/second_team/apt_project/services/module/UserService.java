@@ -1,6 +1,6 @@
 package com.second_team.apt_project.services.module;
 
-import com.second_team.apt_project.Exception.DataDuplicateException;
+import com.second_team.apt_project.exceptions.DataDuplicateException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.SiteUser;
 import com.second_team.apt_project.enums.UserRole;
@@ -53,7 +53,7 @@ public class UserService {
     }
 
     @Transactional
-    public List<SiteUser> getUserList(UserRole userRole) {
-        return this.userRepository.findByUser(userRole);
+    public List<SiteUser> getUserList(Long aptId, UserRole userRole) {
+        return this.userRepository.findByUser(aptId, userRole);
     }
 }

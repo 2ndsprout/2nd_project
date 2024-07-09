@@ -1,17 +1,16 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.dtos.ImageRequestDTO;
 import com.second_team.apt_project.dtos.ImageResponseDTO;
-import com.second_team.apt_project.dtos.UserSaveRequestDTO;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,11 +1,14 @@
 package com.second_team.apt_project.services;
 
 import com.second_team.apt_project.AptProjectApplication;
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.FileSystem;
 import com.second_team.apt_project.domains.Profile;
 import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.dtos.AptResponseDTO;
+import com.second_team.apt_project.dtos.AuthRequestDTO;
+import com.second_team.apt_project.dtos.AuthResponseDTO;
+import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.dtos.*;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
@@ -138,10 +141,10 @@ public class MultiService {
     }
 
     @Transactional
-    public List<UserResponseDTO> getUserList(String username) {
+    public List<UserResponseDTO> getUserList(Long aptId, String username) {
         SiteUser user = userService.get(username);
 
-        List<SiteUser> userList = userService.getUserList(UserRole.USER);
+        List<SiteUser> userList = userService.getUserList(aptId, UserRole.USER);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
@@ -162,8 +165,8 @@ public class MultiService {
      * Apt
      */
 
-    private AptResponseDto getAptResponseDTO(Apt apt) {
-        return AptResponseDto.builder()
+    private AptResponseDTO getAptResponseDTO(Apt apt) {
+        return AptResponseDTO.builder()
                 .aptId(apt.getId())
                 .aptName(apt.getAptName())
                 .roadAddress(apt.getRoadAddress())
@@ -173,7 +176,7 @@ public class MultiService {
     }
 
     @Transactional
-    public AptResponseDto saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
+    public AptResponseDTO saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
         Apt apt = aptService.save(roadAddress, aptName, x, y);
@@ -189,22 +192,30 @@ public class MultiService {
     }
 
 
-    public List<AptResponseDto> getAptList(String username) {
+    public List<AptResponseDTO> getAptList(String username) {
         SiteUser user = userService.get(username);
         List<Apt> aptList = aptService.getAptList();
-        List<AptResponseDto> responseDTOList = new ArrayList<>();
+        List<AptResponseDTO> responseDTOList = new ArrayList<>();
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
         for (Apt apt : aptList) {
-            AptResponseDto aptResponseDTO = this.getApt(apt);
+            AptResponseDTO aptResponseDTO = this.getApt(apt);
             responseDTOList.add(aptResponseDTO);
         }
         return responseDTOList;
     }
 
-    private AptResponseDto getApt(Apt apt) {
+    private AptResponseDTO getApt(Apt apt) {
         return getAptResponseDTO(apt);
     }
 
+
+    public AptResponseDTO getAptDetail(Long aptId, String username) {
+        SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        Apt apt = aptService.get(aptId);
+        AptResponseDTO aptResponseDTO = this.getApt(apt);
+        return aptResponseDTO;
+    }
     /**
      * Image
      */
