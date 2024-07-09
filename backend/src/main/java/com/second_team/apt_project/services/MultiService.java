@@ -1,26 +1,33 @@
 package com.second_team.apt_project.services;
 
+import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
+import com.second_team.apt_project.domains.FileSystem;
 import com.second_team.apt_project.domains.SiteUser;
-import com.second_team.apt_project.dtos.AptResponseDto;
-import com.second_team.apt_project.dtos.AuthRequestDTO;
-import com.second_team.apt_project.dtos.AuthResponseDTO;
-import com.second_team.apt_project.dtos.UserResponseDTO;
+import com.second_team.apt_project.dtos.*;
+import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.AptService;
+import com.second_team.apt_project.services.module.FileSystemService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +35,7 @@ public class MultiService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AptService aptService;
+    private final FileSystemService fileSystemService;
 
     /**
      * Auth
@@ -199,5 +207,41 @@ public class MultiService {
 
     private AptResponseDto getApt(Apt apt) {
         return getAptResponseDTO(apt);
+    }
+
+    /**
+     * Image
+     */
+
+    @Transactional
+    public ImageResponseDTO tempUpload(MultipartFile fileUrl, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new IllegalArgumentException("username");
+        if (!fileUrl.isEmpty()) {
+            try {
+                String path = AptProjectApplication.getOsType().getLoc();
+                Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username));
+                if (_fileSystem.isPresent()) {
+                    FileSystem fileSystem = _fileSystem.get();
+                    File file = new File(path + fileSystem.getV());
+                    if (file.exists()) file.delete();
+                }
+                UUID uuid = UUID.randomUUID();
+                String fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                if (fileLoc != null) {
+                    fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
+                }
+                return ImageResponseDTO.builder().url(fileLoc).build();
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+
+
     }
 }
