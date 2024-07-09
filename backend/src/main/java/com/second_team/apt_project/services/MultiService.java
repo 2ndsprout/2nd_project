@@ -209,6 +209,7 @@ public class MultiService {
         Apt apt = aptService.get(aptId);
         AptResponseDTO aptResponseDTO = this.getApt(apt);
         return aptResponseDTO;
+    }
     /**
      * Image
      */
