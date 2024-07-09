@@ -31,7 +31,6 @@ public class AptService {
     public void update(Apt apt, String aptName) {
         apt.setAptName(aptName);
         aptRepository.save(apt);
-
     }
 
     public List<Apt> getAptList() {
