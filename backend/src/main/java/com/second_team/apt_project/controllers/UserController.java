@@ -34,22 +34,6 @@ public class UserController {
         }
         return tokenRecord.getResponseEntity();
     }
-    @PostMapping("/security")
-    public ResponseEntity<?> saveSecurity(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
-        try {
-            if (tokenRecord.isOK()) {
-                String username = tokenRecord.username();
-                multiService.saveSecurity(requestDTO.getName(),
-                        requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptNum(),
-                        requestDTO.getRole(), requestDTO.getAptId(), username);
-                return tokenRecord.getResponseEntity("문제 없음");
-            }
-        } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-        }
-        return tokenRecord.getResponseEntity();
-    }
     @PostMapping("/group")
     public ResponseEntity<?> saveGroup(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
 
