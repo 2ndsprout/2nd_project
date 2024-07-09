@@ -1,7 +1,6 @@
 package com.second_team.apt_project.services;
 
 import com.second_team.apt_project.AptProjectApplication;
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.FileSystem;
 import com.second_team.apt_project.domains.SiteUser;
@@ -27,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -136,10 +134,10 @@ public class MultiService {
     }
 
     @Transactional
-    public List<UserResponseDTO> getUserList(String username) {
+    public List<UserResponseDTO> getUserList(Long aptId, String username) {
         SiteUser user = userService.get(username);
 
-        List<SiteUser> userList = userService.getUserList(UserRole.USER);
+        List<SiteUser> userList = userService.getUserList(aptId, UserRole.USER);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not admin or security");
