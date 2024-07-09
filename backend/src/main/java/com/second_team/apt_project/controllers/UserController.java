@@ -1,8 +1,6 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataDuplicateException;
 import com.second_team.apt_project.Exception.DataNotFoundException;
-import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.dtos.UserSaveRequestDTO;
 import com.second_team.apt_project.records.TokenRecord;
@@ -68,8 +66,11 @@ public class UserController {
         return tokenRecord.getResponseEntity("문제 없음");
     }
 
-    @GetMapping
-    public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken) {
+
+
+    @GetMapping("/list")
+    public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken,
+                                      @RequestHeader("AptId") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
@@ -78,7 +79,7 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not admin or security");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

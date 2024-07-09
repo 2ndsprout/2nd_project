@@ -3,19 +3,11 @@ package com.second_team.apt_project.services.module;
 
 import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
-import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.repositories.AptRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-
-import com.second_team.apt_project.domains.Apt;
-import com.second_team.apt_project.repositories.AptRepository;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
