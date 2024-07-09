@@ -73,7 +73,8 @@ public class AptController {
                 return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

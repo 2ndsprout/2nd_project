@@ -21,4 +21,8 @@ public class FileSystemService {
                 .k(key)
                 .v(fileLoc).build());
     }
+
+    public void delete(FileSystem fileSystem) {
+        fileSystemRepository.delete(fileSystem);
+    }
 }
