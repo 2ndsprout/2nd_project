@@ -1,8 +1,8 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
-import com.second_team.apt_project.dtos.AptRequestDTO;
-import com.second_team.apt_project.dtos.AptResponseDTO;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
+import com.second_team.apt_project.dtos.AptRequestDto;
+import com.second_team.apt_project.dtos.AptResponseDto;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;

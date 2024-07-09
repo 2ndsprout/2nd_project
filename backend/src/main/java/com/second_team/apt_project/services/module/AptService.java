@@ -1,7 +1,7 @@
 package com.second_team.apt_project.services.module;
 
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.repositories.AptRepository;
 import lombok.RequiredArgsConstructor;
