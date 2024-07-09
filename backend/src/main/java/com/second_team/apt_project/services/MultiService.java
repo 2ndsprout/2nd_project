@@ -100,18 +100,7 @@ public class MultiService {
     public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not security");
-        if (email != null)
-            userService.userEmailCheck(email);
-        userService.save(name, password, email, aptNumber, role, apt);
-    }
-
-    @Transactional
-    public void saveSecurity(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
-        SiteUser user = userService.get(username);
-        Apt apt = null;
-        if (aptId != null) apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not admin");
         if (email != null)
             userService.userEmailCheck(email);
         userService.save(name, password, email, aptNumber, role, apt);
