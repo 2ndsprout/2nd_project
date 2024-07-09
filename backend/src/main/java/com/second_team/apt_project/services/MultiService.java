@@ -12,6 +12,7 @@ import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.dtos.*;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
@@ -319,7 +320,7 @@ public class MultiService {
      * Profile
      */
     @Transactional
-    public void saveProfile(String name, String url, String username) {
+    public ProfileResponseDTO saveProfile(String name, String url, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
@@ -330,10 +331,16 @@ public class MultiService {
                 String newFile = "/api/user" + "/" + username + "/profile" + "/" + profile.getId() + "/";
                 if (_newFileSystem.isPresent()) {
                     String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
-                    fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+                    FileSystem fileSystem = fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+                    return ProfileResponseDTO.builder()
+                            .id(profile.getId())
+                            .username(user.getUsername())
+                            .url(fileSystem.getV())
+                            .name(profile.getName()).build();
                 }
             }
         }
+        return null;
     }
 
     @Transactional
@@ -349,7 +356,7 @@ public class MultiService {
                 .id(profile.getId())
                 .url(fileSystem.getV())
                 .name(profile.getName())
-                .userName(user.getUsername()).build()).orElse(null);
+                .username(user.getUsername()).build()).orElse(null);
 
     }
 
@@ -367,7 +374,7 @@ public class MultiService {
             _fileSystem.ifPresent(fileSystem -> responseDTOList.add(ProfileResponseDTO.builder()
                     .id(profile.getId())
                     .url(fileSystem.getV())
-                    .userName(profile.getUser().getUsername())
+                    .username(profile.getUser().getUsername())
                     .name(profile.getName()).build()));
         }
         return responseDTOList;
@@ -400,7 +407,7 @@ public class MultiService {
 
         return _newUserFileSystem.map(fileSystem -> ProfileResponseDTO.builder()
                 .name(profile.getName())
-                .userName(user.getUsername())
+                .username(user.getUsername())
                 .url(fileSystem.getV())
                 .id(profile.getId()).build()).orElse(null);
     }

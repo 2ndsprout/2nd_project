@@ -16,8 +16,8 @@ public class FileSystemService {
         return this.fileSystemRepository.findKey(key);
     }
 
-    public void save(String key, String fileLoc) {
-        fileSystemRepository.save(FileSystem.builder()
+    public FileSystem save(String key, String fileLoc) {
+        return fileSystemRepository.save(FileSystem.builder()
                 .k(key)
                 .v(fileLoc).build());
     }
