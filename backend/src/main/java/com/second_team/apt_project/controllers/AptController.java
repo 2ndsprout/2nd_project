@@ -1,8 +1,8 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.dtos.AptRequestDTO;
 import com.second_team.apt_project.dtos.AptResponseDTO;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +73,8 @@ public class AptController {
                 return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

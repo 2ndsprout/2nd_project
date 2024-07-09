@@ -3,6 +3,7 @@ package com.second_team.apt_project.services;
 import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.FileSystem;
+import com.second_team.apt_project.domains.Profile;
 import com.second_team.apt_project.domains.SiteUser;
 import com.second_team.apt_project.dtos.AptResponseDTO;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
@@ -16,6 +17,7 @@ import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.AptService;
 import com.second_team.apt_project.services.module.FileSystemService;
+import com.second_team.apt_project.services.module.ProfileService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +47,7 @@ public class MultiService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AptService aptService;
     private final FileSystemService fileSystemService;
+    private final ProfileService profileService;
 
     /**
      * Auth
@@ -106,7 +112,8 @@ public class MultiService {
     public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
+            throw new IllegalArgumentException("role is not");
         if (email != null)
             userService.userEmailCheck(email);
         userService.save(name, password, email, aptNumber, role, apt);
@@ -122,8 +129,8 @@ public class MultiService {
                 for (int j = 1; w >= j; j++) {
                     String jKey = String.valueOf(j);
                     if (j < 10)
-                        jKey =  "0" + jKey;
-                    String name = String.valueOf(aptNumber) +  String.valueOf(i) + jKey;
+                        jKey = "0" + jKey;
+                    String name = String.valueOf(aptNumber) + String.valueOf(i) + jKey;
                     SiteUser _user = userService.saveGroup(name, aptNumber, apt);
                     userResponseDTOList.add(UserResponseDTO.builder()
                                     .username(_user.getUsername())
@@ -132,7 +139,7 @@ public class MultiService {
                             .build());
                 }
             return userResponseDTOList;
-        }else
+        } else
             throw new IllegalArgumentException("not role");
     }
 
@@ -143,7 +150,8 @@ public class MultiService {
         Page<SiteUser> userList = userService.getUserList(pageable, aptId);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("role is not admin or security");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
+            throw new IllegalArgumentException("role is not admin or security");
         for (SiteUser siteUser : userList) {
             UserResponseDTO userResponseDTO = getUser(siteUser);
             responseDTOList.add(userResponseDTO);
@@ -238,10 +246,10 @@ public class MultiService {
      */
 
     @Transactional
-    public ImageResponseDTO tempUpload(MultipartFile fileUrl, String username) {
+    public ImageResponseDTO tempUpload(MultipartFile fileUrl, Long profileId, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
-            throw new IllegalArgumentException("username");
+            throw new DataNotFoundException("username");
         if (!fileUrl.isEmpty()) {
             try {
                 String path = AptProjectApplication.getOsType().getLoc();
@@ -252,20 +260,148 @@ public class MultiService {
                     if (file.exists()) file.delete();
                 }
                 UUID uuid = UUID.randomUUID();
-                String fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
-                File file = new File(path + fileLoc);
-                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
-                fileUrl.transferTo(file);
-                if (fileLoc != null) {
+                String fileLoc = null;
+                if (profileId != null) {
+                    Profile profile = profileService.findById(profileId);
+                    fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                    fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
+                } else {
+                    fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                     fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
                 }
-                return ImageResponseDTO.builder().url(fileLoc).build();
-            }catch (IOException e) {
+                if (fileLoc != null) {
+                    File file = new File(path + fileLoc);
+                    if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                    fileUrl.transferTo(file);
+                    return ImageResponseDTO.builder().url(fileLoc).build();
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return null;
 
 
+    }
+
+    @Transactional
+    public String fileMove(String url, String newUrl, FileSystem fileSystem) {
+        try {
+            String path = AptProjectApplication.getOsType().getLoc();
+            Path tempPath = Paths.get(path + url);
+            Path newPath = Paths.get(path + newUrl + tempPath.getFileName());
+
+            Files.createDirectories(newPath.getParent());
+            Files.move(tempPath, newPath);
+            File file = tempPath.toFile();
+            this.deleteFolder(file.getParentFile());
+            fileSystemService.delete(fileSystem);
+            return newUrl + tempPath.getFileName();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * File
+     */
+    public void deleteFolder(File file) {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                for (File list : file.listFiles())
+                    deleteFolder(list);
+            }
+            file.delete();
+        }
+    }
+
+    /**
+     * Profile
+     */
+    @Transactional
+    public void saveProfile(String name, String url, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        if (!name.trim().isEmpty()) {
+            Profile profile = profileService.save(user, name);
+            if (url != null) {
+                Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username));
+                String newFile = "/api/user" + "/" + username + "/profile" + "/" + profile.getId() + "/";
+                if (_newFileSystem.isPresent()) {
+                    String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                    fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public ProfileResponseDTO getProfile(Long profileId, String username) {
+        SiteUser user = userService.get(username);
+        if (user != null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
+        if (profile.getUser() != user)
+            throw new IllegalArgumentException("User mismatch in profile.");
+        return _fileSystem.map(fileSystem -> ProfileResponseDTO.builder()
+                .id(profile.getId())
+                .url(fileSystem.getV())
+                .name(profile.getName())
+                .userName(user.getUsername()).build()).orElse(null);
+
+    }
+
+    @Transactional
+    public List<ProfileResponseDTO> getProfileList(String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        List<ProfileResponseDTO> responseDTOList = new ArrayList<>();
+        List<Profile> profileList = profileService.findProfilesByUserList(user);
+        if (profileList == null)
+            throw new DataNotFoundException("not profileList");
+        for (Profile profile : profileList) {
+            Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
+            _fileSystem.ifPresent(fileSystem -> responseDTOList.add(ProfileResponseDTO.builder()
+                    .id(profile.getId())
+                    .url(fileSystem.getV())
+                    .userName(profile.getUser().getUsername())
+                    .name(profile.getName()).build()));
+        }
+        return responseDTOList;
+    }
+
+    @Transactional
+    public ProfileResponseDTO updateProfile(String username, String url, String name, Long id) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(id);
+        if (profile == null)
+            throw new DataNotFoundException("not profile");
+        profileService.updateProfile(profile, name);
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
+        String path = AptProjectApplication.getOsType().getLoc();
+        if (_fileSystem.isPresent() && (url == null || !_fileSystem.get().getV().equals(url))) {
+            File old = new File(path + _fileSystem.get().getV());
+            if (old.exists()) old.delete();
+        }
+        if (url != null && !url.isBlank()) {
+            String newFile = "/api/user" + "/" + username + "/profile" + "/" + profile.getId() + "/";
+            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
+            if (_newFileSystem.isPresent()) {
+                String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+            }
+        }
+        Optional<FileSystem> _newUserFileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
+
+        return _newUserFileSystem.map(fileSystem -> ProfileResponseDTO.builder()
+                .name(profile.getName())
+                .userName(user.getUsername())
+                .url(fileSystem.getV())
+                .id(profile.getId()).build()).orElse(null);
     }
 }

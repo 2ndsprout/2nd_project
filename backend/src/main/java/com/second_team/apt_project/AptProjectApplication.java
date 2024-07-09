@@ -1,6 +1,6 @@
 package com.second_team.apt_project;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.enums.OsType;
 import lombok.Getter;
 import org.springframework.boot.SpringApplication;

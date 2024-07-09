@@ -1,7 +1,7 @@
 package com.second_team.apt_project.domains;
 
+import com.second_team.apt_project.enums.ProposeStatus;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,23 +12,33 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Profile { // 프로필
+public class Propose {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private SiteUser user;
+    private String title;
+
     @Column(length = 50, unique = true)
-    private String name;
+    private String roadAddress;
+
+    private String aptName;
+
+    private Integer h;
+
+    private Integer w;
+
+    private Double x;
+
+    private Double y;
+
+    private Integer password;
+
+    private ProposeStatus proposeStatus;
 
     private LocalDateTime createDate;
 
-    @Builder
-    public Profile(SiteUser user, String name) {
-        this.createDate = LocalDateTime.now();
-        this.user = user;
-        this.name = name;
-    }
+    private LocalDateTime modifyDate;
+
 }

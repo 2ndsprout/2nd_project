@@ -1,7 +1,6 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
-import com.second_team.apt_project.dtos.AptResponseDTO;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.dtos.UserSaveRequestDTO;
 import com.second_team.apt_project.records.TokenRecord;
