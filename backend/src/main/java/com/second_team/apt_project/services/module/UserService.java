@@ -66,12 +66,8 @@ public class UserService {
         return this.userRepository.findByUser(userId);
     }
 
-    public SiteUser update(SiteUser updateUser, String name, String password, String email, int aptNum, Apt apt) {
-        updateUser.setApt(apt);
+    public SiteUser update(SiteUser updateUser, String email) {
         updateUser.setEmail(email);
-        updateUser.setUsername(name);
-        updateUser.setPassword(passwordEncoder.encode(password));
-        updateUser.setAptNum(aptNum);
         return userRepository.save(updateUser);
     }
 }

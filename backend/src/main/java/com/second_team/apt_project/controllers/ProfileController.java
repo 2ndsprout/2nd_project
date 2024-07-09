@@ -1,8 +1,8 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.Exception.DataNotFoundException;
 import com.second_team.apt_project.dtos.ProfileResponseDTO;
 import com.second_team.apt_project.dtos.ProfileSaveRequestDTO;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;

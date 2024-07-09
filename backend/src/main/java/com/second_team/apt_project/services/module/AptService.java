@@ -28,7 +28,7 @@ public class AptService {
                 .build());
     }
 
-    public void update(Apt apt, String aptName) {
+    public void update(Apt apt, String url, String aptName) {
         apt.setAptName(aptName);
         aptRepository.save(apt);
     }

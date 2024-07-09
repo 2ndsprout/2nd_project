@@ -12,6 +12,7 @@ import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.dtos.*;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
+import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
@@ -21,6 +22,7 @@ import com.second_team.apt_project.services.module.ProfileService;
 import com.second_team.apt_project.services.module.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -104,7 +106,6 @@ public class MultiService {
                 .aptNum(siteUser.getAptNum())
                 .username(siteUser.getUsername())
                 .email(siteUser.getEmail())
-                .aptResponseDto(this.getAptResponseDTO(siteUser.getApt()))
                 .build();
     }
 
@@ -162,7 +163,7 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security or user");
         SiteUser user1 = userService.getUser(userId);
         UserResponseDTO userResponseDTO = getUser(user1);
 
@@ -170,14 +171,13 @@ public class MultiService {
     }
 
 
-    public UserResponseDTO updateUser(String username, String name, String password, String email, Long aptId, int aptNum, String loginId) {
+    @Transactional
+    public UserResponseDTO updateUser(String username, String email) {
         SiteUser user = userService.get(username);
-        Apt apt = aptService.get(aptId);
-        SiteUser updateUser = userService.get(loginId);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security or not login user");
+        if (!user.getUsername().equals(username)) throw new IllegalArgumentException("user mismatch in login user");
         if (email != null)
             userService.userEmailCheck(email);
-        SiteUser siteUser = userService.update(updateUser, name, password, email, aptNum, apt);
+        SiteUser siteUser = userService.update(user, email);
         return this.getUser(siteUser);
     }
 
@@ -209,11 +209,36 @@ public class MultiService {
     }
 
     @Transactional
-    public void updateApt(Long aptId, String aptName, String username) {
+    public AptResponseDTO updateApt(Long aptId, String aptName, String url, String username) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
         Apt apt = aptService.get(aptId);
+        if (apt == null)
+            throw new DataNotFoundException("not apt");
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
-        aptService.update(apt, aptName);
+        aptService.update(apt, url, aptName);
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        String path = AptProjectApplication.getOsType().getLoc();
+        if (_fileSystem.isPresent() && (url == null || !_fileSystem.get().getV().equals(url))) {
+            File old = new File(path + _fileSystem.get().getV());
+            if (old.exists()) old.delete();
+        }
+        if (url != null && !url.isBlank()) {
+            String newFile = "/api/apt/" + aptId.toString() + "/";
+            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(apt.getId().toString()));
+            if (_newFileSystem.isPresent()) {
+                String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                fileSystemService.save(ImageKey.APT.getKey(apt.getId().toString()), newUrl);
+            }
+        }
+        Optional<FileSystem> _newAptFileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
+
+        return _newAptFileSystem.map(fileSystem -> AptResponseDTO.builder()
+                .aptId(apt.getId())
+                .aptName(apt.getAptName())
+                .url(fileSystem.getV())
+                .build()).orElse(null);
     }
 
 
@@ -241,6 +266,8 @@ public class MultiService {
         AptResponseDTO aptResponseDTO = this.getApt(apt);
         return aptResponseDTO;
     }
+
+
     /**
      * Image
      */
@@ -344,7 +371,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         if (profile.getUser() != user)
-            throw new IllegalArgumentException("User mismatch in profile.");
+            throw new IllegalArgumentException("user mismatch in profile");
         return _fileSystem.map(fileSystem -> ProfileResponseDTO.builder()
                 .id(profile.getId())
                 .url(fileSystem.getV())

@@ -34,13 +34,13 @@ public class AptController {
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@RequestBody AptRequestDTO aptRequestDto, @RequestHeader("Authorization") String accessToken) {
+    public ResponseEntity<?> update(@RequestBody AptRequestDTO aptRequestDTO, @RequestHeader("Authorization") String accessToken) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                this.multiService.updateApt(aptRequestDto.getAptId(), aptRequestDto.getAptName(), username);
-                return tokenRecord.getResponseEntity("문제 없음");
+                AptResponseDTO aptResponseDTO = multiService.updateApt(aptRequestDTO.getAptId(), aptRequestDTO.getAptName(), aptRequestDTO.getUrl(), username);
+                return tokenRecord.getResponseEntity(aptResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());

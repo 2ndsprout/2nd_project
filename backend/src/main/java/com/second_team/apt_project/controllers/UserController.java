@@ -54,13 +54,12 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String accessToken,
-                                        @RequestHeader("Username") String userId,
                                         @RequestBody UserSaveRequestDTO requestDTO) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                UserResponseDTO userResponseDTO = multiService.updateUser(username, requestDTO.getName(), requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptId(), requestDTO.getAptNum(), userId);
+                UserResponseDTO userResponseDTO = multiService.updateUser(username, requestDTO.getEmail());
                 return tokenRecord.getResponseEntity(userResponseDTO);
             }
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
@@ -79,7 +78,7 @@ public class UserController {
                 UserResponseDTO userResponseDTO = multiService.getUserDetail(userId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
-        } catch (IllegalArgumentException | DataNotFoundException ex) {
+        } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
