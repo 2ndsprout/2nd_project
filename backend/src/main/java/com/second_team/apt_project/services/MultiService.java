@@ -411,8 +411,8 @@ public class MultiService {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("requires admin or security role");
+        if (user.getRole() != UserRole.SECURITY)
+            throw new IllegalArgumentException("requires security role");
         Category category = this.categoryService.save(name);
         return CategoryResponseDTO.builder()
                 .id(category.getId())
