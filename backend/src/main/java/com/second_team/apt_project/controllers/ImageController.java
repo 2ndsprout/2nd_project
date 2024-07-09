@@ -25,11 +25,11 @@ public class ImageController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ImageResponseDTO imageResponseDTO = multiService.tempUpload(requestDTO.getFile(), username);
+                ImageResponseDTO imageResponseDTO = multiService.tempUpload(requestDTO.getFile(),requestDTO.getProfileId(), username);
                 return tokenRecord.getResponseEntity(imageResponseDTO);
             }
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

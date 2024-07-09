@@ -59,7 +59,7 @@ public class AptController {
                 return ResponseEntity.status(HttpStatus.OK).body(aptResponseDtoList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not admin");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }
