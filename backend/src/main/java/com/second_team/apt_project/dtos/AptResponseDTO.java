@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class AptResponseDto {
+public class AptResponseDTO {
     private Long aptId;
     private String roadAddress; // 도로명주소
     private String aptName; // 아파트 이름
@@ -12,7 +12,7 @@ public class AptResponseDto {
     private Double y; // 경도
 
     @Builder
-    public AptResponseDto(Long aptId, String roadAddress, String aptName, Double x, Double y) {
+    public AptResponseDTO(Long aptId, String roadAddress, String aptName, Double x, Double y) {
         this.aptId = aptId;
         this.roadAddress = roadAddress;
         this.aptName = aptName;
