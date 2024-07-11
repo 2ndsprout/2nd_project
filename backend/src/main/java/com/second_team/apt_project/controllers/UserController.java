@@ -68,8 +68,22 @@ public class UserController {
         }
         return tokenRecord.getResponseEntity();
     }
-
     @GetMapping
+    public ResponseEntity<?> getUser(@RequestHeader("Authorization") String accessToken) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                UserResponseDTO userResponseDTO = multiService.getUser(username);
+                return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
+            }
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/detail")
     public ResponseEntity<?> userDetail(@RequestHeader("Authorization") String accessToken,
                                     @RequestHeader("Username") String userId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -72,6 +73,7 @@ public class UserService {
         updateUser.setUsername(name);
         updateUser.setPassword(passwordEncoder.encode(password));
         updateUser.setAptNum(aptNum);
+        updateUser.setModifyDate(LocalDateTime.now());
         return userRepository.save(updateUser);
     }
 }
