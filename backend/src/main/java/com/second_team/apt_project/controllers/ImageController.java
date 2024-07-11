@@ -26,7 +26,7 @@ public class ImageController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ImageResponseDTO imageResponseDTO = multiService.tempUpload(requestDTO.getFile(),requestDTO.getProfileId(), username);
-                return tokenRecord.getResponseEntity(imageResponseDTO);
+                return ResponseEntity.status(HttpStatus.OK).body(imageResponseDTO);
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

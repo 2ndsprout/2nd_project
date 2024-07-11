@@ -25,7 +25,7 @@ public class ProfileController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ProfileResponseDTO profileResponseDTO = multiService.saveProfile(requestDTO.getName(), requestDTO.getUrl(), username);
-                return tokenRecord.getResponseEntity(profileResponseDTO);
+                return ResponseEntity.status(HttpStatus.OK).body(profileResponseDTO);
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -34,13 +34,14 @@ public class ProfileController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String accessToken, @RequestHeader("ProfileId") Long profileId) {
+    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String accessToken,
+                                        @RequestHeader("ProfileId") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ProfileResponseDTO responseDTO = multiService.getProfile(profileId, username);
-                return tokenRecord.getResponseEntity(responseDTO);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -55,7 +56,7 @@ public class ProfileController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 List<ProfileResponseDTO> responseDTOList = multiService.getProfileList(username);
-                return tokenRecord.getResponseEntity(responseDTOList);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -70,7 +71,7 @@ public class ProfileController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ProfileResponseDTO profileResponseDTO = multiService.updateProfile(username, requestDTO.getUrl(), requestDTO.getName(), requestDTO.getId());
-                return tokenRecord.getResponseEntity(profileResponseDTO);
+                return ResponseEntity.status(HttpStatus.OK).body(profileResponseDTO);
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
