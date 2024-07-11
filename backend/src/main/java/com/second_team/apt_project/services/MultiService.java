@@ -180,7 +180,8 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("incorrect permissions");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username))
+            throw new IllegalArgumentException("incorrect permissions");
         SiteUser user1 = userService.getUser(userId);
         UserResponseDTO userResponseDTO = getUserResponseDTO(user1);
 
@@ -251,7 +252,7 @@ public class MultiService {
         }
         if (url != null && !url.isBlank()) {
             String newFile = "/api/apt/" + aptId.toString() + "/";
-            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "."+ profile.getId()));
+            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
             if (_newFileSystem.isPresent()) {
                 String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
                 fileSystemService.save(ImageKey.APT.getKey(apt.getId().toString()), newUrl);
@@ -502,7 +503,7 @@ public class MultiService {
     }
 
     /**
-     *
+     * Category
      */
 
     @Transactional
@@ -516,10 +517,7 @@ public class MultiService {
         if (user.getRole() != UserRole.ADMIN)
             throw new IllegalArgumentException("incorrect permissions");
         Category category = this.categoryService.save(name);
-        return CategoryResponseDTO.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .createDate(this.dateTimeTransfer(category.getCreateDate())).build();
+        return categoryResponseDTO(category);
 
     }
 
@@ -540,6 +538,47 @@ public class MultiService {
         categoryService.delete(category);
     }
 
+    @Transactional
+    public CategoryResponseDTO getCategory(Long categoryId, String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        Category category = categoryService.findById(categoryId);
+        if (category == null)
+            throw new DataNotFoundException("category not data");
+
+        return categoryResponseDTO(category);
+    }
+
+    @Transactional
+    public CategoryResponseDTO updateCategory(String username, Long profileId, Long id, String name) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        Category category = categoryService.findById(id);
+        if (category == null)
+            throw new DataNotFoundException("category not data");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("incorrect permissions");
+        category = categoryService.update(category, name);
+
+        return categoryResponseDTO(category);
+    }
+
+    private CategoryResponseDTO categoryResponseDTO(Category category) {
+        return CategoryResponseDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .modifyDate(this.dateTimeTransfer(category.getModifyDate()))
+                .createDate(this.dateTimeTransfer(category.getCreateDate())).build();
+    }
+
 
     /**
      * Tag
@@ -548,7 +587,7 @@ public class MultiService {
     @Transactional
     public TagResponseDTO saveTag(String name, Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user == null )
+        if (user == null)
             throw new DataNotFoundException("username");
         Profile profile = profileService.findById(profileId);
         if (profile == null)
@@ -557,13 +596,12 @@ public class MultiService {
         if (tag == null)
             tag = tagService.save(name);
         return this.tagResponseDTO(tag);
-
     }
 
     @Transactional
     public TagResponseDTO getTag(String username, Long profileId, Long tagId) {
         SiteUser user = userService.get(username);
-        if (user == null )
+        if (user == null)
             throw new DataNotFoundException("username");
         Profile profile = profileService.findById(profileId);
         if (profile == null)
@@ -579,7 +617,6 @@ public class MultiService {
                 .id(tag.getId())
                 .name(tag.getName()).build();
     }
-
 
 
     /**
