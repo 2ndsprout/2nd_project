@@ -29,7 +29,7 @@ public class UserController {
                 multiService.saveUser(requestDTO.getName(),
                         requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptNum(),
                         requestDTO.getRole(), requestDTO.getAptId(), username);
-                return tokenRecord.getResponseEntity("문제 없음");
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
@@ -44,12 +44,12 @@ public class UserController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 List<UserResponseDTO> userResponseDTOList = multiService.saveUserGroup(requestDTO.getAptNum(), requestDTO.getAptId(), username, requestDTO.getH(), requestDTO.getW());
-                return tokenRecord.getResponseEntity(userResponseDTOList);
+                return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
-        return tokenRecord.getResponseEntity("문제 없음");
+        return tokenRecord.getResponseEntity();
     }
 
     @PutMapping
@@ -61,12 +61,12 @@ public class UserController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 UserResponseDTO userResponseDTO = multiService.updateUser(username, requestDTO.getName(), requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptId(), requestDTO.getAptNum(), userId);
-                return tokenRecord.getResponseEntity(userResponseDTO);
+                return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
-        return tokenRecord.getResponseEntity("문제 없음");
+        return tokenRecord.getResponseEntity();
     }
 
     @GetMapping

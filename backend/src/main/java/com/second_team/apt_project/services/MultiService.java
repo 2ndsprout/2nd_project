@@ -52,16 +52,25 @@ public class MultiService {
     public TokenRecord checkToken(String accessToken) {
         HttpStatus httpStatus = HttpStatus.FORBIDDEN;
         String username = null;
+        String body = "logout";
         if (accessToken != null && accessToken.length() > 7) {
             String token = accessToken.substring(7);
             if (this.jwtTokenProvider.validateToken(token)) {
                 httpStatus = HttpStatus.OK;
                 username = this.jwtTokenProvider.getUsernameFromToken(token);
-            } else httpStatus = HttpStatus.UNAUTHORIZED;
+                body = "okay";
+            } else {
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                body = "refresh";
+            }
         }
-        return TokenRecord.builder().httpStatus(httpStatus).username(username).build();
+        return TokenRecord.builder().httpStatus(httpStatus).username(username).body(body).build();
     }
-
+    public TokenRecord checkToken(String accessToken,Long profile_id) {
+        if(profile_id==null)
+            return TokenRecord.builder().httpStatus(HttpStatus.UNAUTHORIZED).body("unknown profile").build();
+        return checkToken(accessToken);
+    }
     @Transactional
     public String refreshToken(String refreshToken) {
         if (this.jwtTokenProvider.validateToken(refreshToken)) {
