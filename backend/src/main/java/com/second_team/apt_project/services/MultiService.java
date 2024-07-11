@@ -407,16 +407,35 @@ public class MultiService {
                 .id(profile.getId()).build()).orElse(null);
     }
 
+    /**
+     *
+     */
+
+    @Transactional
     public CategoryResponseDTO saveCategory(String username, String name) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
-        if (user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("requires security role");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("requires admin role");
         Category category = this.categoryService.save(name);
         return CategoryResponseDTO.builder()
                 .id(category.getId())
                 .name(category.getName()).build();
 
+    }
+
+    @Transactional
+    public void deleteCategory(Long categoryId, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("requires admin role");
+        Category category = categoryService.findById(categoryId);
+        if (category == null)
+            throw new DataNotFoundException("data not category");
+
+        categoryService.delete(category);
     }
 }
