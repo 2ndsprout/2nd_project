@@ -12,7 +12,7 @@ UserApi.interceptors.request.use(
         const PROFILE_ID = localStorage.getItem('profileId');
         config.headers['Authorization'] = `${TOKEN_TYPE} ${ACCESS_TOKEN}`;
         config.headers['REFRESH_TOKEN'] = REFRESH_TOKEN;
-        config.headers['PROFILE_ID'] = PROFILE_ID;
+        config.headers['PROFILE_ID'] = Number(PROFILE_ID);
         return config;
     },
     (error) => {

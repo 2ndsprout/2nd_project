@@ -26,7 +26,7 @@ public class AptController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 AptResponseDTO apt = this.multiService.saveApt(aptRequestDto.getRoadAddress(), aptRequestDto.getAptName(), aptRequestDto.getX(), aptRequestDto.getY(), username);
-                return tokenRecord.getResponseEntity(apt);
+                return ResponseEntity.status(HttpStatus.OK).body(apt);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
