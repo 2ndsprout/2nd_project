@@ -19,7 +19,8 @@ public class AptController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody AptRequestDTO aptRequestDto, @RequestHeader("Authorization") String accessToken) {
+    public ResponseEntity<?> save(@RequestBody AptRequestDTO aptRequestDto,
+                                  @RequestHeader("Authorization") String accessToken) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
@@ -34,13 +35,14 @@ public class AptController {
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@RequestBody AptRequestDTO aptRequestDto, @RequestHeader("Authorization") String accessToken) {
+    public ResponseEntity<?> update(@RequestBody AptRequestDTO aptRequestDto,
+                                    @RequestHeader("Authorization") String accessToken) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 this.multiService.updateApt(aptRequestDto.getAptId(), aptRequestDto.getAptName(), username);
-                return tokenRecord.getResponseEntity("문제 없음");
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
@@ -49,7 +51,8 @@ public class AptController {
     }
 
     @GetMapping
-    public ResponseEntity<?> detail(@RequestHeader("Authorization") String accessToken, @RequestHeader("aptId") Long aptId) {
+    public ResponseEntity<?> detail(@RequestHeader("Authorization") String accessToken,
+                                    @RequestHeader("aptId") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
