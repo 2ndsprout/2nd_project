@@ -19,7 +19,8 @@ public class ProfileController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> saveProfile(@RequestHeader("Authorization") String accessToken, @RequestBody ProfileSaveRequestDTO requestDTO) {
+    public ResponseEntity<?> saveProfile(@RequestHeader("Authorization") String accessToken,
+                                         @RequestBody ProfileSaveRequestDTO requestDTO) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {

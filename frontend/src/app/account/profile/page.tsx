@@ -1,6 +1,7 @@
 'use client'
 
-import { getUser } from "@/app/API/UserAPI";
+import { getProfileList, getUser } from "@/app/API/UserAPI";
+import { Html } from "next/document";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -13,35 +14,33 @@ export default function Page() {
             getUser()
                 .then(r => {
                     setUser(r);
+                    getProfileList()
+                    .then(r => setProfileList(r))
+                    .catch(e => console.log(e));
                 })
                 .catch(e => console.log(e));
         else
             redirect('/account/login');
     }, [ACCESS_TOKEN]);
-    return <>
-    <div className='flex items-end bg-black'>
-    <label className='text-xl font-bold'>내 <label className='text-xl text-red-500 font-bold'>상품</label>목록</label>
-    <label className='text-xs h-[14px] border-l-2 border-gray-400 ml-2 mb-[5px] pl-2'>고객님의 상품으로 들어가서 상품을 수정하실 수 있습니다.</label>
-</div>
-<table className="text-center">
-    <thead>
-        <tr>
-            <th className="w-[600px]">상품명</th>
-            <th className="w-[200px]">리뷰제목</th>
-            <th className="w-[100px]">평점</th>
-            <th className="w-[150px]">작성일</th>
-            <th className="w-[100px]">내용</th>
-        </tr>
-    </thead>
-    <tbody>
-            {profileList?.map((profile, index) => <tr key={index} className='min-h-[104px]'>
-            <td>{profile?.name}</td>
-            <td>{profile?.url}</td>
-        </tr>)}
-    </tbody>
-</table>
-<div className="flex justify-center font-bold text-2xl mt-8">
-    {profileList?.length == 0 ? <label>프로필이 없습니다.</label> : <></>}
-</div>
-</>
+
+    return (
+        <>
+            <div className="bg-black flex flex-col items-center h-screen relative">
+                <a href="/" className="fixed top-0 w-full flex flex-col items-center py-3">
+                    <img src='/user.png' className='w-36 h-36 mb-2' alt="로고" />
+                    <label className="font-bold text-2xl text-white">Honey Danji</label>
+                </a>
+                <div className="flex flex-wrap justify-center mt-52 w-full">
+                    {profileList?.map((profile, index) => (
+                        <div key={index} className="text-center mx-10 my-3 w-1/4">
+                            <div className="flex justify-center">
+                                <img src={profile?.url ? '/user.png' : profile.url} className="w-56 h-56 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
+                            </div>
+                            <span className="text-white">{profile?.name}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
 }

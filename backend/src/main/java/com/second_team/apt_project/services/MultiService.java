@@ -2,10 +2,6 @@ package com.second_team.apt_project.services;
 
 import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.domains.*;
-import com.second_team.apt_project.dtos.AptResponseDTO;
-import com.second_team.apt_project.dtos.AuthRequestDTO;
-import com.second_team.apt_project.dtos.AuthResponseDTO;
-import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.dtos.*;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
@@ -16,7 +12,6 @@ import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -215,6 +210,8 @@ public class MultiService {
      */
 
     private AptResponseDTO getAptResponseDTO(Apt apt) {
+        if (apt == null)
+            return null;
         return AptResponseDTO.builder()
                 .aptId(apt.getId())
                 .aptName(apt.getAptName())
