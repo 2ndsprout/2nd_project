@@ -20,8 +20,8 @@ public class AptController {
 
     @PostMapping
     public ResponseEntity<?> saveApt(@RequestBody AptRequestDTO aptRequestDto,
-                                  @RequestHeader("Authorization") String accessToken,
-                                  @RequestHeader("PROFILE_ID") Long profileId) {
+                                     @RequestHeader("Authorization") String accessToken,
+                                     @RequestHeader("PROFILE_ID") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
@@ -36,9 +36,10 @@ public class AptController {
     }
 
     @PutMapping
+
     public ResponseEntity<?> updateApt(@RequestBody AptRequestDTO aptRequestDTO,
-                                    @RequestHeader("Authorization") String accessToken,
-                                    @RequestHeader("PROFILE_ID") Long profileId) {
+                                       @RequestHeader("Authorization") String accessToken,
+                                       @RequestHeader("PROFILE_ID") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
@@ -54,8 +55,8 @@ public class AptController {
 
     @GetMapping
     public ResponseEntity<?> AptDetail(@RequestHeader("Authorization") String accessToken,
-                                    @RequestHeader("AptId") Long aptId,
-                                    @RequestHeader("PROFILE_ID") Long profileId) {
+                                       @RequestHeader("AptId") Long aptId,
+                                       @RequestHeader("PROFILE_ID") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
@@ -71,7 +72,7 @@ public class AptController {
 
     @GetMapping("/list")
     public ResponseEntity<?> AptList(@RequestHeader("Authorization") String accessToken,
-                                  @RequestHeader("PROFILE_ID") Long profileId) {
+                                     @RequestHeader("PROFILE_ID") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {

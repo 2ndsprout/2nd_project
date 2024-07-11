@@ -1,10 +1,7 @@
 package com.second_team.apt_project.services;
 
 import com.second_team.apt_project.AptProjectApplication;
-import com.second_team.apt_project.domains.Apt;
-import com.second_team.apt_project.domains.FileSystem;
-import com.second_team.apt_project.domains.Profile;
-import com.second_team.apt_project.domains.SiteUser;
+import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.dtos.AptResponseDTO;
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
@@ -16,10 +13,7 @@ import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
-import com.second_team.apt_project.services.module.AptService;
-import com.second_team.apt_project.services.module.FileSystemService;
-import com.second_team.apt_project.services.module.ProfileService;
-import com.second_team.apt_project.services.module.UserService;
+import com.second_team.apt_project.services.module.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -50,6 +44,8 @@ public class MultiService {
     private final AptService aptService;
     private final FileSystemService fileSystemService;
     private final ProfileService profileService;
+    private final CategoryService categoryService;
+    private final MultiKeyService multiKeyService;
 
     /**
      * Auth
@@ -58,16 +54,25 @@ public class MultiService {
     public TokenRecord checkToken(String accessToken) {
         HttpStatus httpStatus = HttpStatus.FORBIDDEN;
         String username = null;
+        String body = "logout";
         if (accessToken != null && accessToken.length() > 7) {
             String token = accessToken.substring(7);
             if (this.jwtTokenProvider.validateToken(token)) {
                 httpStatus = HttpStatus.OK;
                 username = this.jwtTokenProvider.getUsernameFromToken(token);
-            } else httpStatus = HttpStatus.UNAUTHORIZED;
+                body = "okay";
+            } else {
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                body = "refresh";
+            }
         }
-        return TokenRecord.builder().httpStatus(httpStatus).username(username).build();
+        return TokenRecord.builder().httpStatus(httpStatus).username(username).body(body).build();
     }
-
+    public TokenRecord checkToken(String accessToken,Long profile_id) {
+        if(profile_id==null)
+            return TokenRecord.builder().httpStatus(HttpStatus.UNAUTHORIZED).body("unknown profile").build();
+        return checkToken(accessToken);
+    }
     @Transactional
     public String refreshToken(String refreshToken) {
         if (this.jwtTokenProvider.validateToken(refreshToken)) {
@@ -135,9 +140,9 @@ public class MultiService {
                     String name = String.valueOf(aptNumber) + String.valueOf(i) + jKey;
                     SiteUser _user = userService.saveGroup(name, aptNumber, apt);
                     userResponseDTOList.add(UserResponseDTO.builder()
-                                    .username(_user.getUsername())
-                                    .aptNum(_user.getAptNum())
-                                    .aptResponseDto(this.getAptResponseDTO(apt))
+                            .username(_user.getUsername())
+                            .aptNum(_user.getAptNum())
+                            .aptResponseDto(this.getAptResponseDTO(apt))
                             .build());
                 }
             return userResponseDTOList;
@@ -270,7 +275,6 @@ public class MultiService {
         return aptResponseDTO;
     }
 
-
     /**
      * Image
      */
@@ -293,25 +297,63 @@ public class MultiService {
                 String fileLoc = null;
                 if (profileId != null) {
                     Profile profile = profileService.findById(profileId);
+                    if (profile == null)
+                        throw new DataNotFoundException("profile not data");
                     fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                     fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
                 } else {
                     fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                     fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
                 }
-                if (fileLoc != null) {
-                    File file = new File(path + fileLoc);
-                    if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
-                    fileUrl.transferTo(file);
-                    return ImageResponseDTO.builder().url(fileLoc).build();
-                }
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                return ImageResponseDTO.builder().url(fileLoc).build();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return null;
+    }
 
+    @Transactional
+    public ImageResponseDTO tempUploadList(MultipartFile fileUrl, Long profileId, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        if (!fileUrl.isEmpty()) {
+            try {
+                String path = AptProjectApplication.getOsType().getLoc();
+                UUID uuid = UUID.randomUUID();
+                Profile profile = profileService.findById(profileId);
+                if (profile == null)
+                    throw new DataNotFoundException("profile not data");
+                String fileLoc = "/api/user" + "/" + username + "/temp_list/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+                if (_multiKey.isEmpty()) {
+                    MultiKey multiKey = multiKeyService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), ImageKey.TEMP.getKey(username + "." + profile.getId()) + ".0");
+                    fileSystemService.save(multiKey.getVs().getLast(), fileLoc);
+                } else {
+                    multiKeyService.add(_multiKey.get(), ImageKey.TEMP.getKey(username + "." + profile.getId()) + "." + _multiKey.get().getVs().size());
+                    fileSystemService.save(_multiKey.get().getVs().getLast(), fileLoc);
+                }
+                Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+                List<String> urlList =new ArrayList<>();
+                for (String value : _newMultiKey.get().getVs()) {
+                    Optional<FileSystem> fileSystem = fileSystemService.get(value);
+                    fileSystem.ifPresent(system -> urlList.add(system.getV()));
+                }
+                return ImageResponseDTO.builder()
+                        .urlList(urlList).build();
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     @Transactional
@@ -349,7 +391,7 @@ public class MultiService {
      * Profile
      */
     @Transactional
-    public void saveProfile(String name, String url, String username) {
+    public ProfileResponseDTO saveProfile(String name, String url, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
@@ -360,10 +402,16 @@ public class MultiService {
                 String newFile = "/api/user" + "/" + username + "/profile" + "/" + profile.getId() + "/";
                 if (_newFileSystem.isPresent()) {
                     String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
-                    fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+                    FileSystem fileSystem = fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+                    return ProfileResponseDTO.builder()
+                            .id(profile.getId())
+                            .username(user.getUsername())
+                            .url(fileSystem.getV())
+                            .name(profile.getName()).build();
                 }
             }
         }
+        return null;
     }
 
     @Transactional
@@ -379,7 +427,7 @@ public class MultiService {
                 .id(profile.getId())
                 .url(fileSystem.getV())
                 .name(profile.getName())
-                .userName(user.getUsername()).build()).orElse(null);
+                .username(user.getUsername()).build()).orElse(null);
 
     }
 
@@ -391,13 +439,13 @@ public class MultiService {
         List<ProfileResponseDTO> responseDTOList = new ArrayList<>();
         List<Profile> profileList = profileService.findProfilesByUserList(user);
         if (profileList == null)
-            throw new DataNotFoundException("not profileList");
+            throw new DataNotFoundException("profileList not data");
         for (Profile profile : profileList) {
             Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
             _fileSystem.ifPresent(fileSystem -> responseDTOList.add(ProfileResponseDTO.builder()
                     .id(profile.getId())
                     .url(fileSystem.getV())
-                    .userName(profile.getUser().getUsername())
+                    .username(profile.getUser().getUsername())
                     .name(profile.getName()).build()));
         }
         return responseDTOList;
@@ -410,7 +458,7 @@ public class MultiService {
             throw new DataNotFoundException("username");
         Profile profile = profileService.findById(id);
         if (profile == null)
-            throw new DataNotFoundException("not profile");
+            throw new DataNotFoundException("profile not data");
         profileService.updateProfile(profile, name);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         String path = AptProjectApplication.getOsType().getLoc();
@@ -430,8 +478,47 @@ public class MultiService {
 
         return _newUserFileSystem.map(fileSystem -> ProfileResponseDTO.builder()
                 .name(profile.getName())
-                .userName(user.getUsername())
+                .username(user.getUsername())
                 .url(fileSystem.getV())
                 .id(profile.getId()).build()).orElse(null);
     }
+
+    /**
+     *
+     */
+
+    @Transactional
+    public CategoryResponseDTO saveCategory(String username, String name, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("incorrect permissions");
+        Category category = this.categoryService.save(name);
+        return CategoryResponseDTO.builder()
+                .id(category.getId())
+                .name(category.getName()).build();
+
+    }
+
+    @Transactional
+    public void deleteCategory(Long categoryId, String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("incorrect permissions");
+        Category category = categoryService.findById(categoryId);
+        if (category == null)
+            throw new DataNotFoundException("category not data");
+
+        categoryService.delete(category);
+    }
+
 }

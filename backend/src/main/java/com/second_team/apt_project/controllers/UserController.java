@@ -52,7 +52,7 @@ public class UserController {
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
-        return tokenRecord.getResponseEntity("문제 없음");
+        return tokenRecord.getResponseEntity();
     }
 
     @PutMapping
@@ -68,7 +68,7 @@ public class UserController {
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
-        return tokenRecord.getResponseEntity("문제 없음");
+        return tokenRecord.getResponseEntity();
     }
 
     @GetMapping

@@ -24,7 +24,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public SiteUser get(String value) throws IllegalArgumentException {
+    public SiteUser get(String value){
         return this.userRepository.findById(value).orElse(null);
     }
 
