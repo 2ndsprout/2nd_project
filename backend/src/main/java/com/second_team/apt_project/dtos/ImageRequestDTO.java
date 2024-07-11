@@ -8,5 +8,4 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 public class ImageRequestDTO {
     private MultipartFile file;
-    private Long profileId;
 }

@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class ProfileSaveRequestDTO {
-    private Long id;
     private String name;
     private String url;
 }
