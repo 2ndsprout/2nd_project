@@ -19,13 +19,15 @@ public class AptController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody AptRequestDTO aptRequestDto, @RequestHeader("Authorization") String accessToken) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+    public ResponseEntity<?> saveApt(@RequestBody AptRequestDTO aptRequestDto,
+                                  @RequestHeader("Authorization") String accessToken,
+                                  @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                AptResponseDTO apt = this.multiService.saveApt(aptRequestDto.getRoadAddress(), aptRequestDto.getAptName(), aptRequestDto.getX(), aptRequestDto.getY(), username);
-                return tokenRecord.getResponseEntity(apt);
+                AptResponseDTO aptResponseDTO = this.multiService.saveApt(aptRequestDto.getRoadAddress(), aptRequestDto.getAptName(), aptRequestDto.getX(), aptRequestDto.getY(), username);
+                return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
@@ -34,13 +36,15 @@ public class AptController {
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@RequestBody AptRequestDTO aptRequestDTO, @RequestHeader("Authorization") String accessToken) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+    public ResponseEntity<?> updateApt(@RequestBody AptRequestDTO aptRequestDTO,
+                                    @RequestHeader("Authorization") String accessToken,
+                                    @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                AptResponseDTO aptResponseDTO = multiService.updateApt(aptRequestDTO.getAptId(), aptRequestDTO.getAptName(), aptRequestDTO.getUrl(), username);
-                return tokenRecord.getResponseEntity(aptResponseDTO);
+                AptResponseDTO aptResponseDTO = multiService.updateApt(profileId, aptRequestDTO.getAptId(), aptRequestDTO.getRoadAddress(), aptRequestDTO.getAptName(), aptRequestDTO.getUrl(), username);
+                return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
@@ -49,8 +53,10 @@ public class AptController {
     }
 
     @GetMapping
-    public ResponseEntity<?> detail(@RequestHeader("Authorization") String accessToken, @RequestHeader("aptId") Long aptId) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+    public ResponseEntity<?> AptDetail(@RequestHeader("Authorization") String accessToken,
+                                    @RequestHeader("AptId") Long aptId,
+                                    @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
@@ -64,8 +70,9 @@ public class AptController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> list(@RequestHeader("Authorization") String accessToken) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+    public ResponseEntity<?> AptList(@RequestHeader("Authorization") String accessToken,
+                                  @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
@@ -73,8 +80,7 @@ public class AptController {
                 return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

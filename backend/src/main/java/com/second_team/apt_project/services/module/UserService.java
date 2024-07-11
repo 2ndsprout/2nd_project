@@ -36,8 +36,8 @@ public class UserService {
         if (userRepository.isDuplicateEmail(email).size()>1) throw new DataDuplicateException("email");
     }
 
-    public void save(String name, String password, String email, int aptNumber, int role, Apt apt) {
-        userRepository.save(SiteUser.builder()
+    public SiteUser save(String name, String password, String email, int aptNumber, int role, Apt apt) {
+        return userRepository.save(SiteUser.builder()
                 .username(name)
                 .password(passwordEncoder.encode(password))
                 .email(email)

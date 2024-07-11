@@ -110,14 +110,15 @@ public class MultiService {
     }
 
     @Transactional
-    public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
+    public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("role is not");
+            throw new IllegalArgumentException("incorrect permissions");
         if (email != null)
             userService.userEmailCheck(email);
-        userService.save(name, password, email, aptNumber, role, apt);
+        SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -141,7 +142,7 @@ public class MultiService {
                 }
             return userResponseDTOList;
         } else
-            throw new IllegalArgumentException("not role");
+            throw new IllegalArgumentException("incorrect permissions");
     }
 
     @Transactional
@@ -152,9 +153,9 @@ public class MultiService {
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("role is not admin or security");
+            throw new IllegalArgumentException("incorrect permissions");
         for (SiteUser siteUser : userList) {
-            UserResponseDTO userResponseDTO = getUser(siteUser);
+            UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser);
             responseDTOList.add(userResponseDTO);
         }
         return new PageImpl<>(responseDTOList, pageable, userList.getTotalElements());
@@ -163,9 +164,9 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security or user");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("incorrect permissions");
         SiteUser user1 = userService.getUser(userId);
-        UserResponseDTO userResponseDTO = getUser(user1);
+        UserResponseDTO userResponseDTO = getUserResponseDTO(user1);
 
         return userResponseDTO;
     }
@@ -178,7 +179,7 @@ public class MultiService {
         if (email != null)
             userService.userEmailCheck(email);
         SiteUser siteUser = userService.update(user, email);
-        return this.getUser(siteUser);
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -203,21 +204,22 @@ public class MultiService {
     @Transactional
     public AptResponseDTO saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
         Apt apt = aptService.save(roadAddress, aptName, x, y);
         return this.getAptResponseDTO(apt);
     }
 
     @Transactional
-    public AptResponseDTO updateApt(Long aptId, String aptName, String url, String username) {
+    public AptResponseDTO updateApt(Long profileId, Long aptId, String roadAddress, String aptName, String url, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
         Apt apt = aptService.get(aptId);
         if (apt == null)
             throw new DataNotFoundException("not apt");
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
-        aptService.update(apt, url, aptName);
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
+        aptService.update(apt, roadAddress, aptName);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
         if (_fileSystem.isPresent() && (url == null || !_fileSystem.get().getV().equals(url))) {
@@ -226,7 +228,7 @@ public class MultiService {
         }
         if (url != null && !url.isBlank()) {
             String newFile = "/api/apt/" + aptId.toString() + "/";
-            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(apt.getId().toString()));
+            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "."+ profile.getId()));
             if (_newFileSystem.isPresent()) {
                 String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
                 fileSystemService.save(ImageKey.APT.getKey(apt.getId().toString()), newUrl);
@@ -237,16 +239,17 @@ public class MultiService {
         return _newAptFileSystem.map(fileSystem -> AptResponseDTO.builder()
                 .aptId(apt.getId())
                 .aptName(apt.getAptName())
+                .roadAddress(apt.getRoadAddress())
                 .url(fileSystem.getV())
                 .build()).orElse(null);
     }
 
-
+    @Transactional
     public List<AptResponseDTO> getAptList(String username) {
         SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
         List<Apt> aptList = aptService.getAptList();
         List<AptResponseDTO> responseDTOList = new ArrayList<>();
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
         for (Apt apt : aptList) {
             AptResponseDTO aptResponseDTO = this.getApt(apt);
             responseDTOList.add(aptResponseDTO);
@@ -258,10 +261,10 @@ public class MultiService {
         return getAptResponseDTO(apt);
     }
 
-
+    @Transactional
     public AptResponseDTO getAptDetail(Long aptId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
         Apt apt = aptService.get(aptId);
         AptResponseDTO aptResponseDTO = this.getApt(apt);
         return aptResponseDTO;
