@@ -36,7 +36,7 @@ public class ProfileController {
     @GetMapping
     public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String accessToken,
                                         @RequestHeader("ProfileId") Long profileId) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();

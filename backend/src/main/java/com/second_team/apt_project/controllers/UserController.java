@@ -71,7 +71,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> userDetail(@RequestHeader("Authorization") String accessToken,
-                                    @RequestHeader("Username") String userId) {
+                                        @RequestHeader("Username") String userId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {

@@ -52,7 +52,7 @@ public class AptController {
 
     @GetMapping
     public ResponseEntity<?> detail(@RequestHeader("Authorization") String accessToken,
-                                    @RequestHeader("aptId") Long aptId) {
+                                    @RequestHeader("AptId") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
