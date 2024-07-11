@@ -34,4 +34,19 @@ public class ImageController {
         return tokenRecord.getResponseEntity();
     }
 
+    @PostMapping("/list")
+    public ResponseEntity<?> tempImageList(@RequestHeader("Authorization") String accessToken, ImageRequestDTO requestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                ImageResponseDTO imageResponseDTO = multiService.tempUploadList(requestDTO.getFile(),requestDTO.getProfileId(), username);
+                return tokenRecord.getResponseEntity(imageResponseDTO);
+            }
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
 }
