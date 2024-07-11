@@ -16,6 +16,7 @@ import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +45,7 @@ public class MultiService {
     private final FileSystemService fileSystemService;
     private final ProfileService profileService;
     private final CategoryService categoryService;
+    private final MultiKeyService multiKeyService;
 
     /**
      * Auth
@@ -109,19 +111,19 @@ public class MultiService {
                 .aptNum(siteUser.getAptNum())
                 .username(siteUser.getUsername())
                 .email(siteUser.getEmail())
-                .aptResponseDto(this.getAptResponseDTO(siteUser.getApt()))
                 .build();
     }
 
     @Transactional
-    public void saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
+    public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("role is not");
+            throw new IllegalArgumentException("incorrect permissions");
         if (email != null)
             userService.userEmailCheck(email);
-        userService.save(name, password, email, aptNumber, role, apt);
+        SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -138,14 +140,14 @@ public class MultiService {
                     String name = String.valueOf(aptNumber) + String.valueOf(i) + jKey;
                     SiteUser _user = userService.saveGroup(name, aptNumber, apt);
                     userResponseDTOList.add(UserResponseDTO.builder()
-                                    .username(_user.getUsername())
-                                    .aptNum(_user.getAptNum())
-                                    .aptResponseDto(this.getAptResponseDTO(apt))
+                            .username(_user.getUsername())
+                            .aptNum(_user.getAptNum())
+                            .aptResponseDto(this.getAptResponseDTO(apt))
                             .build());
                 }
             return userResponseDTOList;
         } else
-            throw new IllegalArgumentException("not role");
+            throw new IllegalArgumentException("incorrect permissions");
     }
 
     @Transactional
@@ -156,9 +158,9 @@ public class MultiService {
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("role is not admin or security");
+            throw new IllegalArgumentException("incorrect permissions");
         for (SiteUser siteUser : userList) {
-            UserResponseDTO userResponseDTO = getUser(siteUser);
+            UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser);
             responseDTOList.add(userResponseDTO);
         }
         return new PageImpl<>(responseDTOList, pageable, userList.getTotalElements());
@@ -167,23 +169,22 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username)) throw new IllegalArgumentException("incorrect permissions");
         SiteUser user1 = userService.getUser(userId);
-        UserResponseDTO userResponseDTO = getUser(user1);
+        UserResponseDTO userResponseDTO = getUserResponseDTO(user1);
 
         return userResponseDTO;
     }
 
 
-    public UserResponseDTO updateUser(String username, String name, String password, String email, Long aptId, int aptNum, String loginId) {
+    @Transactional
+    public UserResponseDTO updateUser(String username, String email) {
         SiteUser user = userService.get(username);
-        Apt apt = aptService.get(aptId);
-        SiteUser updateUser = userService.get(loginId);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && user.getUsername().equals(username)) throw new IllegalArgumentException("role is not admin or security or not login user");
+        if (!user.getUsername().equals(username)) throw new IllegalArgumentException("user mismatch in login user");
         if (email != null)
             userService.userEmailCheck(email);
-        SiteUser siteUser = userService.update(updateUser, name, password, email, aptNum, apt);
-        return this.getUser(siteUser);
+        SiteUser siteUser = userService.update(user, email);
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -208,25 +209,52 @@ public class MultiService {
     @Transactional
     public AptResponseDTO saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
         Apt apt = aptService.save(roadAddress, aptName, x, y);
         return this.getAptResponseDTO(apt);
     }
 
     @Transactional
-    public void updateApt(Long aptId, String aptName, String username) {
+    public AptResponseDTO updateApt(Long profileId, Long aptId, String roadAddress, String aptName, String url, String username) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
-        aptService.update(apt, aptName);
+        if (apt == null)
+            throw new DataNotFoundException("not apt");
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
+        aptService.update(apt, roadAddress, aptName);
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        String path = AptProjectApplication.getOsType().getLoc();
+        if (_fileSystem.isPresent() && (url == null || !_fileSystem.get().getV().equals(url))) {
+            File old = new File(path + _fileSystem.get().getV());
+            if (old.exists()) old.delete();
+        }
+        if (url != null && !url.isBlank()) {
+            String newFile = "/api/apt/" + aptId.toString() + "/";
+            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "."+ profile.getId()));
+            if (_newFileSystem.isPresent()) {
+                String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                fileSystemService.save(ImageKey.APT.getKey(apt.getId().toString()), newUrl);
+            }
+        }
+        Optional<FileSystem> _newAptFileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
+
+        return _newAptFileSystem.map(fileSystem -> AptResponseDTO.builder()
+                .aptId(apt.getId())
+                .aptName(apt.getAptName())
+                .roadAddress(apt.getRoadAddress())
+                .url(fileSystem.getV())
+                .build()).orElse(null);
     }
 
-
+    @Transactional
     public List<AptResponseDTO> getAptList(String username) {
         SiteUser user = userService.get(username);
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
         List<Apt> aptList = aptService.getAptList();
         List<AptResponseDTO> responseDTOList = new ArrayList<>();
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
         for (Apt apt : aptList) {
             AptResponseDTO aptResponseDTO = this.getApt(apt);
             responseDTOList.add(aptResponseDTO);
@@ -238,14 +266,15 @@ public class MultiService {
         return getAptResponseDTO(apt);
     }
 
-
+    @Transactional
     public AptResponseDTO getAptDetail(Long aptId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("role is not admin");
+        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("incorrect permissions");
         Apt apt = aptService.get(aptId);
         AptResponseDTO aptResponseDTO = this.getApt(apt);
         return aptResponseDTO;
     }
+
     /**
      * Image
      */
@@ -268,25 +297,63 @@ public class MultiService {
                 String fileLoc = null;
                 if (profileId != null) {
                     Profile profile = profileService.findById(profileId);
+                    if (profile == null)
+                        throw new DataNotFoundException("profile not data");
                     fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                     fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
                 } else {
                     fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                     fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
                 }
-                if (fileLoc != null) {
-                    File file = new File(path + fileLoc);
-                    if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
-                    fileUrl.transferTo(file);
-                    return ImageResponseDTO.builder().url(fileLoc).build();
-                }
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                return ImageResponseDTO.builder().url(fileLoc).build();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return null;
+    }
 
+    @Transactional
+    public ImageResponseDTO tempUploadList(MultipartFile fileUrl, Long profileId, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        if (!fileUrl.isEmpty()) {
+            try {
+                String path = AptProjectApplication.getOsType().getLoc();
+                UUID uuid = UUID.randomUUID();
+                Profile profile = profileService.findById(profileId);
+                if (profile == null)
+                    throw new DataNotFoundException("profile not data");
+                String fileLoc = "/api/user" + "/" + username + "/temp_list/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+                if (_multiKey.isEmpty()) {
+                    MultiKey multiKey = multiKeyService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), ImageKey.TEMP.getKey(username + "." + profile.getId()) + ".0");
+                    fileSystemService.save(multiKey.getVs().getLast(), fileLoc);
+                } else {
+                    multiKeyService.add(_multiKey.get(), ImageKey.TEMP.getKey(username + "." + profile.getId()) + "." + _multiKey.get().getVs().size());
+                    fileSystemService.save(_multiKey.get().getVs().getLast(), fileLoc);
+                }
+                Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+                List<String> urlList =new ArrayList<>();
+                for (String value : _newMultiKey.get().getVs()) {
+                    Optional<FileSystem> fileSystem = fileSystemService.get(value);
+                    fileSystem.ifPresent(system -> urlList.add(system.getV()));
+                }
+                return ImageResponseDTO.builder()
+                        .urlList(urlList).build();
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     @Transactional
@@ -355,7 +422,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         if (profile.getUser() != user)
-            throw new IllegalArgumentException("User mismatch in profile.");
+            throw new IllegalArgumentException("user mismatch in profile");
         return _fileSystem.map(fileSystem -> ProfileResponseDTO.builder()
                 .id(profile.getId())
                 .url(fileSystem.getV())
@@ -372,7 +439,7 @@ public class MultiService {
         List<ProfileResponseDTO> responseDTOList = new ArrayList<>();
         List<Profile> profileList = profileService.findProfilesByUserList(user);
         if (profileList == null)
-            throw new DataNotFoundException("not profileList");
+            throw new DataNotFoundException("profileList not data");
         for (Profile profile : profileList) {
             Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
             _fileSystem.ifPresent(fileSystem -> responseDTOList.add(ProfileResponseDTO.builder()
@@ -391,7 +458,7 @@ public class MultiService {
             throw new DataNotFoundException("username");
         Profile profile = profileService.findById(id);
         if (profile == null)
-            throw new DataNotFoundException("not profile");
+            throw new DataNotFoundException("profile not data");
         profileService.updateProfile(profile, name);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         String path = AptProjectApplication.getOsType().getLoc();
@@ -416,16 +483,42 @@ public class MultiService {
                 .id(profile.getId()).build()).orElse(null);
     }
 
-    public CategoryResponseDTO saveCategory(String username, String name) {
+    /**
+     *
+     */
+
+    @Transactional
+    public CategoryResponseDTO saveCategory(String username, String name, Long profileId) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
-        if (user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("requires security role");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("incorrect permissions");
         Category category = this.categoryService.save(name);
         return CategoryResponseDTO.builder()
                 .id(category.getId())
                 .name(category.getName()).build();
 
     }
+
+    @Transactional
+    public void deleteCategory(Long categoryId, String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("incorrect permissions");
+        Category category = categoryService.findById(categoryId);
+        if (category == null)
+            throw new DataNotFoundException("category not data");
+
+        categoryService.delete(category);
+    }
+
 }

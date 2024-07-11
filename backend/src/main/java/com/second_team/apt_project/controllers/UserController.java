@@ -21,15 +21,16 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestHeader("Authorization") String accessToken,
-                                      @RequestBody UserSaveRequestDTO requestDTO) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+                                      @RequestBody UserSaveRequestDTO requestDTO,
+                                      @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                multiService.saveUser(requestDTO.getName(),
+                UserResponseDTO userResponseDTO = multiService.saveUser(requestDTO.getName(),
                         requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptNum(),
                         requestDTO.getRole(), requestDTO.getAptId(), username);
-                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
+                return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
@@ -37,9 +38,11 @@ public class UserController {
         return tokenRecord.getResponseEntity();
     }
     @PostMapping("/group")
-    public ResponseEntity<?> saveGroup(@RequestHeader("Authorization") String accessToken, @RequestBody UserSaveRequestDTO requestDTO) {
+    public ResponseEntity<?> saveGroup(@RequestHeader("Authorization") String accessToken,
+                                       @RequestBody UserSaveRequestDTO requestDTO,
+                                       @RequestHeader("PROFILE_ID") Long profileId) {
 
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
@@ -54,13 +57,12 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String accessToken,
-                                        @RequestHeader("Username") String userId,
                                         @RequestBody UserSaveRequestDTO requestDTO) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                UserResponseDTO userResponseDTO = multiService.updateUser(username, requestDTO.getName(), requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptId(), requestDTO.getAptNum(), userId);
+                UserResponseDTO userResponseDTO = multiService.updateUser(username, requestDTO.getEmail());
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
@@ -79,7 +81,7 @@ public class UserController {
                 UserResponseDTO userResponseDTO = multiService.getUserDetail(userId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
-        } catch (IllegalArgumentException | DataNotFoundException ex) {
+        } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -88,8 +90,9 @@ public class UserController {
     @GetMapping("/list")
     public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken,
                                       @RequestHeader("Page") int page,
-                                      @RequestHeader("AptId") Long aptId) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+                                      @RequestHeader("AptId") Long aptId,
+                                      @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();

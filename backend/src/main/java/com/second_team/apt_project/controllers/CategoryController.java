@@ -18,13 +18,31 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<?> saveCategory(@RequestHeader("Authorization") String accessToken,
+                                          @RequestHeader("PROFILE_ID") Long profileId,
                                           @RequestBody CategoryRequestDTO requestDTO) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                CategoryResponseDTO responseDTO = multiService.saveCategory(username, requestDTO.getName());
+                CategoryResponseDTO responseDTO = multiService.saveCategory(username, requestDTO.getName(), profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteCategory(@RequestHeader("Authorization") String accessToken,
+                                            @RequestHeader("PROFILE_ID") Long profileId,
+                                            @RequestHeader("CategoryId") Long categoryId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.deleteCategory(categoryId, username, profileId);
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

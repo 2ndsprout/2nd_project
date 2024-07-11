@@ -20,12 +20,30 @@ public class ImageController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> tempImage(@RequestHeader("Authorization") String accessToken, ImageRequestDTO requestDTO) {
+    public ResponseEntity<?> tempImage(@RequestHeader("Authorization") String accessToken,
+                                       @RequestHeader("PROFILE_ID") Long profileId,ImageRequestDTO requestDTO) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ImageResponseDTO imageResponseDTO = multiService.tempUpload(requestDTO.getFile(),requestDTO.getProfileId(), username);
+                ImageResponseDTO imageResponseDTO = multiService.tempUpload(requestDTO.getFile(),profileId, username);
+                return ResponseEntity.status(HttpStatus.OK).body(imageResponseDTO);
+            }
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @PostMapping("/list")
+    public ResponseEntity<?> tempImageList(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           ImageRequestDTO requestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                ImageResponseDTO imageResponseDTO = multiService.tempUploadList(requestDTO.getFile(),profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(imageResponseDTO);
             }
         } catch (DataNotFoundException ex) {
