@@ -66,13 +66,19 @@ export const registerGroup = async (data: RegisterProps) => {
     const response = await UserApi.post('/api/user/group', data);
     return response.data;
 }
-// 유저정보 가져오기
+//본인 로그인 정보 가져오기
 export const getUser = async () => {
     const response = await UserApi.get('/api/user');
     return response.data;
+
+}
+// 유저정보 가져오기(어드민)
+export const getUserDetail = async (data: string) => {
+    const response = await UserApi.get('/api/user/detail', { headers: {'Username': data}});
+    return response.data;
 }
 export const getUserList = async (data: number) => {
-    const response = await UserApi.get('/api/user/list', { headers: { 'aptId': data } });
+    const response = await UserApi.get('/api/user/list', { headers: { 'AptId': data } });
     return response.data;
 }
 interface UpdateProps {
@@ -103,22 +109,22 @@ interface ProfileProps {
 }
 
 export const postProfile = async (data: ProfileProps) => {
-    const response = await UserApi.post('/api/user/profile', data);
+    const response = await UserApi.post('/api/profile', data);
     return response.data;
 }
 
 export const getProfileList = async () => {
-    const response = await UserApi.get('/api/user/profile');
+    const response = await UserApi.get('/api/profile/list');
     return response.data;
 }
 
 export const getProfile = async (data: number) => {
-    const response = await UserApi.get('/api/user/profile', { headers: { 'profileId': data } });
+    const response = await UserApi.get('/api/profile', { headers: { 'ProfileId': data } });
     return response.data;
 }
 
 export const upateProfile = async (data: ProfileProps) => {
-    const response = await UserApi.put('/api/user/profile', data);
+    const response = await UserApi.put('/api/profile', data);
     return response.data;
 }
 
@@ -172,7 +178,7 @@ export const getAptList = async () => {
 }
 
 export const getApt = async (data: number) => {
-    const response = await UserApi.get('/api/apt', { headers: { 'aptId': data } });
+    const response = await UserApi.get('/api/apt', { headers: { 'AptId': data } });
     return response.data;
 }
 
@@ -186,6 +192,6 @@ export const postCategory = async (data: CategoryProps) => {
 }
 
 export const deleteCategory = async (data: number) => {
-    await UserApi.delete('/api/category', {headers: {'categoryId': data}});
+    await UserApi.delete('/api/category', {headers: {'CategoryId': data}});
 
 }

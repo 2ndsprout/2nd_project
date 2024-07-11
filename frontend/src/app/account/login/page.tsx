@@ -19,7 +19,7 @@ export default function Page() {
                 localStorage.setItem('accessToken', response.accessToken);
                 localStorage.setItem('refreshToken', response.refreshToken);
                 console.log("login success!");
-                window.location.href = ``;
+                window.location.href = `/account/profile/`;
             }).catch((error) => {
                 switch (error.response.data) {
                     case 'username': { setError('아이디가 잘못되었습니다.'); break; }
