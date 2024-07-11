@@ -35,8 +35,8 @@ public class ProfileController {
 
     @GetMapping
     public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String accessToken,
-                                        @RequestHeader("ProfileId") Long profileId) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+                                        @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
@@ -65,12 +65,14 @@ public class ProfileController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String accessToken, @RequestBody ProfileSaveRequestDTO requestDTO) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestBody ProfileSaveRequestDTO requestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ProfileResponseDTO profileResponseDTO = multiService.updateProfile(username, requestDTO.getUrl(), requestDTO.getName(), requestDTO.getId());
+                ProfileResponseDTO profileResponseDTO = multiService.updateProfile(username, requestDTO.getUrl(), requestDTO.getName(), profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(profileResponseDTO);
             }
         } catch (DataNotFoundException ex) {

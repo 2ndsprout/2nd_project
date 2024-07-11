@@ -119,7 +119,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("role is not");
+            throw new IllegalArgumentException("incorrect permissions");
         if (email != null)
             userService.userEmailCheck(email);
         userService.save(name, password, email, aptNumber, role, apt);
@@ -146,7 +146,7 @@ public class MultiService {
                 }
             return userResponseDTOList;
         } else
-            throw new IllegalArgumentException("not role");
+            throw new IllegalArgumentException("incorrect permissions");
     }
 
     @Transactional
@@ -272,6 +272,8 @@ public class MultiService {
                 String fileLoc = null;
                 if (profileId != null) {
                     Profile profile = profileService.findById(profileId);
+                    if (profile == null)
+                        throw new DataNotFoundException("profile not data");
                     fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                     fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
                 } else {
@@ -395,7 +397,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         if (profile.getUser() != user)
-            throw new IllegalArgumentException("User mismatch in profile.");
+            throw new IllegalArgumentException("user mismatch in profile");
         return _fileSystem.map(fileSystem -> ProfileResponseDTO.builder()
                 .id(profile.getId())
                 .url(fileSystem.getV())
@@ -412,7 +414,7 @@ public class MultiService {
         List<ProfileResponseDTO> responseDTOList = new ArrayList<>();
         List<Profile> profileList = profileService.findProfilesByUserList(user);
         if (profileList == null)
-            throw new DataNotFoundException("not profileList");
+            throw new DataNotFoundException("profileList not data");
         for (Profile profile : profileList) {
             Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
             _fileSystem.ifPresent(fileSystem -> responseDTOList.add(ProfileResponseDTO.builder()
@@ -431,7 +433,7 @@ public class MultiService {
             throw new DataNotFoundException("username");
         Profile profile = profileService.findById(id);
         if (profile == null)
-            throw new DataNotFoundException("not profile");
+            throw new DataNotFoundException("profile not data");
         profileService.updateProfile(profile, name);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         String path = AptProjectApplication.getOsType().getLoc();
@@ -461,12 +463,15 @@ public class MultiService {
      */
 
     @Transactional
-    public CategoryResponseDTO saveCategory(String username, String name) {
+    public CategoryResponseDTO saveCategory(String username, String name, Long profileId) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
         if (user.getRole() != UserRole.ADMIN)
-            throw new IllegalArgumentException("requires admin role");
+            throw new IllegalArgumentException("incorrect permissions");
         Category category = this.categoryService.save(name);
         return CategoryResponseDTO.builder()
                 .id(category.getId())
@@ -475,15 +480,18 @@ public class MultiService {
     }
 
     @Transactional
-    public void deleteCategory(Long categoryId, String username) {
+    public void deleteCategory(Long categoryId, String username, Long profileId) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
         if (user.getRole() != UserRole.ADMIN)
-            throw new IllegalArgumentException("requires admin role");
+            throw new IllegalArgumentException("incorrect permissions");
         Category category = categoryService.findById(categoryId);
         if (category == null)
-            throw new DataNotFoundException("data not category");
+            throw new DataNotFoundException("category not data");
 
         categoryService.delete(category);
     }
