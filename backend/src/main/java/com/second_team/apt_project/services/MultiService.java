@@ -303,6 +303,38 @@ public class MultiService {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("username");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("profile not data");
+        if (!fileUrl.isEmpty()) {
+            try {
+                String path = AptProjectApplication.getOsType().getLoc();
+                Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+                if (_fileSystem.isPresent()) {
+                    FileSystem fileSystem = _fileSystem.get();
+                    File file = new File(path + fileSystem.getV());
+                    if (file.exists()) file.delete();
+                }
+                UUID uuid = UUID.randomUUID();
+                String fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
+
+                File file = new File(path + fileLoc);
+                if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+                fileUrl.transferTo(file);
+                return ImageResponseDTO.builder().url(fileLoc).build();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    @Transactional
+    public ImageResponseDTO tempUploadProfile(MultipartFile fileUrl, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("username");
         if (!fileUrl.isEmpty()) {
             try {
                 String path = AptProjectApplication.getOsType().getLoc();
@@ -313,17 +345,9 @@ public class MultiService {
                     if (file.exists()) file.delete();
                 }
                 UUID uuid = UUID.randomUUID();
-                String fileLoc = null;
-                if (profileId != null) {
-                    Profile profile = profileService.findById(profileId);
-                    if (profile == null)
-                        throw new DataNotFoundException("profile not data");
-                    fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
-                    fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
-                } else {
-                    fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
-                    fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
-                }
+                String fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
+                fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
+
                 File file = new File(path + fileLoc);
                 if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
                 fileUrl.transferTo(file);
@@ -416,19 +440,18 @@ public class MultiService {
             throw new DataNotFoundException("username");
         if (!name.trim().isEmpty()) {
             Profile profile = profileService.save(user, name);
-            if (url != null) {
-                Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username));
-                String newFile = "/api/user" + "/" + username + "/profile" + "/" + profile.getId() + "/";
-                if (_newFileSystem.isPresent()) {
-                    String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
-                    FileSystem fileSystem = fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
-                    return ProfileResponseDTO.builder()
-                            .id(profile.getId())
-                            .username(user.getUsername())
-                            .url(fileSystem.getV())
-                            .name(profile.getName()).build();
-                }
+            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username));
+            String newFile = "/api/user" + "/" + username + "/profile" + "/" + profile.getId() + "/";
+            if (_newFileSystem.isPresent()) {
+                String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                FileSystem fileSystem = fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
+                url = fileSystem.getV();
             }
+            return ProfileResponseDTO.builder()
+                    .id(profile.getId())
+                    .username(user.getUsername())
+                    .url(url)
+                    .name(profile.getName()).build();
         }
         return null;
     }
@@ -442,11 +465,14 @@ public class MultiService {
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         if (profile.getUser() != user)
             throw new IllegalArgumentException("user mismatch in profile");
-        return _fileSystem.map(fileSystem -> ProfileResponseDTO.builder()
+        String url = null;
+        if (_fileSystem.isPresent())
+            url = _fileSystem.get().getV();
+        return ProfileResponseDTO.builder()
                 .id(profile.getId())
-                .url(fileSystem.getV())
                 .name(profile.getName())
-                .username(user.getUsername()).build()).orElse(null);
+                .url(url)
+                .username(user.getUsername()).build();
 
     }
 
@@ -461,11 +487,14 @@ public class MultiService {
             throw new DataNotFoundException("profileList not data");
         for (Profile profile : profileList) {
             Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-            _fileSystem.ifPresent(fileSystem -> responseDTOList.add(ProfileResponseDTO.builder()
+            String url = null;
+            if (_fileSystem.isPresent())
+                url = _fileSystem.get().getV();
+            responseDTOList.add(ProfileResponseDTO.builder()
                     .id(profile.getId())
-                    .url(fileSystem.getV())
+                    .url(url)
                     .username(profile.getUser().getUsername())
-                    .name(profile.getName()).build()));
+                    .name(profile.getName()).build());
         }
         return responseDTOList;
     }
