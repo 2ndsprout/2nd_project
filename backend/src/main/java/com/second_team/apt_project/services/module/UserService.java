@@ -37,8 +37,8 @@ public class UserService {
         if (userRepository.isDuplicateEmail(email).size()>1) throw new DataDuplicateException("email");
     }
 
-    public void save(String name, String password, String email, int aptNumber, int role, Apt apt) {
-        userRepository.save(SiteUser.builder()
+    public SiteUser save(String name, String password, String email, int aptNumber, int role, Apt apt) {
+        return userRepository.save(SiteUser.builder()
                 .username(name)
                 .password(passwordEncoder.encode(password))
                 .email(email)
@@ -67,12 +67,8 @@ public class UserService {
         return this.userRepository.findByUser(userId);
     }
 
-    public SiteUser update(SiteUser updateUser, String name, String password, String email, int aptNum, Apt apt) {
-        updateUser.setApt(apt);
+    public SiteUser update(SiteUser updateUser, String email) {
         updateUser.setEmail(email);
-        updateUser.setUsername(name);
-        updateUser.setPassword(passwordEncoder.encode(password));
-        updateUser.setAptNum(aptNum);
         updateUser.setModifyDate(LocalDateTime.now());
         return userRepository.save(updateUser);
     }

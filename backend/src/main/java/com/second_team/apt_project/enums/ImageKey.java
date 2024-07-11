@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ImageKey {
-    USER, MESSAGE, ARTICLE, TEMP, MULTI
+    USER, MESSAGE, ARTICLE, TEMP, MULTI, APT
     //
     ;
     public String getKey(String value){
