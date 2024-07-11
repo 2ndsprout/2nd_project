@@ -2,8 +2,6 @@ package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.dtos.CategoryRequestDTO;
 import com.second_team.apt_project.dtos.CategoryResponseDTO;
-import com.second_team.apt_project.dtos.ProfileResponseDTO;
-import com.second_team.apt_project.dtos.ProfileSaveRequestDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
@@ -26,6 +24,21 @@ public class CategoryController {
                 String username = tokenRecord.username();
                 CategoryResponseDTO responseDTO = multiService.saveCategory(username, requestDTO.getName());
                 return tokenRecord.getResponseEntity(responseDTO);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteCategory(@RequestHeader("Authorization") String accessToken, @RequestHeader("CategoryId") Long categoryId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.deleteCategory(categoryId, username);
+                return tokenRecord.getResponseEntity("문제 없음");
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

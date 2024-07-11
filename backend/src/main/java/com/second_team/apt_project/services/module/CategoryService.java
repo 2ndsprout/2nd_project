@@ -14,4 +14,13 @@ public class CategoryService {
         return categoryRepository.save(Category.builder()
                 .name(name).build());
     }
+
+    public Category findById(Long categoryId) {
+        return categoryRepository.findById(categoryId).orElse(null);
+
+    }
+
+    public void delete(Category category) {
+        categoryRepository.delete(category);
+    }
 }
