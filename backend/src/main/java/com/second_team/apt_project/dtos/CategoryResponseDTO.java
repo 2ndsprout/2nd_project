@@ -11,10 +11,13 @@ import lombok.Setter;
 public class CategoryResponseDTO {
     private Long id;
     private String name;
-
+    private Long createDate;
+    private Long modifyDate;
     @Builder
-    public CategoryResponseDTO(Long id, String name) {
+    public CategoryResponseDTO(Long id, String name, Long createDate, Long modifyDate) {
         this.id = id;
         this.name = name;
+        this.createDate = createDate;
+        this.modifyDate = modifyDate;
     }
 }

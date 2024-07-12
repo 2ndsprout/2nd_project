@@ -33,4 +33,8 @@ public class MultiKeyService {
         multiKey.getVs().add(s);
         multiKeyRepository.save(multiKey);
     }
+
+    public void delete(MultiKey multiKey) {
+        multiKeyRepository.delete(multiKey);
+    }
 }
