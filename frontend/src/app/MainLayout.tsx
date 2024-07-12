@@ -4,4 +4,5 @@ interface MainProps {
     updateUser?: ()=>void;
 }
 export default function Main(props: MainProps) {
+    
 }
