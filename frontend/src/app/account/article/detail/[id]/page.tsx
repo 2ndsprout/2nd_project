@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getArticle } from '@/app/API/UserAPI';
 import { useParams } from "next/navigation";
 import { useEffect, useState } from 'react';
+import { getDateTimeFormat } from '@/app/Global/Method'
 
 interface Article {
     id?: number;
@@ -72,12 +73,14 @@ export default function ArticleDetail () {
                 </div>
             </aside>
             <div className="flex-1 p-10">
-                <h1 className="text-3xl font-bold mb-20 text-center">{article.title}</h1>
+                <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
+                <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                     <p>{article.content}</p>
                 </div>
                 <div>
-                    {/* {댓글 컨텐츠} */}
+                    좋아요 댓글수
+                    {/* 좋아요 댓글수 표시, 댓글 입력창*/}
                 </div>
                 <div className="mt-6">
                     <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
@@ -93,10 +96,10 @@ export default function ArticleDetail () {
                     {dropdownOpen && (
                         <div className="absolute left-2 mt-2 w-20 bg-yellow-600 shadow-lg">
                             <div className="flex flex-col items-center">
-                            <Link href="#" className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-black">
+                            <Link href="#" className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-white">
                                 수정
                             </Link>
-                            <Link href="#" className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-black">
+                            <Link href="#" className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-white">
                                 삭제
                             </Link>
                             </div>

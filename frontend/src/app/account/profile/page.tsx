@@ -11,6 +11,7 @@ export default function Page() {
     const [error, setError] = useState('');
     const [profileId, setProfileId] = useState('');
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+    const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     useEffect(() => {
         if (ACCESS_TOKEN)
             getUser()
