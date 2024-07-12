@@ -29,8 +29,8 @@ public class ArticleController {
                         articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
-        } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }
@@ -46,8 +46,8 @@ public class ArticleController {
                 ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
-        } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }

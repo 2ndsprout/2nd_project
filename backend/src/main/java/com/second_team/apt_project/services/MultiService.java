@@ -46,6 +46,7 @@ public class MultiService {
     private final ArticleService articleService;
     private final TagService tagService;
     private final ArticleTagService articleTagService;
+    private final LoveService loveService;
 
     /**
      * Auth
@@ -748,6 +749,42 @@ public class MultiService {
                 .name(category.getName())
                 .modifyDate(this.dateTimeTransfer(category.getModifyDate()))
                 .createDate(this.dateTimeTransfer(category.getCreateDate())).build();
+    }
+
+
+    /**
+     * Love
+     */
+
+
+    @Transactional
+    public void saveLove(String username, Long articleId, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        Article article = articleService.findById(articleId);
+        if (article == null )
+            throw new DataNotFoundException("게시물 객체 없음");
+        loveService.save(article, profile);
+
+    }
+
+    @Transactional
+    public void deleteLove(String username, Long articleId, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        Article article = articleService.findById(articleId);
+        if (article == null )
+            throw new DataNotFoundException("게시물 객체 없음");
+        Love love = loveService.findByArticleAndProfile(article, profile);
+        loveService.delete(love);
     }
 
 
