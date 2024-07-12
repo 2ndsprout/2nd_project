@@ -8,10 +8,7 @@ import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +31,8 @@ public class ImageController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+
     @PostMapping("/profile")
     public ResponseEntity<?> tempImageProfile(@RequestHeader("Authorization") String accessToken,
                                        ImageRequestDTO requestDTO) {
@@ -50,6 +49,7 @@ public class ImageController {
         return tokenRecord.getResponseEntity();
     }
 
+
     @PostMapping("/list")
     public ResponseEntity<?> tempImageList(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
@@ -60,6 +60,22 @@ public class ImageController {
                 String username = tokenRecord.username();
                 ImageResponseDTO imageResponseDTO = multiService.tempUploadList(requestDTO.getFile(),profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(imageResponseDTO);
+            }
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @DeleteMapping("/list")
+    public ResponseEntity<?> deleteImageList(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                this.multiService.deleteImageList(username,profileId);
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

@@ -9,7 +9,7 @@ UserApi.interceptors.request.use(
         const TOKEN_TYPE = localStorage.getItem('tokenType');
         const ACCESS_TOKEN = localStorage.getItem('accessToken');
         const REFRESH_TOKEN = localStorage.getItem('refreshToken');
-        const PROFILE_ID = localStorage.getItem('profileId');
+        const PROFILE_ID = localStorage.getItem('PROFILE_ID');
         config.headers['Authorization'] = `${TOKEN_TYPE} ${ACCESS_TOKEN}`;
         config.headers['REFRESH_TOKEN'] = REFRESH_TOKEN;
         config.headers['PROFILE_ID'] = Number(PROFILE_ID);
@@ -118,8 +118,8 @@ export const getProfileList = async () => {
     return response.data;
 }
 
-export const getProfile = async (data: number) => {
-    const response = await UserApi.get('/api/profile', { headers: { 'ProfileId': data } });
+export const getProfile = async () => {
+    const response = await UserApi.get('/api/profile');
     return response.data;
 }
 
@@ -195,3 +195,38 @@ export const deleteCategory = async (data: number) => {
     await UserApi.delete('/api/category', {headers: {'CategoryId': data}});
 
 }
+
+// Article
+
+export const getArticleList = async ( categoryId: number ) => {
+    const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
+    console.log("Sending request with CategoryId:", categoryId);
+    return response.data;
+}
+
+export const getArticle = async ( articleId: number ) => {
+    const response = await UserApi.get('api/article/detail', { headers: { ArticleId: articleId }} )
+    return response.data
+}
+
+// export const postArticle = async (data: postArticle, categoryId: number ) => {
+//     const response = await UserApi.post('/api/article', data, { headers: { CategoryId: categoryId} });
+//     console.log(data, categoryId);
+//     return response.data;
+// };
+
+// interface putArticle {
+//     articleId: number;
+//     title: String;
+//     content: String;
+// }
+
+// export const updateArticle = async (data: putArticle ) => {
+//     const response = await UserApi.put('/api/article', data);
+//     return response.data;
+// };
+
+// export const deleteArticle = async (data: number) => {
+//     const response = await UserApi.delete('/api/article', { headers: { ArticleId: data } });
+//     return response.data;
+// }

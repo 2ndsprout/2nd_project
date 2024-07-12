@@ -41,6 +41,7 @@ public class ProfileController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
+                System.out.println("profileId : "+profileId);
                 ProfileResponseDTO responseDTO = multiService.getProfile(profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
