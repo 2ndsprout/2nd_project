@@ -206,6 +206,7 @@ export const getArticleList = async ( categoryId: number ) => {
 
 export const getArticle = async ( articleId: number ) => {
     const response = await UserApi.get('api/article/detail', { headers: { ArticleId: articleId }} )
+    console.log("Sending request with ArticleId:", articleId);
     return response.data
 }
 
