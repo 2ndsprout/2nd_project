@@ -21,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -309,7 +310,10 @@ public class MultiService {
                 if (_fileSystem.isPresent()) {
                     FileSystem fileSystem = _fileSystem.get();
                     File file = new File(path + fileSystem.getV());
-                    if (file.exists()) file.delete();
+                    if (file.exists())
+                        file.delete();
+                    fileSystemService.delete(_fileSystem.get());
+
                 }
                 UUID uuid = UUID.randomUUID();
                 String fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
@@ -339,6 +343,7 @@ public class MultiService {
                     FileSystem fileSystem = _fileSystem.get();
                     File file = new File(path + fileSystem.getV());
                     if (file.exists()) file.delete();
+                    fileSystemService.delete(_fileSystem.get());
                 }
                 UUID uuid = UUID.randomUUID();
                 String fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
@@ -413,6 +418,31 @@ public class MultiService {
         }
     }
 
+    @Transactional
+    public void deleteImageList(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
+        String path = AptProjectApplication.getOsType().getLoc();
+        if (_multiKey.isPresent())
+            for (String value : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(value);
+                if (_fileSystem.isPresent()) {
+                    File file = new File(path + _fileSystem.get().getV());
+                    if (file.getParentFile().list().length == 1)
+                        this.deleteFolder(file.getParentFile());
+                    else
+                        file.delete();
+                    fileSystemService.delete(_fileSystem.get());
+                }
+                multiKeyService.delete(_multiKey.get());
+            }
+    }
+
     /**
      * File
      */
@@ -456,7 +486,7 @@ public class MultiService {
     public ProfileResponseDTO getProfile(Long profileId, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
-            throw new DataNotFoundException("username");
+            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         if (profile.getUser() != user)
