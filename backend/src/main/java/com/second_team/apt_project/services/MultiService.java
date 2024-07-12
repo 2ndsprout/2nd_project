@@ -412,7 +412,7 @@ public class MultiService {
             Files.createDirectories(newPath.getParent());
             Files.move(tempPath, newPath);
             File file = tempPath.toFile();
-            if (file.getParentFile().list().length == 0)
+            if (file.getParentFile().list().length == 1)
                 this.deleteFolder(file.getParentFile());
             else
                 file.delete();
@@ -635,6 +635,29 @@ public class MultiService {
     }
 
 
+    public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username) {
+        SiteUser user = userService.get(username);
+        if (user == null) {
+            throw new DataNotFoundException("유저 객체 없음");
+        }
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        Article article = articleService.findById(articleId);
+        if (article == null)
+            throw new DataNotFoundException("게시물 객체 없음");
+        List<ArticleTag> articleTagList = articleTagService.getArticle(article);
+        if (articleTagList == null)
+            throw new DataNotFoundException("게시물태그 객체 없음");
+        List<TagResponseDTO> responseDTOList = new ArrayList<>();
+        for (ArticleTag articleTag : articleTagList) {
+            Tag tag = tagService.findById(articleTag.getTag().getId());
+            responseDTOList.add(tagResponseDTO(tag));
+        }
+        String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
+        return this.getArticleResponseDTO(article, profileUrl, responseDTOList);
+    }
+
     private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList) {
         return ArticleResponseDTO.builder()
                 .articleId(article.getId())
@@ -651,7 +674,6 @@ public class MultiService {
                 .tagResponseDTOList(responseDTOList)
                 .build();
     }
-
     private void updateArticleContent(Article article, MultiKey multiKey) {
         String content = article.getContent();
         for (String keyName : multiKey.getVs()) {
@@ -673,6 +695,7 @@ public class MultiService {
         multiKeyService.delete(multiKey);
         articleService.updateContent(article, content);
     }
+
     @Transactional
     public CategoryResponseDTO getCategory(Long categoryId, String username, Long profileId) {
         SiteUser user = userService.get(username);

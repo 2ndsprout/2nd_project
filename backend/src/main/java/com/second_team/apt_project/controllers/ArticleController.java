@@ -34,4 +34,21 @@ public class ArticleController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+    @GetMapping
+    public ResponseEntity<?> articleDetail(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader("ArticleId") Long articleId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username);
+                return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }
