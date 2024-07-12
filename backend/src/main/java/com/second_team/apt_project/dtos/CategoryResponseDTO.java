@@ -13,7 +13,6 @@ public class CategoryResponseDTO {
     private String name;
     private Long createDate;
     private Long modifyDate;
-
     @Builder
     public CategoryResponseDTO(Long id, String name, Long createDate, Long modifyDate) {
         this.id = id;
