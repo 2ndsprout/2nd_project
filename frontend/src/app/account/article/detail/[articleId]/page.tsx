@@ -1,10 +1,10 @@
 'use client'
 
+import { getArticle } from '@/app/API/UserAPI'; // deleteArticle
+import { getDateTimeFormat } from '@/app/Global/Method';
 import Link from 'next/link';
-import { getArticle } from '@/app/API/UserAPI';
 import { useParams } from "next/navigation";
 import { useEffect, useState } from 'react';
-import { getDateTimeFormat } from '@/app/Global/Method'
 
 interface Article {
     id?: number;
@@ -20,6 +20,7 @@ export default function ArticleDetail () {
     const { articleId } = useParams();
     const [article, setArticle] = useState<Article | null>(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         const fetchArticle = async () => {
@@ -62,7 +63,23 @@ export default function ArticleDetail () {
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
     };
-    
+
+    const handleDelete = () => {
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        // 삭제 API 호출
+        // deleteArticle()
+        //     .then(() => {
+        //         console.log("article deleted!");
+        //     })
+        //     .catch(e => console.log(e));
+        setShowDeleteConfirm(false);
+        window.location.href = `/account/article/${article.categoryId}/`;
+        // 페이지 리다이렉트 등 추가 작업 필요
+    };
+
     console.log(article.id)
     return (
         <div className="bg-black w-full min-h-screen text-white flex">
@@ -99,14 +116,27 @@ export default function ArticleDetail () {
                             <Link href="#" className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-white">
                                 수정
                             </Link>
-                            <Link href="#" className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-white">
+                            <button onClick={handleDelete} className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-white">
                                 삭제
-                            </Link>
+                            </button>
                             </div>
                         </div>
                     )}
                 </div>
             </aside>
+            {/* 삭제 확인창 */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 p-5 rounded shadow-lg">
+                        <div className="text-lg font-semibold text-white">삭제 확인</div>
+                        <p className="text-gray-400">이 게시물을 삭제하시겠습니까?</p>
+                        <div className="mt-4 flex justify-end">
+                            <button onClick={() => setShowDeleteConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
+                            <button onClick={confirmDelete} className="p-2 bg-red-600 rounded text-white hover:bg-red-500">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
