@@ -21,7 +21,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -121,12 +120,6 @@ public class MultiService {
     }
 
     @Transactional
-    public UserResponseDTO getUser(String username) {
-        SiteUser siteUser = userService.getUser(username);
-        return this.getUserResponseDTO(siteUser, siteUser.getApt());
-    }
-
-    @Transactional
     public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
@@ -217,7 +210,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
-        return this.getUserResponseDTO(user);
+        return this.getUserResponseDTO(user, user.getApt());
     }
 
 
@@ -627,7 +620,7 @@ public class MultiService {
      * Article
      */
     @Transactional
-    public ArticleResponseDTO saveArticle(Long profileId, Long categoryId, List<Long> tagId, String title, String content, String username) {
+    public ArticleResponseDTO saveArticle(Long profileId, Long categoryId, List<Long> tagId, String title, String content, String username, Boolean topActive) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
@@ -637,7 +630,7 @@ public class MultiService {
         Category category = categoryService.findById(categoryId);
         if (category == null)
             throw new DataNotFoundException("카테고리 객체 없음");
-        Article article = articleService.save(profile, title, content, category);
+        Article article = articleService.save(profile, title, content, category, topActive);
         List<TagResponseDTO> tagResponseDTOList = new ArrayList<>();
         for (Long id : tagId){
             Tag tag =tagService.findById(id);
@@ -691,6 +684,7 @@ public class MultiService {
                         .url(profileUrl)
                         .name(article.getProfile().getName()).build())
                 .tagResponseDTOList(responseDTOList)
+                .topActive(article.getTopActive())
                 .build();
     }
     private void updateArticleContent(Article article, MultiKey multiKey) {

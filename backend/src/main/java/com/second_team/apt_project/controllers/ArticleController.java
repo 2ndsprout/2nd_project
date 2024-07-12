@@ -26,7 +26,7 @@ public class ArticleController {
                 String username = tokenRecord.username();
                 ArticleResponseDTO articleResponseDTO = this.multiService.saveArticle(profileId,
                         articleRequestDTO.getCategoryId(), articleRequestDTO.getTagId(), articleRequestDTO.getTitle(),
-                        articleRequestDTO.getContent(), username);
+                        articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
