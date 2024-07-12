@@ -456,7 +456,7 @@ public class MultiService {
     @Transactional
     public ProfileResponseDTO getProfile(Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user != null)
+        if (user == null)
             throw new DataNotFoundException("username");
         Profile profile = profileService.findById(profileId);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
