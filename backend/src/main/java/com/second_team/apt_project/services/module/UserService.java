@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public void userEmailCheck(String email) {
-        if (userRepository.isDuplicateEmail(email).size()>1) throw new DataDuplicateException("email");
+        if (userRepository.isDuplicateEmail(email).size()>1) throw new DataDuplicateException("이베일 중복");
     }
 
     public SiteUser save(String name, String password, String email, int aptNumber, int role, Apt apt) {
