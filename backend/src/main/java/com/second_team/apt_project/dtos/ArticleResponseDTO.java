@@ -19,10 +19,10 @@ public class ArticleResponseDTO {
     private String categoryName;
     private ProfileResponseDTO profileResponseDTO;
     private List<String> urlList;
-    private List<String> tagNameList;
+    private List<TagResponseDTO> tagResponseDTOList;
 
     @Builder
-    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<String> tagNameList) {
+    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList) {
         this.articleId = articleId;
         this.title = title;
         this.content = content;
@@ -31,6 +31,6 @@ public class ArticleResponseDTO {
         this.categoryName = categoryName;
         this.profileResponseDTO = profileResponseDTO;
         this.urlList = urlList;
-        this.tagNameList = tagNameList;
+        this.tagResponseDTOList = tagResponseDTOList;
     }
 }

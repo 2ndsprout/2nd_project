@@ -10,6 +10,6 @@ public class ArticleRequestDTO {
     private String title;
     private String content;
     private Boolean topActive;
-    private Long tagId;
+    private List<Long> tagId;
     private List<String> url;
 }

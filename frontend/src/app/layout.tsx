@@ -7,9 +7,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Honey Danji",
   description: "아파트 커뮤니티",
-  name: "viewport", 
-  content: "width=device-width, initial-scale=1",
-  charSet: "UTF-8"
 };
 
 export default function RootLayout({
@@ -19,6 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        </head>
       <body className={inter.className}>{children}</body>
     </html>
   );

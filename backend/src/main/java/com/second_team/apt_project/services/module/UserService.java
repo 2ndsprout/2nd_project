@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -68,6 +69,7 @@ public class UserService {
 
     public SiteUser update(SiteUser updateUser, String email) {
         updateUser.setEmail(email);
+        updateUser.setModifyDate(LocalDateTime.now());
         return userRepository.save(updateUser);
     }
 }

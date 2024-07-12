@@ -1,8 +1,7 @@
 package com.second_team.apt_project.services.module;
 
-import com.second_team.apt_project.domains.Article;
-import com.second_team.apt_project.domains.Category;
-import com.second_team.apt_project.domains.Profile;
+import com.second_team.apt_project.domains.*;
+import com.second_team.apt_project.dtos.ArticleResponseDTO;
 import com.second_team.apt_project.repositories.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,7 @@ public class ArticleService {
     public Article save(Profile profile, String title, String content, Category category) {
         return articleRepository.save(Article.builder()
                 .profile(profile)
-                        .category(category)
+                .category(category)
                 .title(title)
                 .content(content)
                 .build());
@@ -25,4 +24,5 @@ public class ArticleService {
         article.setContent(content);
         this.articleRepository.save(article);
     }
+
 }

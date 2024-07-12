@@ -1,6 +1,5 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.dtos.AptResponseDTO;
 import com.second_team.apt_project.dtos.ArticleRequestDTO;
 import com.second_team.apt_project.dtos.ArticleResponseDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;

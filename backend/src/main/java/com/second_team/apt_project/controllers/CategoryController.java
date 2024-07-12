@@ -49,4 +49,38 @@ public class CategoryController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+    @GetMapping
+    public ResponseEntity<?> getCategory(@RequestHeader("Authorization") String accessToken,
+                                         @RequestHeader("PROFILE_ID") Long profileId,
+                                         @RequestHeader("CategoryId") Long categoryId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                CategoryResponseDTO categoryResponseDTO = multiService.getCategory(categoryId, username, profileId);
+                return ResponseEntity.status(HttpStatus.OK).body(categoryResponseDTO);
+            }
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @PutMapping
+    private ResponseEntity<?> updateCategory(@RequestHeader("Authorization") String accessToken,
+                                             @RequestHeader("PROFILE_ID") Long profileId,
+                                             @RequestBody CategoryRequestDTO requestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                CategoryResponseDTO categoryResponseDTO = multiService.updateCategory(username, profileId,requestDTO.getId(), requestDTO.getName());
+                return ResponseEntity.status(HttpStatus.OK).body(categoryResponseDTO);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }
