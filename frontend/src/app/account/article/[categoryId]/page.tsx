@@ -1,11 +1,11 @@
 'use client'
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
 import { getArticleList } from "@/app/API/UserAPI";
+import { getDate } from "@/app/Global/Method";
+import Pagination from "@/app/Global/Pagination";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getDate } from "@/app/Global/Method"
-import Pagination from "@/app/Global/Pagination"
+import { useEffect, useState } from "react";
 
 interface Article {
     id?: number;
@@ -19,14 +19,14 @@ interface Article {
 export default function ArticleListPage() {
     const [articleList, setArticleList] = useState<Article[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
+    const [filteredArticles, setFilteredArticles] = useState<Article[]>([]); // 검색
     const { categoryId } = useParams();
     //페이징 함수
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10; // 페이지당 게시물 수
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const displayedArticles = filteredArticles.slice(startIndex, endIndex);
+    const displayedArticles = filteredArticles.slice(startIndex, endIndex);  // .map으로 나열하기 전 받아온 JSON데이터 리스트(우측).slice의 결과물을 좌측((displayedArticles).map)에 선언.
 
     useEffect(() => {
         const fetchArticles = async () => {
@@ -120,7 +120,7 @@ export default function ArticleListPage() {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           viewPageList={Array.from(
-            { length: Math.ceil(filteredArticles.length / itemsPerPage) },
+            { length: Math.ceil(filteredArticles.length / itemsPerPage) }, // map으로 나열하기 이전에 받아온 json데이터.length
             (_, i) => i + 1
           )}
         />
