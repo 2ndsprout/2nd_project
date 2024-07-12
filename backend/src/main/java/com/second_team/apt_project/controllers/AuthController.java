@@ -2,6 +2,7 @@ package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
+import com.second_team.apt_project.dtos.ProfileResponseDTO;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
 
     @GetMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestHeader("REFRESH_TOKEN") String refreshToken) {

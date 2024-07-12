@@ -31,8 +31,8 @@ export default function Page() {
     }
 
     return (
-        <div className='bg-black w-full h-screen'>
-            <div className='flex flex-col items-center justify-center h-full relative'>
+        <div className='bg-black min-h-screen w-full'>
+            <div className='flex flex-col items-center justify-center relative'>
                 <a href='/'><img src='/user.png' className='w-40 h-40 mb-5' alt='로고' /></a>
                 <label className='text-xs text-red-500 text-start w-[396px]'>{error}</label>
                 

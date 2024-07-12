@@ -91,13 +91,15 @@ export default function ArticleDetail () {
                         <span className="text-white">⁝</span>
                     </button>
                     {dropdownOpen && (
-                        <div className="absolute left-2 mt-2 w-40 bg-gray-800 rounded-lg">
-                            <Link href={`/account/article/${article.id}/edit`} className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                        <div className="absolute left-2 mt-2 w-20 bg-yellow-600 shadow-lg">
+                            <div className="flex flex-col items-center">
+                            <Link href="#" className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-black">
                                 수정
                             </Link>
-                            <Link href={`/account/article/${article.id}/delete`} className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                            <Link href="#" className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-black">
                                 삭제
                             </Link>
+                            </div>
                         </div>
                     )}
                 </div>
