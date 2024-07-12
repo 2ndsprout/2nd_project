@@ -11,14 +11,16 @@ public class AptResponseDTO {
     private Double x; // 위도
     private Double y; // 경도
     private String url;
+    private Long count;
 
     @Builder
-    public AptResponseDTO(Long aptId, String roadAddress, String aptName, Double x, Double y, String url) {
+    public AptResponseDTO(Long aptId, String roadAddress, String aptName, Double x, Double y, String url,Long count) {
         this.aptId = aptId;
         this.roadAddress = roadAddress;
         this.aptName = aptName;
         this.x = x;
         this.y = y;
         this.url = url;
+        this.count = count;
     }
 }
