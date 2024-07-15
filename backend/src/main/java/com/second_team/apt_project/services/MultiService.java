@@ -945,7 +945,7 @@ public class MultiService {
      * Center
      */
     @Transactional
-    public CenterResponseDTO saveCenter(String username, Long profileId, CenterType type, Time endDate, Time startDate) {
+    public CenterResponseDTO saveCenter(String username, Long profileId, int type, Time endDate, Time startDate) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
@@ -1016,7 +1016,7 @@ public class MultiService {
     }
 
     @Transactional
-    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, CenterType type, Time
+    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, int type, Time
             endDate, Time startDate, List<String> key) {
         SiteUser user = userService.get(username);
         if (user == null)
