@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 public class CenterRequestDTO {
     private Long id;
-    private CenterType type;
+    private int type;
     private Time startDate;
     private Time endDate;
     private List<String> key;
