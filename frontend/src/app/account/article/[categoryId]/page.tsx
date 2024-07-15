@@ -1,10 +1,10 @@
 'use client'
 
-import { getArticleList } from "@/app/API/UserAPI";
+import { getArticleList, getProfile, getUser } from "@/app/API/UserAPI";
 import { getDate } from "@/app/Global/Method";
 import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Article {
@@ -27,7 +27,31 @@ export default function ArticleListPage() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const displayedArticles = filteredArticles.slice(startIndex, endIndex);  // .map으로 나열하기 전 받아온 JSON데이터 리스트(우측).slice의 결과물을 좌측((displayedArticles).map)에 선언.
-
+    const [user, setUser] = useState(null as any);
+    const [error, setError] = useState('');
+    const [profileId, setProfileId] = useState('');
+    const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+    const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    useEffect(() => {
+        if (ACCESS_TOKEN)
+            getUser()
+                .then(r => {
+                    setUser(r);
+                })
+                .catch(e => console.log(e));
+        else
+            redirect('/account/login');
+    }, [ACCESS_TOKEN]);
+    useEffect(() => {
+      if (PROFILE_ID)
+          getProfile()
+              .then(r => {
+                  setProfileId(r);
+              })
+              .catch(e => console.log(e));
+      else
+          redirect('/account/profile');
+    }, [PROFILE_ID]);
     useEffect(() => {
         const fetchArticles = async () => {
             const data = await getArticleList(Number(categoryId));
@@ -37,7 +61,7 @@ export default function ArticleListPage() {
 
         fetchArticles();
     }, [categoryId]);
-
+    
     const handleSearch = () => {
         const results = articleList.filter(article =>
             article.title.toLowerCase().includes(searchTerm.toLowerCase())

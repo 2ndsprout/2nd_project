@@ -12,6 +12,8 @@ export default function Page() {
     const [profileId, setProfileId] = useState('');
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const [isModalOpen, setISModalOpen] = useState(-1);
+
     useEffect(() => {
         if (ACCESS_TOKEN)
             getUser()
@@ -32,7 +34,12 @@ export default function Page() {
             getProfile()
                 .then(() => {
                     console.log("profile selected!");
-                    window.location.href = '/';
+                    if (user.username == 'admin') {
+                        window.location.href = '/account/admin';
+                    }
+                    else {
+                        window.location.href = '/';
+                    }
                 })
                 //   .catch(e => alert(e.response.data));
                 .catch(e => console.log(e));
@@ -56,7 +63,7 @@ export default function Page() {
                         <div key={index} className="text-center mx-auto my-3 w-1/3">
                             <div className="flex justify-center">
                                 <button onClick={() => Select(profile.id)}>
-                                    <img src={profile?.url ? '/user.png' : profile.url} className="w-60 h-60 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
+                                    <img src={'/user.png'} className="w-60 h-60 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
                                     <span>{profile?.name}</span>
                                 </button>
                             </div>
