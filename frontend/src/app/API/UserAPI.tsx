@@ -198,6 +198,14 @@ export const deleteCategory = async (data: number) => {
 
 // Article
 
+interface ArticleProps {
+    categoryId: number,
+    title: string,
+    content: string,
+    topActive: boolean,
+    tagIdList: number[]
+}
+
 export const getArticleList = async ( categoryId: number ) => {
     const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
     console.log("Sending request with CategoryId:", categoryId);
@@ -210,11 +218,37 @@ export const getArticle = async ( articleId: number ) => {
     return response.data
 }
 
-// export const postArticle = async (data: postArticle, categoryId: number ) => {
-//     const response = await UserApi.post('/api/article', data, { headers: { CategoryId: categoryId} });
-//     console.log(data, categoryId);
-//     return response.data;
-// };
+export const postArticle = async (data: ArticleProps) => {
+    const response = await UserApi.post('/api/article', data);
+    return response.data;
+};
+
+
+// Tag
+
+interface TagProps {
+    name: string
+}
+
+export const postTag = async (data: TagProps) => {
+    const response = await UserApi.post('/api/tag', data);
+    return response.data;
+}
+
+export const getTagList = async (data: number) => {
+    const response = await UserApi.get('/api/tag/list', {headers: {'articleId': data}});
+    return response.data;
+}
+
+export const getTag = async (data: number) => {
+    const response = await UserApi.get('/api/tag', {headers: {'tagId': data}});
+    return response.data;
+}
+
+export const deleteTag = async (data: number) => {
+    await UserApi.delete('/api/tag', {headers: {'tagId': data}});
+}
+
 
 // interface putArticle {
 //     articleId: number;
