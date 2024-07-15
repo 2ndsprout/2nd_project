@@ -1,5 +1,6 @@
 package com.second_team.apt_project.controllers;
 
+import com.second_team.apt_project.dtos.ImageListResponseDTO;
 import com.second_team.apt_project.dtos.ImageRequestDTO;
 import com.second_team.apt_project.dtos.ImageResponseDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,8 +61,8 @@ public class ImageController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ImageResponseDTO imageResponseDTO = multiService.tempUploadList(requestDTO.getFile(),profileId, username);
-                return ResponseEntity.status(HttpStatus.OK).body(imageResponseDTO);
+                List<ImageListResponseDTO> imageListResponseDTOS = multiService.tempUploadList(requestDTO.getFile(),profileId, username);
+                return ResponseEntity.status(HttpStatus.OK).body(imageListResponseDTOS);
             }
         } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

@@ -3,6 +3,7 @@ package com.second_team.apt_project.services;
 import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.dtos.*;
+import com.second_team.apt_project.enums.CenterType;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
@@ -12,6 +13,8 @@ import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import org.commonmark.node.Image;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,17 +24,23 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.second_team.apt_project.domains.QCultureCenter.cultureCenter;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +56,7 @@ public class MultiService {
     private final TagService tagService;
     private final ArticleTagService articleTagService;
     private final LoveService loveService;
+    private final CultureCenterService cultureCenterService;
 
     /**
      * Auth
@@ -117,6 +127,7 @@ public class MultiService {
                 .aptResponseDto(this.getAptResponseDTO(siteUser.getApt()))
                 .createDate(this.dateTimeTransfer(siteUser.getCreateDate()))
                 .modifyDate(this.dateTimeTransfer(siteUser.getModifyDate()))
+                .role(siteUser.getRole().toString())
                 .build();
     }
 
@@ -205,7 +216,6 @@ public class MultiService {
     }
 
 
-
     @Transactional
     public UserResponseDTO getUser(String username) {
         SiteUser user = userService.get(username);
@@ -213,7 +223,6 @@ public class MultiService {
             throw new DataNotFoundException("유저 객체 없음");
         return this.getUserResponseDTO(user, user.getApt());
     }
-
 
 
     /**
@@ -326,12 +335,12 @@ public class MultiService {
                 }
                 UUID uuid = UUID.randomUUID();
                 String fileLoc = "/api/user" + "/" + username + "/temp/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
-                fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
+                FileSystem fileSystem = fileSystemService.save(ImageKey.TEMP.getKey(username + "." + profile.getId()), fileLoc);
 
                 File file = new File(path + fileLoc);
                 if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
                 fileUrl.transferTo(file);
-                return ImageResponseDTO.builder().url(fileLoc).build();
+                return ImageResponseDTO.builder().key(fileSystem.getK()).url(fileSystem.getV()).build();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -356,12 +365,12 @@ public class MultiService {
                 }
                 UUID uuid = UUID.randomUUID();
                 String fileLoc = "/api/user" + "/" + username + "/temp/" + uuid + "." + fileUrl.getContentType().split("/")[1];
-                fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
+                FileSystem fileSystem = fileSystemService.save(ImageKey.TEMP.getKey(username), fileLoc);
 
                 File file = new File(path + fileLoc);
                 if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
                 fileUrl.transferTo(file);
-                return ImageResponseDTO.builder().url(fileLoc).build();
+                return ImageResponseDTO.builder().key(fileSystem.getK()).url(fileSystem.getV()).build();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -370,7 +379,7 @@ public class MultiService {
     }
 
     @Transactional
-    public ImageResponseDTO tempUploadList(MultipartFile fileUrl, Long profileId, String username) {
+    public List<ImageListResponseDTO> tempUploadList(MultipartFile fileUrl, Long profileId, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
@@ -394,19 +403,33 @@ public class MultiService {
                     fileSystemService.save(_multiKey.get().getVs().getLast(), fileLoc);
                 }
                 Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
-                List<String> urlList = new ArrayList<>();
-                for (String value : _newMultiKey.get().getVs()) {
-                    Optional<FileSystem> fileSystem = fileSystemService.get(value);
-                    fileSystem.ifPresent(system -> urlList.add(system.getV()));
-                }
-                return ImageResponseDTO.builder()
-                        .urlList(urlList).build();
+                List<ImageListResponseDTO> imageListResponseDTOS = new ArrayList<>();
+                if (_newMultiKey.isPresent())
+                    for (String value : _newMultiKey.get().getVs()) {
+                        Optional<FileSystem> fileSystem = fileSystemService.get(value);
+                        fileSystem.ifPresent(system -> imageListResponseDTOS.add(ImageListResponseDTO.builder()
+                                .key(fileSystem.get().getK())
+                                .value(fileSystem.get().getV())
+                                .build()));
+                    }
+                return imageListResponseDTOS;
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return null;
+    }
+
+    @Transactional
+    private void deleteFile(FileSystem fileSystem) {
+        String path = AptProjectApplication.getOsType().getLoc();
+        Path tempPath = Paths.get(path + fileSystem.getV());
+        File file = tempPath.toFile();
+        if (file.getParentFile().list().length == 1)
+            this.deleteFolder(file.getParentFile());
+        else
+            file.delete();
     }
 
     @Transactional
@@ -419,11 +442,10 @@ public class MultiService {
             Files.createDirectories(newPath.getParent());
             Files.move(tempPath, newPath);
             File file = tempPath.toFile();
-            if (file.getParentFile().list().length == 1)
+            if (file.getParentFile().list().length == 0)
                 this.deleteFolder(file.getParentFile());
             else
                 file.delete();
-
             fileSystemService.delete(fileSystem);
             return newUrl + tempPath.getFileName();
         } catch (IOException e) {
@@ -616,6 +638,47 @@ public class MultiService {
         categoryService.delete(category);
     }
 
+    @Transactional
+    public CategoryResponseDTO getCategory(Long categoryId, String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        Category category = categoryService.findById(categoryId);
+        if (category == null)
+            throw new DataNotFoundException("카테고리 객체 없음");
+
+        return categoryResponseDTO(category);
+    }
+
+    @Transactional
+    public CategoryResponseDTO updateCategory(String username, Long profileId, Long id, String name) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        Category category = categoryService.findById(id);
+        if (category == null)
+            throw new DataNotFoundException("카테고리 객체 없음");
+        if (user.getRole() != UserRole.ADMIN)
+            throw new IllegalArgumentException("권한 불일치");
+        category = categoryService.update(category, name);
+
+        return categoryResponseDTO(category);
+    }
+
+    private CategoryResponseDTO categoryResponseDTO(Category category) {
+        return CategoryResponseDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .modifyDate(this.dateTimeTransfer(category.getModifyDate()))
+                .createDate(this.dateTimeTransfer(category.getCreateDate())).build();
+    }
+
 
     /**
      * Article
@@ -633,9 +696,9 @@ public class MultiService {
             throw new DataNotFoundException("카테고리 객체 없음");
         Article article = articleService.save(profile, title, content, category, topActive);
         List<TagResponseDTO> tagResponseDTOList = new ArrayList<>();
-        for (Long id : tagId){
-            Tag tag =tagService.findById(id);
-            if(tag == null)
+        for (Long id : tagId) {
+            Tag tag = tagService.findById(id);
+            if (tag == null)
                 throw new DataNotFoundException("태그 객체 없음");
             articleTagService.save(article, tag);
             tagResponseDTOList.add(tagResponseDTO(tag));
@@ -688,6 +751,7 @@ public class MultiService {
                 .topActive(article.getTopActive())
                 .build();
     }
+
     private void updateArticleContent(Article article, MultiKey multiKey) {
         String content = article.getContent();
         for (String keyName : multiKey.getVs()) {
@@ -698,7 +762,7 @@ public class MultiService {
                 String newUrl = this.fileMove(_fileSystem.get().getV(), newFile, _fileSystem.get());
                 if (_articleMulti.isEmpty()) {
                     MultiKey multiKey1 = multiKeyService.save(ImageKey.ARTICLE.getKey(article.getId().toString()), ImageKey.ARTICLE.getKey(article.getId().toString() + ".0"));
-                    fileSystemService.save(multiKey1.getVs().getLast(), newUrl);
+                    fileSystemService.save(multiKey.getVs().getLast(), newUrl);
                 } else {
                     multiKeyService.add(_articleMulti.get(), ImageKey.ARTICLE.getKey(article.getId().toString()) + "." + _articleMulti.get().getVs().size());
                     fileSystemService.save(_articleMulti.get().getVs().getLast(), newUrl);
@@ -708,47 +772,6 @@ public class MultiService {
         }
         multiKeyService.delete(multiKey);
         articleService.updateContent(article, content);
-    }
-
-    @Transactional
-    public CategoryResponseDTO getCategory(Long categoryId, String username, Long profileId) {
-        SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
-        Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
-        Category category = categoryService.findById(categoryId);
-        if (category == null)
-            throw new DataNotFoundException("카테고리 객체 없음");
-
-        return categoryResponseDTO(category);
-    }
-
-    @Transactional
-    public CategoryResponseDTO updateCategory(String username, Long profileId, Long id, String name) {
-        SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
-        Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
-        Category category = categoryService.findById(id);
-        if (category == null)
-            throw new DataNotFoundException("카테고리 객체 없음");
-        if (user.getRole() != UserRole.ADMIN)
-            throw new IllegalArgumentException("권한 불일치");
-        category = categoryService.update(category, name);
-
-        return categoryResponseDTO(category);
-    }
-
-    private CategoryResponseDTO categoryResponseDTO(Category category) {
-        return CategoryResponseDTO.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .modifyDate(this.dateTimeTransfer(category.getModifyDate()))
-                .createDate(this.dateTimeTransfer(category.getCreateDate())).build();
     }
 
 
@@ -766,7 +789,7 @@ public class MultiService {
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
         Article article = articleService.findById(articleId);
-        if (article == null )
+        if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
         loveService.save(article, profile);
 
@@ -781,7 +804,7 @@ public class MultiService {
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
         Article article = articleService.findById(articleId);
-        if (article == null )
+        if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
         Love love = loveService.findByArticleAndProfile(article, profile);
         loveService.delete(love);
@@ -838,5 +861,190 @@ public class MultiService {
             return null;
         }
         return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    private Long timeTransfer(Time time) {
+
+        if (time == null) {
+            return null;
+        }
+        LocalDateTime dateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(time.getHours(), time.getMinutes()));
+        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+
+    /**
+     * Center
+     */
+    @Transactional
+    public CenterResponseDTO saveCenter(String username, Long profileId, CenterType type, Time endDate, Time startDate) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        if (user.getRole() == UserRole.USER)
+            throw new IllegalArgumentException("권한 불일치");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+
+        CultureCenter cultureCenter = cultureCenterService.save(type, endDate, startDate);
+
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
+        if (_multiKey.isPresent()) {
+            for (String values : _multiKey.get().getVs()) {
+                Optional<MultiKey> _centerMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+                Optional<FileSystem> _fileSystem = fileSystemService.get(values);
+                if (_fileSystem.isPresent()) {
+                    String newFile = "/api/center" + "/" + cultureCenter.getId() + "/";
+                    String newUrl = this.fileMove(_fileSystem.get().getV(), newFile, _fileSystem.get());
+                    if (_centerMultiKey.isPresent()) {
+                        MultiKey multiKey = multiKeyService.add(_centerMultiKey.get(), ImageKey.Center.getKey(cultureCenter.getId().toString() + "." + _centerMultiKey.get().getVs().size()));
+                        fileSystemService.save(multiKey.getVs().getLast(), newUrl);
+                    } else {
+                        MultiKey multiKey = multiKeyService.save(ImageKey.Center.getKey(cultureCenter.getId().toString()), ImageKey.Center.getKey(cultureCenter.getId().toString() + ".0"));
+                        fileSystemService.save(multiKey.getVs().getLast(), newUrl);
+                    }
+                }
+
+            }
+            multiKeyService.delete(_multiKey.get());
+        }
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        return _newMultiKey.map(multiKey -> centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+    }
+
+    private CenterResponseDTO centerResponseDTO(CultureCenter cultureCenter, MultiKey multiKey) {
+        List<ImageListResponseDTO> imageListResponseDTOS = new ArrayList<>();
+        if (multiKey != null) {
+            for (String value : multiKey.getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(value);
+                _fileSystem.ifPresent(fileSystem -> imageListResponseDTOS.add(ImageListResponseDTO.builder().key(fileSystem.getK()).value(fileSystem.getV()).build()));
+            }
+        }
+        return CenterResponseDTO.builder()
+                .id(cultureCenter.getId())
+                .startDate(this.timeTransfer(cultureCenter.getOpenTime()))
+                .endDate(this.timeTransfer(cultureCenter.getCloseTime()))
+                .type(cultureCenter.getCenterType().toString())
+                .createDate(this.dateTimeTransfer(cultureCenter.getCreateDate()))
+                .modifyDate(this.dateTimeTransfer(cultureCenter.getModifyDate()))
+                .imageListResponseDTOS(imageListResponseDTOS)
+                .build();
+    }
+
+    @Transactional
+    public CenterResponseDTO getCenter(String username, Long profileId, Long centerId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        return _newMultiKey.map(multiKey -> centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+    }
+
+    @Transactional
+    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, CenterType type, Time
+            endDate, Time startDate, List<String> key) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        if (user.getRole() == UserRole.USER)
+            throw new IllegalArgumentException("권한 불일치");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        CultureCenter cultureCenter = cultureCenterService.findById(id);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
+        cultureCenterService.update(cultureCenter, type, endDate, startDate);
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        if (_oldMulti.isPresent())
+            if (key != null) {
+                for (String k : key){
+                    Optional<FileSystem> _fileSystem = fileSystemService.get(k);
+                    _fileSystem.ifPresent(fileSystem -> {
+                        fileSystemService.delete(fileSystem);
+                        _oldMulti.get().getVs().remove(key);
+                        deleteFile(_fileSystem.get());
+                    });
+                }
+            }
+        if (_newMultiKey.isPresent()) {
+            String newFile = "/api/center" + "/" + cultureCenter.getId() + "/";
+            for (String values : _newMultiKey.get().getVs()) {
+                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+                Optional<FileSystem> _newFileSystem = fileSystemService.get(values);
+                if (_newFileSystem.isPresent()) {
+                    String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                    if (_multiKey.isPresent()) {
+                        multiKeyService.add(_multiKey.get(), ImageKey.Center.getKey(cultureCenter.getId().toString() + "." + _multiKey.get().getVs().size()));
+                        fileSystemService.save(_multiKey.get().getVs().getLast(), newUrl);
+                    } else {
+                        MultiKey multiKey = multiKeyService.save(ImageKey.Center.getKey(cultureCenter.getId().toString()), ImageKey.Center.getKey(cultureCenter.getId().toString() + ".0"));
+                        fileSystemService.save(multiKey.getVs().getLast(), newUrl);
+
+                    }
+                }
+            }
+            multiKeyService.delete(_newMultiKey.get());
+        }
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        return _multiKey.map(multiKey -> this.centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+
+    }
+
+
+    @Transactional
+    public void deleteCenter(String username, Long profileId, Long centerId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        if (user.getRole() == UserRole.USER)
+            throw new IllegalArgumentException("권한 불일치");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        if (_multiKey.isPresent()) {
+            for (String values : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(values);
+                _fileSystem.ifPresent(fileSystemService::delete);
+            }
+            multiKeyService.delete(_multiKey.get());
+        }
+        cultureCenterService.delete(cultureCenter);
+    }
+
+    @Transactional
+    public List<CenterResponseDTO> getCenterList(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        List<CultureCenter> cultureCenterList = cultureCenterService.getList();
+        if (cultureCenterList == null)
+            throw new DataNotFoundException("센터 리스트 없음");
+        List<CenterResponseDTO> centerResponseDTOS = new ArrayList<>();
+
+        for (CultureCenter cultureCenter : cultureCenterList) {
+            Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+            MultiKey multiKey = null;
+            if (_multiKey.isPresent())
+                multiKey = _multiKey.get();
+
+            centerResponseDTOS.add(centerResponseDTO(cultureCenter, multiKey));
+        }
+        return centerResponseDTOS;
     }
 }

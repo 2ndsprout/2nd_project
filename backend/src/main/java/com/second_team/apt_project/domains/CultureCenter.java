@@ -29,6 +29,7 @@ public class CultureCenter {
 
     private CenterType centerType;
     private LocalDateTime createDate;
+    private LocalDateTime modifyDate;
 
     @Builder
     public CultureCenter(Time openTime, Time closeTime, CenterType centerType) {

@@ -12,15 +12,17 @@ public class UserResponseDTO {
     private AptResponseDTO aptResponseDto;
     private Long createDate;
     private Long modifyDate;
+    private String role;
 
 
     @Builder
-    public UserResponseDTO(String username, Integer aptNum, String email, AptResponseDTO aptResponseDto, Long createDate, Long modifyDate) {
+    public UserResponseDTO(String username, Integer aptNum, String email, AptResponseDTO aptResponseDto, Long createDate, Long modifyDate, String role) {
         this.username = username;
         this.aptNum = aptNum;
         this.email = email;
         this.aptResponseDto = aptResponseDto;
         this.createDate = createDate;
         this.modifyDate = modifyDate;
+        this.role = role;
     }
 }
