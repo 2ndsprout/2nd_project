@@ -7,6 +7,8 @@ import com.second_team.apt_project.repositories.LoveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class LoveService {
@@ -24,5 +26,9 @@ public class LoveService {
 
     public void delete(Love love) {
         loveRepository.delete(love);
+    }
+
+    public List<Love> findByArticle(Long id) {
+        return this.loveRepository.findByArticle(id);
     }
 }
