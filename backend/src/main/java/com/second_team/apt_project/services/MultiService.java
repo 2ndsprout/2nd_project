@@ -107,6 +107,17 @@ public class MultiService {
     /**
      * User
      */
+    @Transactional
+    private void userCheck(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        if (profile.getUser() != user)
+            throw new IllegalArgumentException("유저와 일치 X");
+    }
 
     @Transactional
     private UserResponseDTO getUserResponseDTO(SiteUser siteUser, Apt apt) {
@@ -435,11 +446,8 @@ public class MultiService {
     @Transactional
     public void deleteImageList(String username, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(username, profileId);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
         if (_multiKey.isPresent())
@@ -500,12 +508,9 @@ public class MultiService {
     @Transactional
     public ProfileResponseDTO getProfile(Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
+        this.userCheck(username, profileId);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-        if (profile.getUser() != user)
-            throw new IllegalArgumentException("프로필 유저와 일치하지 않음");
         String url = null;
         if (_fileSystem.isPresent())
             url = _fileSystem.get().getV();
@@ -541,13 +546,10 @@ public class MultiService {
     }
 
     @Transactional
-    public ProfileResponseDTO updateProfile(String username, String url, String name, Long id) {
+    public ProfileResponseDTO updateProfile(String username, String url, String name, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
-        Profile profile = profileService.findById(id);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(username, profileId);
         profileService.updateProfile(profile, name);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         String path = AptProjectApplication.getOsType().getLoc();
@@ -623,11 +625,8 @@ public class MultiService {
     @Transactional
     public ArticleResponseDTO saveArticle(Long profileId, Long categoryId, List<Long> tagId, String title, String content, String username, Boolean topActive) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(username, profileId);
         Category category = categoryService.findById(categoryId);
         if (category == null)
             throw new DataNotFoundException("카테고리 객체 없음");
@@ -650,15 +649,42 @@ public class MultiService {
         return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount);
     }
 
+
+    @Transactional
+    public ArticleResponseDTO updateArticle(Long profileId, Long articleId, Long categoryId, List<Long> tagId, String title, String content, String username, Boolean topActive) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(username, profileId);
+        Category category = categoryService.findById(categoryId);
+        if (category == null)
+            throw new DataNotFoundException("카테고리 객체 없음");
+        Article targetArticle = articleService.findById(articleId);
+        if (profile != targetArticle.getProfile())
+            throw new IllegalArgumentException("수정 권한 없음");
+        Article article = articleService.update(targetArticle, title, content, category, topActive);
+        List<TagResponseDTO> tagResponseDTOList = new ArrayList<>();
+        for (Long id : tagId){
+            Tag tag =tagService.findById(id);
+            if(tag == null)
+                throw new DataNotFoundException("태그 객체 없음");
+            articleTagService.save(article, tag);
+            tagResponseDTOList.add(tagResponseDTO(tag));
+        }
+        List<Love> loveList = loveService.findByArticle(article.getId());
+        if (loveList == null)
+            throw new DataNotFoundException("게시물 좋아요 객체 없음");
+        int loveCount = loveList.size();
+        String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
+        _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
+        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount);
+    }
+
     @Transactional
     public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user == null) {
-            throw new DataNotFoundException("유저 객체 없음");
-        }
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(username, profileId);
         Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
