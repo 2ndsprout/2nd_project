@@ -1,4 +1,3 @@
-import Main from "./MainLayout";
 
 
 export default function Home() {
@@ -6,8 +5,8 @@ export default function Home() {
 
   //   </main>
 
-  return <Main>
-    1asdasd
-  </Main>
+  return <main>
+    123fdsa
+  </main>
   
 }

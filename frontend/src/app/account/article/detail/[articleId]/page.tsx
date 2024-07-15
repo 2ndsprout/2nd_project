@@ -1,9 +1,9 @@
 'use client'
 
-import { getArticle } from '@/app/API/UserAPI'; // deleteArticle
+import { getArticle, getProfile, getUser } from '@/app/API/UserAPI'; // deleteArticle
 import { getDateTimeFormat } from '@/app/Global/Method';
 import Link from 'next/link';
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from 'react';
 
 interface Article {
@@ -28,7 +28,31 @@ export default function ArticleDetail () {
     const [article, setArticle] = useState<Article | null>(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+    const [user, setUser] = useState(null as any);
+    const [error, setError] = useState('');
+    const [profileId, setProfileId] = useState('');
+    const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+    const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    useEffect(() => {
+        if (ACCESS_TOKEN)
+            getUser()
+                .then(r => {
+                    setUser(r);
+                })
+                .catch(e => console.log(e));
+        else
+            redirect('/account/login');
+    }, [ACCESS_TOKEN]);
+    useEffect(() => {
+      if (PROFILE_ID)
+          getProfile()
+              .then(r => {
+                  setProfileId(r);
+              })
+              .catch(e => console.log(e));
+      else
+          redirect('/account/profile');
+    }, [PROFILE_ID]);
     useEffect(() => {
         console.log("articleId:", articleId);
     }, [articleId]);
@@ -104,7 +128,9 @@ export default function ArticleDetail () {
                 <div className="text-3xl font-bold mb-20 text-center">{article?.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article?.createDate)}</div>
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <p>{article?.content}</p>
+                    {/* <div dangerouslySetInnerHTML={{ __html: article.content }} />
+                    게시물 내용 */}
+                    {article?.content}
                 </div>
                 <div>
                     좋아요 댓글수

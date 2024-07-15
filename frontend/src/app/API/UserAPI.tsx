@@ -198,11 +198,12 @@ export const deleteCategory = async (data: number) => {
 
 // Article
 
-// export const getArticleList = async ( categoryId: number ) => {
-//     const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
-//     console.log("Sending request with CategoryId:", categoryId);
-//     return response.data;
-// }
+export const getArticleList = async ( categoryId: number ) => {
+    const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
+    console.log("Sending request with CategoryId:", categoryId);
+    return response.data;
+}
+
 
 export const getArticle = async ( data: number ) => {
     const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data }} );
@@ -210,30 +211,40 @@ export const getArticle = async ( data: number ) => {
     return response.data
 }
 
+
 interface PostArticleProps {
     title: string;
     content: string;
     categoryId: number;
 }
 
-export const PostArticle = async (data: PostArticleProps) => {
+export const postArticle = async (data: PostArticleProps) => {
     const response = await UserApi.post(`/api/article`, data);
     console.log("Sending request with ArticleId:", data);
     return response.data;
 }
 
-// interface putArticle {
-//     articleId: number;
-//     title: String;
-//     content: String;
-// }
+// Tag
 
-// export const updateArticle = async (data: putArticle ) => {
-//     const response = await UserApi.put('/api/article', data);
-//     return response.data;
-// };
+interface TagProps {
+    name: string
+}
 
-// export const deleteArticle = async (data: number) => {
-//     const response = await UserApi.delete('/api/article', { headers: { ArticleId: data } });
-//     return response.data;
-// }
+export const postTag = async (data: TagProps) => {
+    const response = await UserApi.post('/api/tag', data);
+    return response.data;
+}
+
+export const getTagList = async (data: number) => {
+    const response = await UserApi.get('/api/tag/list', {headers: {'articleId': data}});
+    return response.data;
+}
+
+export const getTag = async (data: number) => {
+    const response = await UserApi.get('/api/tag', {headers: {'tagId': data}});
+    return response.data;
+}
+
+export const deleteTag = async (data: number) => {
+    await UserApi.delete('/api/tag', {headers: {'tagId': data}});
+}

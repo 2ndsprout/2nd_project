@@ -5,10 +5,14 @@ import com.second_team.apt_project.dtos.ArticleResponseDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,6 +39,26 @@ public class ArticleController {
         return tokenRecord.getResponseEntity();
     }
 
+    @PutMapping
+    public ResponseEntity<?> updateArticle(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader("ArticleId") Long articleId,
+                                           @RequestBody ArticleRequestDTO articleRequestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                ArticleResponseDTO articleResponseDTO = this.multiService.updateArticle(profileId, articleId,
+                        articleRequestDTO.getCategoryId(), articleRequestDTO.getTagId(), articleRequestDTO.getTitle(),
+                        articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
+                return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
     @GetMapping
     public ResponseEntity<?> articleDetail(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
@@ -47,6 +71,25 @@ public class ArticleController {
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
         } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> articleList(@RequestHeader("Authorization") String accessToken,
+                                         @RequestHeader("PROFILE_ID") Long profileId,
+                                         @RequestHeader("Page") int page,
+                                         @RequestHeader("AptId") Long aptId,
+                                         @RequestHeader("CategoryId") Long categoryId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId, aptId, categoryId);
+                return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
