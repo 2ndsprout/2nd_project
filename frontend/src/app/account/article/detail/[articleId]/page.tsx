@@ -23,7 +23,7 @@ export default function ArticleDetail () {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [user, setUser] = useState(null as any);
     const [error, setError] = useState('');
-    const [profileId, setProfileId] = useState('');
+    const [profile, setProfile] = useState(null as any);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     useEffect(() => {
@@ -40,7 +40,7 @@ export default function ArticleDetail () {
       if (PROFILE_ID)
           getProfile()
               .then(r => {
-                  setProfileId(r);
+                  setProfile(r);
               })
               .catch(e => console.log(e));
       else
