@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { getAPI } from './AxiosAPI';
 
 
@@ -37,6 +36,7 @@ UserApi.interceptors.response.use((response) => {
             window.location.href = '/account/profile';
             return;
         }
+    console.log(error);
     return Promise.reject(error);
 });
 // 토큰 갱신
@@ -198,23 +198,29 @@ export const deleteCategory = async (data: number) => {
 
 // Article
 
-export const getArticleList = async ( categoryId: number ) => {
-    const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
-    console.log("Sending request with CategoryId:", categoryId);
-    return response.data;
-}
+// export const getArticleList = async ( categoryId: number ) => {
+//     const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
+//     console.log("Sending request with CategoryId:", categoryId);
+//     return response.data;
+// }
 
-export const getArticle = async ( articleId: number ) => {
-    const response = await UserApi.get('api/article/detail', { headers: { ArticleId: articleId }} )
-    console.log("Sending request with ArticleId:", articleId);
+export const getArticle = async ( data: number ) => {
+    const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data }} );
+    console.log("Sending request with ArticleId:", data);
     return response.data
 }
 
-// export const postArticle = async (data: postArticle, categoryId: number ) => {
-//     const response = await UserApi.post('/api/article', data, { headers: { CategoryId: categoryId} });
-//     console.log(data, categoryId);
-//     return response.data;
-// };
+interface PostArticleProps {
+    title: string;
+    content: string;
+    categoryId: number;
+}
+
+export const PostArticle = async (data: PostArticleProps) => {
+    const response = await UserApi.post(`/api/article`, data);
+    console.log("Sending request with ArticleId:", data);
+    return response.data;
+}
 
 // interface putArticle {
 //     articleId: number;
