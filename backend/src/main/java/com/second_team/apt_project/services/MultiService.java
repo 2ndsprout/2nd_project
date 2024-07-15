@@ -640,14 +640,17 @@ public class MultiService {
             articleTagService.save(article, tag);
             tagResponseDTOList.add(tagResponseDTO(tag));
         }
+        List<Love> loveList = loveService.findByArticle(article.getId());
+        if (loveList == null)
+            throw new DataNotFoundException("게시물 좋아요 객체 없음");
+        int loveCount = loveList.size();
         String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
-        ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList);
-        return articleResponseDTO;
+        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount);
     }
 
-
+    @Transactional
     public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username) {
         SiteUser user = userService.get(username);
         if (user == null) {
@@ -667,15 +670,20 @@ public class MultiService {
             Tag tag = tagService.findById(articleTag.getTag().getId());
             responseDTOList.add(tagResponseDTO(tag));
         }
+        List<Love> loveList = loveService.findByArticle(article.getId());
+        if (loveList == null)
+            throw new DataNotFoundException("게시물 좋아요 객체 없음");
+        int loveCount = loveList.size();
         String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
-        return this.getArticleResponseDTO(article, profileUrl, responseDTOList);
+        return this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount);
     }
 
-    private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList) {
+    private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList, int loveCount) {
         return ArticleResponseDTO.builder()
                 .articleId(article.getId())
                 .title(article.getTitle())
                 .content(article.getContent())
+                .loveCount(loveCount)
                 .createDate(this.dateTimeTransfer(article.getCreateDate()))
                 .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
                 .categoryName(article.getCategory().getName())

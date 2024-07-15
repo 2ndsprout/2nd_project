@@ -5,19 +5,12 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.QSiteUser;
 import com.second_team.apt_project.domains.SiteUser;
-import com.second_team.apt_project.dtos.UserResponseDTO;
-import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.repositories.customs.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
-import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
