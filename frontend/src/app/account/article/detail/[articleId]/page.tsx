@@ -7,13 +7,20 @@ import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from 'react';
 
 interface Article {
-    id?: number;
+    articleId: number;
     title: string;
     content: string;
-    categoryId: number;
     createDate: number;
-    // profile?: Profile;
-    authorName: string;
+    categoryName: string;
+    profileResponseDTO: {
+        id: number;
+        name: string;
+        username: string;
+        url: string | null;
+    };
+    urlList: string[] | null;
+    topActive: boolean;
+    tagResponseDTOList: any[];
 }
 
 export default function ArticleDetail () {
@@ -47,18 +54,22 @@ export default function ArticleDetail () {
           redirect('/account/profile');
     }, [PROFILE_ID]);
     useEffect(() => {
+        console.log("articleId:", articleId);
+    }, [articleId]);
+
+    useEffect(() => {
         const fetchArticle = async () => {
             try {
-                const fetchedArticle = await getArticle(Number(articleId));
-                setArticle(fetchedArticle);
+                if (articleId) {
+                    const fetchedArticle = await getArticle(Number(articleId));
+                    setArticle(fetchedArticle);
+                }
             } catch (error) {
                 console.error('Error fetching article:', error);
             }
         };
-
-        if (articleId) {
-            fetchArticle();
-        }
+    
+        fetchArticle();
     }, [articleId]);
 
     useEffect(() => {
@@ -80,9 +91,9 @@ export default function ArticleDetail () {
         };
     }, [dropdownOpen]);
 
-    if (!article) {
-        return <div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>;
-    }
+    // if (!article) {
+    //     return <div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>;
+    // }
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
@@ -100,34 +111,35 @@ export default function ArticleDetail () {
         //     })
         //     .catch(e => console.log(e));
         setShowDeleteConfirm(false);
-        window.location.href = `/account/article/${article.categoryId}/`;
+        // window.location.href = `/account/article/${article.categoryId}/`;
         // 페이지 리다이렉트 등 추가 작업 필요
     };
 
-    console.log(article.id)
+    console.log(article?.articleId)
     return (
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 flex flex-col items-center">
                 <div className="mt-5 flex justify-center">
                     <img src='/user.png' className='w-10 h-10 mb-2' alt="로고" />
-                    <div className="mt-2 ml-5 text-lg font-semibold">{article.authorName || '알 수 없음'}</div>
+                    <div className="mt-2 ml-5 text-lg font-semibold">{article?.profileResponseDTO.name || '알 수 없음'}</div>
                 </div>
             </aside>
             <div className="flex-1 p-10">
-                <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
-                <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
+                <div className="text-3xl font-bold mb-20 text-center">{article?.title}</div>
+                <div className="text-end mb-2">{getDateTimeFormat(article?.createDate)}</div>
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <div dangerouslySetInnerHTML={{ __html: article.content }} />
-                    {/* 게시물 내용 */}
+                    {/* <div dangerouslySetInnerHTML={{ __html: article.content }} />
+                    게시물 내용 */}
+                    {article?.content}
                 </div>
                 <div>
                     좋아요 댓글수
                     {/* 좋아요 댓글수 표시, 댓글 입력창*/}
                 </div>
                 <div className="mt-6">
-                    <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
+                    {/* <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
                         돌아가기
-                    </Link>
+                    </Link> */}
                 </div>
             </div>
             <aside className="w-1/6 p-6 flex flex-col items-start">

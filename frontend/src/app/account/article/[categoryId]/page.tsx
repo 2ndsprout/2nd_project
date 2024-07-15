@@ -8,14 +8,18 @@ import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Article {
-    id?: number;
+    id: number;
     title: string;
     content: string;
-    categoryId: number;
-    createDate: string;
-    authorName: string;
+    createDate: number;
+    categoryName: string;
+    profileResponseDTO: {
+        id: number;
+        name: string;
+        username: string;
+        url: string | null;
+    };
 }
-
 export default function ArticleListPage() {
     const [articleList, setArticleList] = useState<Article[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +33,7 @@ export default function ArticleListPage() {
     const displayedArticles = filteredArticles.slice(startIndex, endIndex);  // .map으로 나열하기 전 받아온 JSON데이터 리스트(우측).slice의 결과물을 좌측((displayedArticles).map)에 선언.
     const [user, setUser] = useState(null as any);
     const [error, setError] = useState('');
-    const [profileId, setProfileId] = useState('');
+    const [profile, setProfile] = useState('');
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     useEffect(() => {
@@ -46,7 +50,7 @@ export default function ArticleListPage() {
       if (PROFILE_ID)
           getProfile()
               .then(r => {
-                  setProfileId(r);
+                  setProfile(r);
               })
               .catch(e => console.log(e));
       else
@@ -111,7 +115,7 @@ export default function ArticleListPage() {
                       {article.title}
                     </Link>
                   </td>
-                  <td className="p-4 text-left">{article.authorName}</td>
+                  <td className="p-4 text-left">{article.profileResponseDTO.name}</td>
                   <td className="p-4 text-right text-gray-400">{getDate(article.createDate)}</td>
                 </tr>
               ))}
