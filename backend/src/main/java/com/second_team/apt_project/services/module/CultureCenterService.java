@@ -16,9 +16,9 @@ import java.util.List;
 public class CultureCenterService {
     private final CultureCenterRepository cultureCenterRepository;
 
-    public CultureCenter save(CenterType type, Time endDate, Time startDate) {
+    public CultureCenter save(int type, Time endDate, Time startDate) {
         return cultureCenterRepository.save(CultureCenter.builder()
-                .centerType(type)
+                .centerType(CenterType.values()[type])
                 .openTime(startDate)
                 .closeTime(endDate)
                 .build());
@@ -28,8 +28,8 @@ public class CultureCenterService {
         return cultureCenterRepository.findById(centerId).orElse(null);
     }
 
-    public void update(CultureCenter cultureCenter, CenterType type, Time endDate, Time startDate) {
-        cultureCenter.setCenterType(type);
+    public void update(CultureCenter cultureCenter, int type, Time endDate, Time startDate) {
+        cultureCenter.setCenterType(CenterType.values()[type]);
         cultureCenter.setOpenTime(startDate);
         cultureCenter.setCloseTime(endDate);
         cultureCenter.setModifyDate(LocalDateTime.now());
