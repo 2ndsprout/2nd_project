@@ -678,6 +678,40 @@ public class MultiService {
         return this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount);
     }
 
+    @Transactional
+    public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long aptId, Long categoryId) {
+        SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        if (profile == null)
+            throw new DataNotFoundException("프로필 객체 없음");
+        if (!user.getApt().getId().equals(aptId)) {
+            throw new IllegalArgumentException("해당 아파트의 주민이 아닙니다.");
+        }
+        Pageable pageable = PageRequest.of(page, 20);
+        Page<Article> articleList = articleService.getArticleList(pageable, aptId, categoryId);
+        List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
+        for (Article article : articleList) {
+            List<ArticleTag> articleTagList = articleTagService.getArticle(article);
+            if (articleTagList == null)
+                throw new DataNotFoundException("게시물태그 객체 없음");
+            List<TagResponseDTO> responseDTOList = new ArrayList<>();
+            for (ArticleTag articleTag : articleTagList) {
+                Tag tag = tagService.findById(articleTag.getTag().getId());
+                responseDTOList.add(tagResponseDTO(tag));
+            }
+            List<Love> loveList = loveService.findByArticle(article.getId());
+            if (loveList == null)
+                throw new DataNotFoundException("게시물 좋아요 객체 없음");
+            int loveCount = loveList.size();
+            String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
+            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount);
+            articleResponseDTOList.add(articleResponseDTO);
+        }
+        return new PageImpl<>(articleResponseDTOList, pageable, articleList.getTotalElements());
+    }
+
     private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList, int loveCount) {
         return ArticleResponseDTO.builder()
                 .articleId(article.getId())
@@ -696,6 +730,7 @@ public class MultiService {
                 .topActive(article.getTopActive())
                 .build();
     }
+
     private void updateArticleContent(Article article, MultiKey multiKey) {
         String content = article.getContent();
         for (String keyName : multiKey.getVs()) {
