@@ -38,6 +38,7 @@ export default function Page() {
         else
             redirect('/account/login');
     }, [ACCESS_TOKEN]);
+    
     useEffect(() => {
       if (PROFILE_ID)
           getProfile()

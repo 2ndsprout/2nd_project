@@ -103,9 +103,14 @@ export const deleteUser = async () => {
 }
 
 interface ProfileProps {
-    id: number,
     name: string,
     url: string,
+}
+
+interface UpdateProfileProps {
+    id: number,
+    name: string,
+    url: string
 }
 
 export const postProfile = async (data: ProfileProps) => {
@@ -123,7 +128,7 @@ export const getProfile = async () => {
     return response.data;
 }
 
-export const upateProfile = async (data: ProfileProps) => {
+export const upateProfile = async (data: UpdateProfileProps) => {
     const response = await UserApi.put('/api/profile', data);
     return response.data;
 }
