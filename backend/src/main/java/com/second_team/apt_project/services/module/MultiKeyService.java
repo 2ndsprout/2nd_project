@@ -29,9 +29,9 @@ public class MultiKeyService {
 
     }
 
-    public void add(MultiKey multiKey, String s) {
+    public MultiKey add(MultiKey multiKey, String s) {
         multiKey.getVs().add(s);
-        multiKeyRepository.save(multiKey);
+        return multiKeyRepository.save(multiKey);
     }
 
     public void delete(MultiKey multiKey) {
