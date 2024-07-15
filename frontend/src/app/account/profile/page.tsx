@@ -57,9 +57,15 @@ export default function Page() {
     }
 
     function Regist() {
-        postProfile({ name: name, url: url })
-            .then(() => window.location.href = '/account/profile')
-            .catch(e => console.log(e))
+        if (profileList.length <= 6) {
+            postProfile({ name: name, url: url })
+                .then(() => window.location.href = '/account/profile')
+                .catch(e => console.log(e))
+        }
+        else {
+            alert('프로필은 최대 6개까지 등록 가능합니다.')
+            window.location.href = '/account/profile'
+        }
     }
 
     return (
@@ -70,10 +76,10 @@ export default function Page() {
                     <button className="btn btn-active btn-info" onClick={() => openModal(0)}>프로필 생성</button>
                 </div>
                 <div className="h-[20%]">
-                    <a href="/" className="w-full flex flex-col items-center py-3">
+                    <div className="w-full flex flex-col items-center py-3">
                         <img src='/user.png' className='w-36 h-36 mb-2' alt="로고" />
                         <label className="font-bold text-2xl text-white">Honey Danji</label>
-                    </a>
+                    </div>
                 </div>
                 <div className="flex flex-wrap justify-center mx-auto mt-10 w-full">
                     {profileList?.map((profile, index) => (
