@@ -34,4 +34,12 @@ public class ArticleService {
     public Page<Article> getArticleList(Pageable pageable, Long aptId, Long categoryId) {
         return this.articleRepository.findByArticleList(pageable, aptId, categoryId);
     }
+
+    public Article update(Article targetArticle, String title, String content, Category category, Boolean topActive) {
+        targetArticle.setTitle(title);
+        targetArticle.setContent(content);
+        targetArticle.setCategory(category);
+        targetArticle.setTopActive(topActive);
+        return this.articleRepository.save(targetArticle);
+    }
 }
