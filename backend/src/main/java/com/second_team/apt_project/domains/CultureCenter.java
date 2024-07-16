@@ -1,16 +1,12 @@
 package com.second_team.apt_project.domains;
 
 import com.second_team.apt_project.enums.CenterType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,17 +19,23 @@ public class CultureCenter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Time openTime;
+    private LocalDateTime openTime;
 
-    private Time closeTime;
+    private LocalDateTime closeTime;
 
     private CenterType centerType;
+
     private LocalDateTime createDate;
+
     private LocalDateTime modifyDate;
 
+    @ManyToOne
+    private Apt apt;
+
     @Builder
-    public CultureCenter(Time openTime, Time closeTime, CenterType centerType) {
+    public CultureCenter(LocalDateTime openTime, LocalDateTime closeTime, CenterType centerType, Apt apt) {
         this.createDate = LocalDateTime.now();
+        this.apt = apt;
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.centerType = centerType;
