@@ -410,7 +410,7 @@ public class MultiService {
 
             Files.createDirectories(newPath.getParent());
             Files.move(tempPath, newPath);
-            File file = tempPath.toFile()
+            File file = tempPath.toFile();
             if (file.getParentFile().list().length == 0)
                 this.deleteFolder(file.getParentFile());
             else
@@ -778,8 +778,9 @@ public class MultiService {
 
     @Transactional
     public CommentResponseDTO saveComment(String username, Long articleId, Long parentId, Long profileId, String content) {
-        this.userCheck(username, profileId);
+        SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null) throw new DataNotFoundException("게시물 객체 없음");
         Comment comment = commentService.saveComment(article, profile, content, parentId);
@@ -790,8 +791,9 @@ public class MultiService {
 
     @Transactional
     public CommentResponseDTO updateComment(String username, Long profileId, Long commentId, String content) {
-        this.userCheck(username, profileId);
+        SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
         Comment comment = commentService.updateComment(commentId, content);
         if (!profile.equals(comment.getProfile())) throw new IllegalArgumentException("작성자의 프로필이 일치하지 않습니다");
         return this.commentResponseDTO(comment, profile);
@@ -799,8 +801,9 @@ public class MultiService {
 
     @Transactional
     public void deleteComment(String username, Long profileId, Long commentId) {
-        this.userCheck(username, profileId);
+        SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
         Comment comment = commentService.findByComment(commentId);
         if (comment == null)
             throw new DataNotFoundException("댓글 객체 없음");
