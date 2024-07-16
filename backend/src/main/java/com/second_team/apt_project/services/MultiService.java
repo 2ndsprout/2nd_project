@@ -47,6 +47,7 @@ public class MultiService {
     private final TagService tagService;
     private final ArticleTagService articleTagService;
     private final LoveService loveService;
+    private final CommentService commentService;
 
     /**
      * Auth
@@ -195,9 +196,7 @@ public class MultiService {
         Apt apt = aptService.get(user1.getApt().getId());
         if (apt == null)
             throw new DataNotFoundException("apt not data");
-        UserResponseDTO userResponseDTO = getUserResponseDTO(user1, apt);
-
-        return userResponseDTO;
+        return this.getUserResponseDTO(user1, apt);
     }
 
 
@@ -643,10 +642,18 @@ public class MultiService {
         if (loveList == null)
             throw new DataNotFoundException("게시물 좋아요 객체 없음");
         int loveCount = loveList.size();
+        List<Comment> commentList = commentService.getComment(article.getId());
+        if (commentList == null)
+            throw new DataNotFoundException("댓글 객체 없음");
+        List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
+            commentResponseDTOList.add(commentResponseDTO);
+        }
         String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
-        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount);
+        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount, commentResponseDTOList);
     }
 
 
@@ -674,10 +681,18 @@ public class MultiService {
         if (loveList == null)
             throw new DataNotFoundException("게시물 좋아요 객체 없음");
         int loveCount = loveList.size();
+        List<Comment> commentList = commentService.getComment(article.getId());
+        if (commentList == null)
+            throw new DataNotFoundException("댓글 객체 없음");
+        List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
+            commentResponseDTOList.add(commentResponseDTO);
+        }
         String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
-        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount);
+        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount, commentResponseDTOList);
     }
 
     @Transactional
@@ -700,23 +715,28 @@ public class MultiService {
         if (loveList == null)
             throw new DataNotFoundException("게시물 좋아요 객체 없음");
         int loveCount = loveList.size();
+        List<Comment> commentList = commentService.getComment(article.getId());
+        if (commentList == null)
+            throw new DataNotFoundException("댓글 객체 없음");
+        List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
+        for (Comment comment : commentList) {
+            CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
+            commentResponseDTOList.add(commentResponseDTO);
+        }
         String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
-        return this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount);
+        return this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount, commentResponseDTOList);
     }
 
     @Transactional
-    public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long aptId, Long categoryId) {
+    public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long categoryId) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
-        if (!user.getApt().getId().equals(aptId)) {
-            throw new IllegalArgumentException("해당 아파트의 주민이 아닙니다.");
-        }
         Pageable pageable = PageRequest.of(page, 20);
-        Page<Article> articleList = articleService.getArticleList(pageable, aptId, categoryId);
+        Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId);
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
             List<ArticleTag> articleTagList = articleTagService.getArticle(article);
@@ -731,14 +751,22 @@ public class MultiService {
             if (loveList == null)
                 throw new DataNotFoundException("게시물 좋아요 객체 없음");
             int loveCount = loveList.size();
+            List<Comment> commentList = commentService.getComment(article.getId());
+            if (commentList == null)
+                throw new DataNotFoundException("댓글 객체 없음");
+            List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
+            for (Comment comment : commentList) {
+                CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
+                commentResponseDTOList.add(commentResponseDTO);
+            }
             String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
-            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount);
+            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount, commentResponseDTOList);
             articleResponseDTOList.add(articleResponseDTO);
         }
         return new PageImpl<>(articleResponseDTOList, pageable, articleList.getTotalElements());
     }
 
-    private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList, int loveCount) {
+    private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList, int loveCount, List<CommentResponseDTO> commentResponseDTOList) {
         return ArticleResponseDTO.builder()
                 .articleId(article.getId())
                 .title(article.getTitle())
@@ -754,6 +782,7 @@ public class MultiService {
                         .name(article.getProfile().getName()).build())
                 .tagResponseDTOList(responseDTOList)
                 .topActive(article.getTopActive())
+                .commentResponseDTOList(commentResponseDTOList)
                 .build();
     }
 
@@ -820,6 +849,39 @@ public class MultiService {
                 .createDate(this.dateTimeTransfer(category.getCreateDate())).build();
     }
 
+    /**
+     * Comment
+     */
+
+    @Transactional
+    private CommentResponseDTO commentResponseDTO(Comment comment, Profile profile) {
+        return CommentResponseDTO.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .articleId(comment.getArticle().getId())
+                .profileResponseDTO(ProfileResponseDTO.builder()
+                        .id(profile.getId())
+                        .name(profile.getName())
+                        .url(profileUrl(profile.getName(), profile.getId()))
+                        .username(profile.getUser().getUsername())
+                        .build())
+                .createDate(this.dateTimeTransfer(comment.getCreateDate()))
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .build();
+    }
+
+    @Transactional
+    public CommentResponseDTO saveComment(String username, Long articleId, Long parentId, Long profileId, String content) {
+        this.userCheck(username, profileId);
+        Profile profile = profileService.findById(profileId);
+        Article article = articleService.findById(articleId);
+        if (article == null)
+            throw new DataNotFoundException("게시물 객체 없음");
+        Comment comment = commentService.saveComment(article, profile, content, parentId);
+        if (comment.getParent().getArticle().getId() != article.getId())
+            throw new DataNotFoundException("부모 댓글의 게시글 객체와 해당 게시글 객체가 다름");
+        return this.commentResponseDTO(comment, profile);
+    }
 
     /**
      * Love

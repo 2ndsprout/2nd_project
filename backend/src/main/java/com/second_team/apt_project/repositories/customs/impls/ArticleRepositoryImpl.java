@@ -26,7 +26,7 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                 .leftJoin(qArticle.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qApt.id.eq(aptId).and(qCategory.id.eq(categoryId)));
+                .where(qApt.id.eq(aptId).and(qArticle.topActive.eq(false)).and(qCategory.id.eq(categoryId)));
 
         QueryResults<Article> results = query.fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());

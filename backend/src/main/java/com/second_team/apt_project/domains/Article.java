@@ -44,5 +44,6 @@ public class Article {
         this.content = content;
         this.topActive = topActive;
         this.createDate = LocalDateTime.now();
+        this.modifyDate = LocalDateTime.now();
     }
 }
