@@ -11,7 +11,7 @@ UserApi.interceptors.request.use(
         const PROFILE_ID = localStorage.getItem('PROFILE_ID');
         config.headers['Authorization'] = `${TOKEN_TYPE} ${ACCESS_TOKEN}`;
         config.headers['REFRESH_TOKEN'] = REFRESH_TOKEN;
-        config.headers['PROFILE_ID'] = Number(PROFILE_ID);
+        config.headers['PROFILE_ID'] = `${PROFILE_ID}`;
         return config;
     },
     (error) => {
@@ -82,16 +82,26 @@ export const getUserList = async (data: number) => {
     return response.data;
 }
 interface UpdateProps {
+    name: string,
+    aptId: number,
+    aptNumber: number,
     email: string,
     password: string,
-    newPassword: string,
-    url: string
+    role: number
 }
-// 유저정보 수정
-export const updateUser = async (data: UpdateProps) => {
+interface UpdateEmailProps {
+    email: string
+}
+
+export const updateEmail = async (data: UpdateEmailProps) => {
     const response = await UserApi.put('/api/user', data);
     return response.data;
 }
+// // 유저정보 수정
+// export const updateUser = async (data: UpdateProps) => {
+//     const response = await UserApi.put('/api/user', data);
+//     return response.data;
+// }
 // 비밀번호 수정
 export const updateUserPassword = async (data: UpdateProps) => {
     const response = await UserApi.put('/api/user/password', data);

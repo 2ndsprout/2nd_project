@@ -21,11 +21,17 @@ export default function Page() {
                 console.log("login success!");
                 window.location.href = `/account/profile/`;
             }).catch((error) => {
-                switch (error.response.data) {
-                    case 'username': { setError('아이디가 잘못되었습니다.'); break; }
-                    case 'password': { setError('잘못된 비밀번호입니다.'); break; }
-                    default:
-                        console.log(error);
+                if (error.response && error.response.data) {
+                    switch (error.response.data) {
+                        case 'username':
+                        case 'password':
+                            setError('아이디 또는 비밀번호를 다시 확인해주세요.');
+                            break;
+                        default:
+                            console.log(error);
+                    }
+                } else {
+                    console.log('Unexpected error:', error);
                 }
             });
     }
@@ -34,7 +40,7 @@ export default function Page() {
         <div className='bg-black min-h-screen w-full flex items-center justify-center'>
             <div className='flex flex-col items-center justify-center relative'>
                 <a href='/'><img src='/user.png' className='w-40 h-40 mb-5' alt='로고' /></a>
-                <label className='text-xs text-red-500 text-start w-[396px]'>{error}</label>
+                <label className='text-xs text-red-500 text-center w-[396px]'>{error}</label>
                 <div className='flex items-start'>
                     <div className='flex flex-col items-center'>
                         <input id='username' type='text' className='w-[396px] h-[46px] input input-bordered rounded-[0] mb-[10px] text-black'
@@ -59,7 +65,7 @@ export default function Page() {
                 </div>
                 <div className='flex justify-evenly w-[396px] mt-[12px]'>
                     <a>관리자 문의</a>
-                    <a>비밀번호 변경</a>
+                    <a>비밀번호 찾기</a>
                 </div>
                 <label className='text-gray-400 text-sm mt-[50px]'>Copyright © 2024 Honeydanji Co.,Ltd. All Rights Reserved.</label>
             </div>

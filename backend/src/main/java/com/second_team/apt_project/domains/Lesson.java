@@ -35,6 +35,10 @@ public class Lesson {
     private LocalDateTime createDate;
     private LocalDateTime modifyDate;
 
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
+
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;

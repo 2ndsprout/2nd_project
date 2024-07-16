@@ -11,6 +11,12 @@ export function KeyDownCheck({ preKey, setPreKey, e, pre, next }: { preKey: stri
     else if (preKey != null)
         setPreKey('');
 }
+export function checkInput(check: any, pattern: string, True: () => void, False: () => void) {
+    if (new RegExp(pattern).test(check.target.value))
+        True();
+    else
+        False();
+}
 export function Check(pattern: string, test: string) {
     return new RegExp(pattern).test(test);
 }
