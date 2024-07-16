@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import Main from "./Global/layout/MainLayout";
 import { redirect } from "next/navigation";
 import { getApt, getProfile, getUser } from "./API/UserAPI";
+import Main from "./Global/layout/MainLayout";
+
 
 interface pageProps {
   categories: any[];
@@ -23,11 +24,6 @@ export default function Page(props: pageProps) {
       getUser()
         .then(r => {
           setUser(r);
-          getApt(r.aptResponseDto.aptId)
-            .then(r => {
-              setApt(r);
-            })
-            .catch(e => console.log(e));
         })
         .catch(e => console.log(e));
     else
@@ -45,10 +41,8 @@ export default function Page(props: pageProps) {
       redirect('/account/profile');
   }, [PROFILE_ID]);
 
-  console.log(user, profile, apt);
-
   return <Main user={user} profile={profile} categories={categories}>
     fdsa
-    </Main>
+  </Main>
 
 }

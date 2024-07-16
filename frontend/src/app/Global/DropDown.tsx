@@ -32,16 +32,16 @@ const DropDown = (props: DropProps) => {
     if (background && button) {
         switch (direction) {
             case Direcion.UP:
-                position = { top: button.y - background.y - props.height - button.height / 2 - y, left: x + button.x, width: props.width + 'px', height: props.height + 'px' };
+                position = { top: button.y - background.y - props.height - button.height / 2 + y, left: x + button.x, width: props.width + 'px', height: props.height + 'px' };
                 break;
             case Direcion.DOWN:
-                position = { top: button.y - background.y + button.height - y, left: x + button.x, width: props.width + 'px', height: props.height + 'px' };
+                position = { top: button.y - background.y + button.height + y, left: x + button.x, width: props.width + 'px', height: props.height + 'px' };
                 break;
             case Direcion.LEFT:
-                position = { left: button.x - background.x - props.width + x, top: button.y - background.y - button.height - y, width: props.width + 'px', height: props.height + 'px' };
+                position = { left: button.x - background.x - props.width + x, top: button.y - background.y - button.height + y, width: props.width + 'px', height: props.height + 'px' };
                 break;
             case Direcion.RIGHT:
-                position = { left: button.x - background.x + button.width + x, top: button.y - background.y - button.height - y, width: props.width + 'px', height: props.height + 'px' };
+                position = { left: button.x - background.x + button.width + x, top: button.y - background.y - button.height + y, width: props.width + 'px', height: props.height + 'px' };
                 break;
         }
     }
