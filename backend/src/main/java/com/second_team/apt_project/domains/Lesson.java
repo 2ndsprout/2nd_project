@@ -42,8 +42,6 @@ public class Lesson {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
 
     @Builder
     public Lesson(Profile profile, CultureCenter cultureCenter, String name, String content, LocalDateTime startDate, LocalDateTime endDate, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime modifyDate) {

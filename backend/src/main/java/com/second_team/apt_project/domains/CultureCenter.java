@@ -31,8 +31,6 @@ public class CultureCenter {
     @ManyToOne(fetch = FetchType.LAZY)
     private Apt apt;
 
-    @ManyToOne
-    private Apt apt;
 
     @Builder
     public CultureCenter(LocalDateTime openTime, LocalDateTime closeTime, CenterType centerType, Apt apt) {
