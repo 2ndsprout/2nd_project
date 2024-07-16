@@ -35,4 +35,21 @@ public class CommentService {
         return commentRepository.getComment(articleId);
     }
 
+    public Comment updateComment(Long commentId, String content) {
+        Comment comment = commentRepository.findById(commentId).orElse(null);
+        comment.setContent(content);
+        return this.commentRepository.save(comment);
+    }
+
+    public void deleteComment(Comment comment) {
+        commentRepository.delete(comment);
+    }
+
+    public Comment findByComment(Long commentId) {
+        return this.commentRepository.findById(commentId).orElse(null);
+    }
+
+    public List<Comment> findByCommentList(Long commentId) {
+        return this.commentRepository.findByChildren(commentId);
+    }
 }

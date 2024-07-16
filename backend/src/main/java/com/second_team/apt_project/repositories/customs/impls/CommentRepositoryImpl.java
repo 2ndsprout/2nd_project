@@ -25,4 +25,9 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         return Optional.ofNullable(jpaQueryFactory.selectFrom(qComment).where(qComment.id.eq(parentId)).fetchOne());
     }
 
+    @Override
+    public List<Comment> findByChildren(Long commentId) {
+        return jpaQueryFactory.selectFrom(qComment).where(qComment.parent.id.eq(commentId)).fetch();
+    }
+
 }
