@@ -1,9 +1,13 @@
 package com.second_team.apt_project.repositories.customs.impls;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.repositories.customs.LessonRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -16,11 +20,12 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
     QSiteUser qSiteUser = QSiteUser.siteUser;
 
     @Override
-    public List<Lesson> findByApt(Long aptId) {
-        return jpaQueryFactory.selectFrom(qLesson)
+    public Page<Lesson> findByApt(Long aptId,  Pageable pageable) {
+        QueryResults<Lesson> results = jpaQueryFactory.selectFrom(qLesson)
                 .leftJoin(qLesson.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qApt.id.eq(aptId)).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).fetch();
+                .where(qApt.id.eq(aptId)).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+        return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 }

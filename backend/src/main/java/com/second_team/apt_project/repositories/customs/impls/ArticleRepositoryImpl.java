@@ -21,12 +21,12 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
     QCategory qCategory = QCategory.category;
 
     @Override
-    public Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId) {
+    public Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId, Boolean topActive) {
         JPAQuery<Article> query = jpaQueryFactory.selectFrom(qArticle)
                 .leftJoin(qArticle.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qApt.id.eq(aptId).and(qCategory.id.eq(categoryId)));
+                .where(qArticle.topActive.eq(topActive).and(qApt.id.eq(aptId)).and(qCategory.id.eq(categoryId)));
 
         QueryResults<Article> results = query.fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
