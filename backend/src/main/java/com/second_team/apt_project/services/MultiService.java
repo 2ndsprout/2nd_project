@@ -118,11 +118,9 @@ public class MultiService {
      * User
      */
     @Transactional
-    private void userCheck(String username, Long profileId) {
-        SiteUser user = userService.get(username);
+    private void userCheck(SiteUser user, Profile profile) {
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
-        Profile profile = profileService.findById(profileId);
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
         if (profile.getUser() != user)
@@ -469,7 +467,7 @@ public class MultiService {
     public void deleteImageList(String username, Long profileId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
-        this.userCheck(username, profileId);
+        this.userCheck(user, profile);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
         if (_multiKey.isPresent())
@@ -531,7 +529,7 @@ public class MultiService {
     public ProfileResponseDTO getProfile(Long profileId, String username) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
-        this.userCheck(username, profileId);
+        this.userCheck(user, profile);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         String url = null;
         if (_fileSystem.isPresent())
@@ -571,7 +569,7 @@ public class MultiService {
     public ProfileResponseDTO updateProfile(String username, String url, String name, Long profileId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
-        this.userCheck(username, profileId);
+        this.userCheck(user, profile);
         profileService.updateProfile(profile, name);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         String path = AptProjectApplication.getOsType().getLoc();
@@ -689,7 +687,7 @@ public class MultiService {
     public ArticleResponseDTO saveArticle(Long profileId, Long categoryId, List<Long> tagId, String title, String content, String username, Boolean topActive) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
-        this.userCheck(username, profileId);
+        this.userCheck(user, profile);
         Category category = categoryService.findById(categoryId);
         if (category == null)
             throw new DataNotFoundException("카테고리 객체 없음");
@@ -717,7 +715,7 @@ public class MultiService {
     public ArticleResponseDTO updateArticle(Long profileId, Long articleId, Long categoryId, List<Long> tagId, String title, String content, String username, Boolean topActive) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
-        this.userCheck(username, profileId);
+        this.userCheck(user, profile);
         Category category = categoryService.findById(categoryId);
         if (category == null)
             throw new DataNotFoundException("카테고리 객체 없음");
@@ -747,7 +745,7 @@ public class MultiService {
     public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
-        this.userCheck(username, profileId);
+        this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
@@ -1115,4 +1113,13 @@ public class MultiService {
         }
         return centerResponseDTOS;
     }
+
+    /**
+     * Lesson
+     */
+
+//    public LessonResponseDTO saveLesson(String username, Long profileId, Long centerId, String name, String content, Time startDate, Time endDate) {
+//        this.userCheck(username, profileId);
+//
+//    }
 }
