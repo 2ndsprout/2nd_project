@@ -765,8 +765,9 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
-        Pageable pageable = PageRequest.of(page, 20);
-        Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId);
+        Pageable pageable = PageRequest.of(page, 15);
+        Boolean topActive = false;
+        Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId, topActive);
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
             List<ArticleTag> articleTagList = articleTagService.getArticle(article);
@@ -1158,19 +1159,20 @@ public class MultiService {
     }
 
     @Transactional
-    public List<LessonResponseDTO> getLessonList(String username, Long profileId) {
+    public Page<LessonResponseDTO> getLessonPage(String username, Long profileId, int page) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
+        Pageable pageable =PageRequest.of(page, 15);
 
-        List<Lesson> lessonList = lessonService.getList(user.getApt().getId());
-        if (lessonList == null)
-            throw new DataNotFoundException("레슨 리스트 객체 없음");
+        Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable);
+        if (lessonPage == null)
+            throw new DataNotFoundException("레슨 페이지 객체 없음");
         List<LessonResponseDTO> lessonResponseDTOS = new ArrayList<>();
-        for (Lesson lesson : lessonList)
+        for (Lesson lesson : lessonPage)
             lessonResponseDTOS.add(this.lessonResponseDTO(lesson));
 
-        return lessonResponseDTOS;
+        return new PageImpl<>(lessonResponseDTOS, pageable ,lessonPage.getTotalElements());
     }
 
     @Transactional

@@ -1,18 +1,15 @@
 package com.second_team.apt_project.controllers;
 
-import com.second_team.apt_project.dtos.CenterRequestDTO;
-import com.second_team.apt_project.dtos.CenterResponseDTO;
 import com.second_team.apt_project.dtos.LessonRequestDTO;
 import com.second_team.apt_project.dtos.LessonResponseDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -55,15 +52,16 @@ public class LessonController {
         return tokenRecord.getResponseEntity();
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<?> getLessonList(@RequestHeader("Authorization") String accessToken,
-                                           @RequestHeader("PROFILE_ID") Long profileId) {
+    @GetMapping("/page")
+    public ResponseEntity<?> getLessonPage(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader("Page") int page) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<LessonResponseDTO> responseDTOList = multiService.getLessonList(username, profileId);
-                return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
+                Page<LessonResponseDTO> responseDTOPage = multiService.getLessonPage(username, profileId, page);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTOPage);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

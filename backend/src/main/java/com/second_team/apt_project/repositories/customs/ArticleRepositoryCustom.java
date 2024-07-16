@@ -5,5 +5,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ArticleRepositoryCustom {
-    Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId);
+    Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId, Boolean topActive);
 }

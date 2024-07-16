@@ -5,10 +5,11 @@ import com.second_team.apt_project.domains.Lesson;
 import com.second_team.apt_project.domains.Profile;
 import com.second_team.apt_project.repositories.LessonRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +33,8 @@ public class LessonService {
         return lessonRepository.findById(lessonId).orElse(null);
     }
 
-    public List<Lesson> getList(Long aptId) {
-        return lessonRepository.findByApt(aptId);
+    public Page<Lesson> getPage(Long aptId, Pageable pageable) {
+        return lessonRepository.findByApt(aptId, pageable);
     }
 
     public Lesson update(Lesson lesson, String name, String content, LocalDateTime startDate, LocalDateTime startTime, LocalDateTime endDate, LocalDateTime endTime) {
