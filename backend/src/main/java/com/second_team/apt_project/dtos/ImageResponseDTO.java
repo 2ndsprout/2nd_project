@@ -12,11 +12,11 @@ import java.util.List;
 @NoArgsConstructor
 public class ImageResponseDTO {
     private String url;
+    private String key;
 
-    private List<String> urlList;
     @Builder
-    public ImageResponseDTO(String url, List<String> urlList) {
+    public ImageResponseDTO(String url, String key) {
         this.url = url;
-        this.urlList = urlList;
+        this.key = key;
     }
 }

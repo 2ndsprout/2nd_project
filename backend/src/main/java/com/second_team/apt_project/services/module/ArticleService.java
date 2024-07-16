@@ -31,8 +31,8 @@ public class ArticleService {
         return articleRepository.findById(articleId).orElse(null);
     }
 
-    public Page<Article> getArticleList(Pageable pageable, Long aptId, Long categoryId) {
-        return this.articleRepository.findByArticleList(pageable, aptId, categoryId);
+    public Page<Article> getArticleList(Pageable pageable, Long aptId, Long categoryId, Boolean topActive) {
+        return this.articleRepository.findByArticleList(pageable, aptId, categoryId, topActive);
     }
 
     public Article update(Article targetArticle, String title, String content, Category category, Boolean topActive) {

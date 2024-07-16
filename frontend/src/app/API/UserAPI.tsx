@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { getAPI } from './AxiosAPI';
 
 
@@ -37,6 +36,7 @@ UserApi.interceptors.response.use((response) => {
             window.location.href = '/account/profile';
             return;
         }
+    console.log(error);
     return Promise.reject(error);
 });
 // 토큰 갱신
@@ -103,9 +103,14 @@ export const deleteUser = async () => {
 }
 
 interface ProfileProps {
-    id: number,
     name: string,
     url: string,
+}
+
+interface UpdateProfileProps {
+    id: number,
+    name: string,
+    url: string
 }
 
 export const postProfile = async (data: ProfileProps) => {
@@ -123,7 +128,7 @@ export const getProfile = async () => {
     return response.data;
 }
 
-export const upateProfile = async (data: ProfileProps) => {
+export const upateProfile = async (data: UpdateProfileProps) => {
     const response = await UserApi.put('/api/profile', data);
     return response.data;
 }
@@ -198,31 +203,31 @@ export const deleteCategory = async (data: number) => {
 
 // Article
 
-interface ArticleProps {
-    categoryId: number,
-    title: string,
-    content: string,
-    topActive: boolean,
-    tagIdList: number[]
-}
-
 export const getArticleList = async ( categoryId: number ) => {
     const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
     console.log("Sending request with CategoryId:", categoryId);
     return response.data;
 }
 
-export const getArticle = async ( articleId: number ) => {
-    const response = await UserApi.get('api/article/detail', { headers: { ArticleId: articleId }} )
-    console.log("Sending request with ArticleId:", articleId);
+
+export const getArticle = async ( data: number ) => {
+    const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data }} );
+    console.log("Sending request with ArticleId:", data);
     return response.data
 }
 
-export const postArticle = async (data: ArticleProps) => {
-    const response = await UserApi.post('/api/article', data);
-    return response.data;
-};
 
+interface PostArticleProps {
+    title: string;
+    content: string;
+    categoryId: number;
+}
+
+export const postArticle = async (data: PostArticleProps) => {
+    const response = await UserApi.post(`/api/article`, data);
+    console.log("Sending request with ArticleId:", data);
+    return response.data;
+}
 
 // Tag
 
@@ -248,20 +253,3 @@ export const getTag = async (data: number) => {
 export const deleteTag = async (data: number) => {
     await UserApi.delete('/api/tag', {headers: {'tagId': data}});
 }
-
-
-// interface putArticle {
-//     articleId: number;
-//     title: String;
-//     content: String;
-// }
-
-// export const updateArticle = async (data: putArticle ) => {
-//     const response = await UserApi.put('/api/article', data);
-//     return response.data;
-// };
-
-// export const deleteArticle = async (data: number) => {
-//     const response = await UserApi.delete('/api/article', { headers: { ArticleId: data } });
-//     return response.data;
-// }

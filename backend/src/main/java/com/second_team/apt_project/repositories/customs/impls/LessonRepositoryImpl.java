@@ -1,34 +1,31 @@
 package com.second_team.apt_project.repositories.customs.impls;
 
 import com.querydsl.core.QueryResults;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.*;
-import com.second_team.apt_project.repositories.customs.ArticleRepositoryCustom;
+import com.second_team.apt_project.repositories.customs.LessonRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-@RequiredArgsConstructor
-public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
-    private final JPAQueryFactory jpaQueryFactory;
+import java.util.List;
 
-    QArticle qArticle = QArticle.article;
+@RequiredArgsConstructor
+public class LessonRepositoryImpl implements LessonRepositoryCustom {
+    private final JPAQueryFactory jpaQueryFactory;
+    QLesson qLesson = QLesson.lesson;
+    QApt qApt = QApt.apt;
     QProfile qProfile = QProfile.profile;
     QSiteUser qSiteUser = QSiteUser.siteUser;
-    QApt qApt = QApt.apt;
-    QCategory qCategory = QCategory.category;
 
     @Override
-    public Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId, Boolean topActive) {
-        JPAQuery<Article> query = jpaQueryFactory.selectFrom(qArticle)
-                .leftJoin(qArticle.profile, qProfile)
+    public Page<Lesson> findByApt(Long aptId,  Pageable pageable) {
+        QueryResults<Lesson> results = jpaQueryFactory.selectFrom(qLesson)
+                .leftJoin(qLesson.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qArticle.topActive.eq(topActive).and(qApt.id.eq(aptId)).and(qCategory.id.eq(categoryId)));
-
-        QueryResults<Article> results = query.fetchResults();
+                .where(qApt.id.eq(aptId)).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 }
