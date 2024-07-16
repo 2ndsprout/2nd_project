@@ -16,7 +16,7 @@ public class CultureCenterRepositoryImpl implements CultureCenterRepositoryCusto
 
 
     @Override
-    public List<CultureCenter> getList() {
-        return jpaQueryFactory.selectFrom(qCultureCenter).orderBy(qCultureCenter.createDate.asc()).fetch();
+    public List<CultureCenter> getList(Long aptId) {
+        return jpaQueryFactory.selectFrom(qCultureCenter).where(qCultureCenter.apt.id.eq(aptId)).orderBy(qCultureCenter.createDate.asc()).fetch();
     }
 }

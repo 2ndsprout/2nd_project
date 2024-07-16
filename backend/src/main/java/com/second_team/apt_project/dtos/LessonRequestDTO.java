@@ -11,8 +11,10 @@ public class LessonRequestDTO {
     private Long centerId;
     private String name;
     private String content;
-    private Time startDate;
-    private Time endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 
 
 }

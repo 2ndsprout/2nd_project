@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.cglib.core.Local;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,19 +33,25 @@ public class Lesson {
     private String content;
 
     private LocalDateTime createDate;
+    private LocalDateTime modifyDate;
 
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 
     @Builder
-    public Lesson(Profile profile, CultureCenter cultureCenter, String name, String content, LocalDateTime startDate, LocalDateTime endDate) {
+    public Lesson(Profile profile, CultureCenter cultureCenter, String name, String content, LocalDateTime startDate, LocalDateTime endDate, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime modifyDate) {
         this.profile = profile;
         this.cultureCenter = cultureCenter;
         this.name = name;
         this.content = content;
+        this.modifyDate = modifyDate;
         this.startDate = startDate;
         this.createDate = LocalDateTime.now();
         this.endDate = endDate;
+        this.startTime =startTime;
+        this.endTime =endTime;
     }
 }

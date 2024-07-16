@@ -20,8 +20,10 @@ public class CenterResponseDTO {
     private Long modifyDate;
     private List<ImageListResponseDTO> imageListResponseDTOS;
 
+    private AptResponseDTO aptResponseDTO;
+
     @Builder
-    public CenterResponseDTO(Long id, String type, Long startDate, Long endDate, Long createDate, Long modifyDate, List<ImageListResponseDTO> imageListResponseDTOS) {
+    public CenterResponseDTO(Long id, String type, Long startDate, Long endDate, Long createDate, Long modifyDate, List<ImageListResponseDTO> imageListResponseDTOS, AptResponseDTO aptResponseDTO) {
         this.id = id;
         this.type = type;
         this.startDate = startDate;
@@ -29,5 +31,6 @@ public class CenterResponseDTO {
         this.createDate = createDate;
         this.modifyDate = modifyDate;
         this.imageListResponseDTOS = imageListResponseDTOS;
+        this.aptResponseDTO = aptResponseDTO;
     }
 }
