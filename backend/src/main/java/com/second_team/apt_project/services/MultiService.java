@@ -766,18 +766,15 @@ public class MultiService {
     }
 
     @Transactional
-    public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long aptId, Long categoryId) {
+    public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long categoryId) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
-        if (!user.getApt().getId().equals(aptId)) {
-            throw new IllegalArgumentException("해당 아파트의 주민이 아닙니다.");
-        }
         Pageable pageable = PageRequest.of(page, 20);
-        Page<Article> articleList = articleService.getArticleList(pageable, aptId, categoryId);
+        Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId);
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
             List<ArticleTag> articleTagList = articleTagService.getArticle(article);
