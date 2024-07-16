@@ -42,13 +42,12 @@ public class ArticleController {
     @PutMapping
     public ResponseEntity<?> updateArticle(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
-                                           @RequestHeader("ArticleId") Long articleId,
                                            @RequestBody ArticleRequestDTO articleRequestDTO) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ArticleResponseDTO articleResponseDTO = this.multiService.updateArticle(profileId, articleId,
+                ArticleResponseDTO articleResponseDTO = this.multiService.updateArticle(profileId, articleRequestDTO.getArticleId(),
                         articleRequestDTO.getCategoryId(), articleRequestDTO.getTagId(), articleRequestDTO.getTitle(),
                         articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
@@ -76,10 +75,10 @@ public class ArticleController {
         return tokenRecord.getResponseEntity();
     }
 
-    @GetMapping("/list")
+    @GetMapping("/page")
     public ResponseEntity<?> articleList(@RequestHeader("Authorization") String accessToken,
                                          @RequestHeader("PROFILE_ID") Long profileId,
-                                         @RequestHeader("Page") int page,
+                                         @RequestHeader(value = "Page", defaultValue = "0") int page,
                                          @RequestHeader("CategoryId") Long categoryId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {

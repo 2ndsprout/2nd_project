@@ -38,7 +38,7 @@ public class LessonController {
     @GetMapping
     public ResponseEntity<?> getLesson(@RequestHeader("Authorization") String accessToken,
                                        @RequestHeader("PROFILE_ID") Long profileId,
-                                       @RequestHeader("lessonId") Long lessonId) {
+                                       @RequestHeader("LessonId") Long lessonId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
@@ -55,7 +55,7 @@ public class LessonController {
     @GetMapping("/page")
     public ResponseEntity<?> getLessonPage(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
-                                           @RequestHeader("Page") int page) {
+                                           @RequestHeader(value = "Page", defaultValue = "0") int page) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
@@ -90,7 +90,7 @@ public class LessonController {
     @DeleteMapping
     public ResponseEntity<?> deleteLesson(@RequestHeader("Authorization") String accessToken,
                                           @RequestHeader("PROFILE_ID") Long profileId,
-                                          @RequestHeader("lessonId") Long lessonId) {
+                                          @RequestHeader("LessonId") Long lessonId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {

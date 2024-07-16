@@ -6,6 +6,7 @@ import java.util.List;
 
 @Getter
 public class ArticleRequestDTO {
+    private Long articleId;
     private Long categoryId;
     private String title;
     private String content;
