@@ -46,7 +46,7 @@ public class CultureCenterController {
                 CenterResponseDTO responseDTO = multiService.getCenter(username, profileId, centerId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
-        } catch (DataNotFoundException | IllegalArgumentException ex) {
+        } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -61,7 +61,7 @@ public class CultureCenterController {
                 List<CenterResponseDTO> responseDTOList = multiService.getCenterList(username, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
             }
-        } catch (DataNotFoundException | IllegalArgumentException ex) {
+        } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

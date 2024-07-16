@@ -80,13 +80,12 @@ public class ArticleController {
     public ResponseEntity<?> articleList(@RequestHeader("Authorization") String accessToken,
                                          @RequestHeader("PROFILE_ID") Long profileId,
                                          @RequestHeader("Page") int page,
-                                         @RequestHeader("AptId") Long aptId,
                                          @RequestHeader("CategoryId") Long categoryId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId, aptId, categoryId);
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId,categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
