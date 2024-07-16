@@ -17,6 +17,9 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+.navbar {
+  padding: 0 !important;
+}
 
 @layer utilities {
   .text-balance {

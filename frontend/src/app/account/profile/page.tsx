@@ -10,7 +10,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faUserPlus, faBars } from "@fortawesome/free-solid-svg-icons";
 import { Check, checkInput } from "@/app/Global/Method";
 
-
 export default function Page() {
     const [user, setUser] = useState(null as any);
     const [profileList, setProfileList] = useState([] as any[]);
@@ -100,24 +99,23 @@ export default function Page() {
     return (
         <>
             <div className="bg-black flex flex-col items-center min-h-screen relative" id="main">
-                <div className="flex justify-end w-full mt-[30px] mr-[400px]">
+                <div className="flex justify-end w-full mt-[15px] mr-[50px]">
                     <button id="profileSettings" className="btn btn-active btn-primary w-[200px] text-lg text-black" onClick={() => setOpenDropDown(!openDropDown)}>
                         <FontAwesomeIcon icon={faBars} />프로필 설정
                     </button>
                     <div>
-                        <DropDown open={openDropDown} onClose={() => setOpenDropDown(false)} background="main" button="profileSettings" className="mt-[10px]" defaultDriection={Direcion.DOWN} height={200} width={200}>
+                        <DropDown open={openDropDown} onClose={() => setOpenDropDown(false)} background="main" button="profileSettings" className="mt-[10px]" defaultDriection={Direcion.DOWN} height={200} width={250} x={-30} y={30}>
                             <button className="mt-0 btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(1)}>
                                 <FontAwesomeIcon icon={faGear} />계정 설정</button>
                             <button className="mt-[5px] btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(2)}>
                                 <FontAwesomeIcon icon={faUserPlus} size="xs" />프로필 추가
                             </button>
-
                         </DropDown>
                     </div>
                 </div>
                 <div className="h-[20%]">
                     <div className="w-full flex flex-col items-center py-3">
-                        <img src='/user.png' className='w-36 h-36 mb-2' alt="로고" />
+                        <img src='/user.png' className='w-[64px] h-[64px] mb-2' alt="로고" />
                         <label className="font-bold text-2xl text-white">Honey Danji</label>
                     </div>
                 </div>
@@ -126,8 +124,8 @@ export default function Page() {
                         <div key={index} className="text-center mx-auto my-3 w-1/3">
                             <div className="flex justify-center">
                                 <button onClick={() => Select(profile.id)}>
-                                    <img src={'/user.png'} className="w-60 h-60 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
-                                    <span>{profile?.name}</span>
+                                    <img src={'/user.png'} className="w-56 h-56 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
+                                    <span className='font-bold text-xl'>{profile?.name}</span>
                                 </button>
                             </div>
                         </div>
@@ -141,10 +139,10 @@ export default function Page() {
                 <div className="mt-0 flex flex-col items-center gap-3">
                     <label className='text-xs font-bold text-red-500'>{error}</label>
                     <input type="text" className='input input-bordered input-lg text-black' defaultValue={email} minLength={3}
-                    onChange={e => setEmail(e.target.value)}
-                    onFocus={e => checkInput(e, '^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setError(''), () => setError('이메일 형식이 맞지 않습니다.'))}
-                    onKeyUp={e => checkInput(e, '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setError(''), () => setError('이메일 형식이 맞지 않습니다.'))} />
-                    <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!IsDisabled() || !!error} onClick={() => {Submit(); setISModalOpen(-2)}}>정보 수정</button>
+                        onChange={e => setEmail(e.target.value)}
+                        onFocus={e => checkInput(e, '^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setError(''), () => setError('이메일 형식이 맞지 않습니다.'))}
+                        onKeyUp={e => checkInput(e, '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setError(''), () => setError('이메일 형식이 맞지 않습니다.'))} />
+                    <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!IsDisabled() || !!error} onClick={() => { Submit(); setISModalOpen(-2) }}>정보 수정</button>
 
                 </div>
             </Modal>
