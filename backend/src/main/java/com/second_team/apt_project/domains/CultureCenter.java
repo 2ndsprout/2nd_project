@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,14 +24,20 @@ public class CultureCenter {
     private LocalDateTime closeTime;
 
     private CenterType centerType;
+
     private LocalDateTime createDate;
+
     private LocalDateTime modifyDate;
     @ManyToOne(fetch = FetchType.LAZY)
+    private Apt apt;
+
+    @ManyToOne
     private Apt apt;
 
     @Builder
     public CultureCenter(LocalDateTime openTime, LocalDateTime closeTime, CenterType centerType, Apt apt) {
         this.createDate = LocalDateTime.now();
+        this.apt = apt;
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.centerType = centerType;

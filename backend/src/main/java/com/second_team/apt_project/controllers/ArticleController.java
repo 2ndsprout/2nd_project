@@ -53,7 +53,7 @@ public class ArticleController {
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }
@@ -84,11 +84,11 @@ public class ArticleController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId,categoryId);
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
     }
