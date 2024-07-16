@@ -3,7 +3,6 @@ package com.second_team.apt_project.services;
 import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.dtos.*;
-import com.second_team.apt_project.enums.CenterType;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
@@ -13,8 +12,6 @@ import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import org.commonmark.node.Image;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,23 +21,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Time;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static com.second_team.apt_project.domains.QCultureCenter.cultureCenter;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +48,7 @@ public class MultiService {
     private final ArticleTagService articleTagService;
     private final LoveService loveService;
     private final CultureCenterService cultureCenterService;
+    private final LessonService lessonService;
 
     /**
      * Auth
@@ -926,21 +918,11 @@ public class MultiService {
         return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
-    private Long timeTransfer(Time time) {
-
-        if (time == null) {
-            return null;
-        }
-        LocalDateTime dateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(time.getHours(), time.getMinutes()));
-        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-
-
     /**
      * Center
      */
     @Transactional
-    public CenterResponseDTO saveCenter(String username, Long profileId, int type, Time endDate, Time startDate) {
+    public CenterResponseDTO saveCenter(String username, Long profileId, int type, LocalDateTime endDate, LocalDateTime startDate) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
@@ -949,8 +931,10 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
-
-        CultureCenter cultureCenter = cultureCenterService.save(type, endDate, startDate);
+        Apt apt = aptService.get(user.getApt().getId());
+        if (apt == null)
+            throw new DataNotFoundException("아파트 객체 없음");
+        CultureCenter cultureCenter = cultureCenterService.save(type, endDate, startDate, apt);
 
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
         if (_multiKey.isPresent()) {
@@ -973,7 +957,10 @@ public class MultiService {
             multiKeyService.delete(_multiKey.get());
         }
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
-        return _newMultiKey.map(multiKey -> centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+        MultiKey multiKey = null;
+        if (_newMultiKey.isPresent())
+            multiKey = _newMultiKey.get();
+        return this.centerResponseDTO(cultureCenter, multiKey);
     }
 
     private CenterResponseDTO centerResponseDTO(CultureCenter cultureCenter, MultiKey multiKey) {
@@ -986,12 +973,13 @@ public class MultiService {
         }
         return CenterResponseDTO.builder()
                 .id(cultureCenter.getId())
-                .startDate(this.timeTransfer(cultureCenter.getOpenTime()))
-                .endDate(this.timeTransfer(cultureCenter.getCloseTime()))
+                .startDate(this.dateTimeTransfer(cultureCenter.getOpenTime()))
+                .endDate(this.dateTimeTransfer(cultureCenter.getCloseTime()))
                 .type(cultureCenter.getCenterType().toString())
                 .createDate(this.dateTimeTransfer(cultureCenter.getCreateDate()))
                 .modifyDate(this.dateTimeTransfer(cultureCenter.getModifyDate()))
                 .imageListResponseDTOS(imageListResponseDTOS)
+                .aptResponseDTO(getAptResponseDTO(cultureCenter.getApt()))
                 .build();
     }
 
@@ -1011,8 +999,8 @@ public class MultiService {
     }
 
     @Transactional
-    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, int type, Time
-            endDate, Time startDate, List<String> key) {
+    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, int type, LocalDateTime
+            endDate, LocalDateTime startDate, List<String> key) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
@@ -1095,7 +1083,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         if (profile == null)
             throw new DataNotFoundException("프로필 객체 없음");
-        List<CultureCenter> cultureCenterList = cultureCenterService.getList();
+        List<CultureCenter> cultureCenterList = cultureCenterService.getList(user.getApt().getId());
         if (cultureCenterList == null)
             throw new DataNotFoundException("센터 리스트 없음");
         List<CenterResponseDTO> centerResponseDTOS = new ArrayList<>();
@@ -1115,8 +1103,104 @@ public class MultiService {
      * Lesson
      */
 
-//    public LessonResponseDTO saveLesson(String username, Long profileId, Long centerId, String name, String content, Time startDate, Time endDate) {
-//        this.userCheck(username, profileId);
-//
-//    }
+    @Transactional
+    public LessonResponseDTO saveLesson(String username, Long profileId, Long centerId, String name, String content, LocalDateTime startDate, LocalDateTime endDate, LocalDateTime startTime, LocalDateTime endTime) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (user.getRole() != UserRole.STAFF)
+            throw new IllegalArgumentException("권한 불일치");
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체가 없음");
+        Lesson lesson = lessonService.save(cultureCenter, profile, name, content, startTime, endTime, startDate, endDate);
+
+        return this.lessonResponseDTO(lesson);
+    }
+
+
+    private LessonResponseDTO lessonResponseDTO(Lesson lesson) {
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(lesson.getCultureCenter().getId().toString()));
+        MultiKey centerMulti = null;
+        if (_multiKey.isPresent())
+            centerMulti = _multiKey.get();
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(lesson.getProfile().getUser().getUsername() + "." + lesson.getProfile().getId()));
+        String profileUrl = null;
+        if (_fileSystem.isPresent())
+            profileUrl = _fileSystem.get().getV();
+        return LessonResponseDTO.builder()
+                .id(lesson.getId())
+                .centerResponseDTO(this.centerResponseDTO(lesson.getCultureCenter(), centerMulti))
+                .profileResponseDTO(ProfileResponseDTO.builder().id(lesson.getProfile().getId())
+                        .username(lesson.getProfile().getUser().getUsername())
+                        .name(lesson.getProfile().getName())
+                        .url(profileUrl).build())
+                .createDate(this.dateTimeTransfer(lesson.getCreateDate()))
+                .modifyDate(this.dateTimeTransfer(lesson.getModifyDate()))
+                .name(lesson.getName())
+                .content(lesson.getContent())
+                .startDate(this.dateTimeTransfer(lesson.getStartDate()))
+                .startTime(this.dateTimeTransfer(lesson.getStartTime()))
+                .endDate(this.dateTimeTransfer(lesson.getEndDate()))
+                .endTime(this.dateTimeTransfer(lesson.getEndTime()))
+                .build();
+    }
+
+    @Transactional
+    public LessonResponseDTO getLesson(String username, Long profileId, Long lessonId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Lesson lesson = lessonService.findById(lessonId);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        return this.lessonResponseDTO(lesson);
+    }
+
+    @Transactional
+    public List<LessonResponseDTO> getLessonList(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+
+        List<Lesson> lessonList = lessonService.getList(user.getApt().getId());
+        if (lessonList == null)
+            throw new DataNotFoundException("레슨 리스트 객체 없음");
+        List<LessonResponseDTO> lessonResponseDTOS = new ArrayList<>();
+        for (Lesson lesson : lessonList)
+            lessonResponseDTOS.add(this.lessonResponseDTO(lesson));
+
+        return lessonResponseDTOS;
+    }
+
+    @Transactional
+    public LessonResponseDTO updateLesson(String username, Long profileId, Long id, Long centerId, String name, String content, LocalDateTime startDate, LocalDateTime endDate, LocalDateTime startTime, LocalDateTime endTime) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
+        Lesson lesson = lessonService.findById(id);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        if (!lesson.getProfile().equals(profile))
+            throw new IllegalArgumentException("프로필 불일치");
+
+        Lesson newLesson = lessonService.update(lesson, name, content, startDate, startTime, endDate,endTime);
+        return this.lessonResponseDTO(newLesson);
+    }
+
+    @Transactional
+    public void deleteLesson(String username, Long profileId, Long lessonId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Lesson lesson = lessonService.findById(lessonId);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        if (!lesson.getProfile().equals(profile))
+            throw new IllegalArgumentException("프로필 불일치");
+        this.lessonService.delete(lesson);
+    }
 }

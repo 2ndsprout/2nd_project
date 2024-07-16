@@ -30,13 +30,19 @@ public class QLesson extends EntityPathBase<Lesson> {
 
     public final DateTimePath<java.time.LocalDateTime> endDate = createDateTime("endDate", java.time.LocalDateTime.class);
 
+    public final DateTimePath<java.time.LocalDateTime> endTime = createDateTime("endTime", java.time.LocalDateTime.class);
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final DateTimePath<java.time.LocalDateTime> modifyDate = createDateTime("modifyDate", java.time.LocalDateTime.class);
 
     public final StringPath name = createString("name");
 
     public final QProfile profile;
 
     public final DateTimePath<java.time.LocalDateTime> startDate = createDateTime("startDate", java.time.LocalDateTime.class);
+
+    public final DateTimePath<java.time.LocalDateTime> startTime = createDateTime("startTime", java.time.LocalDateTime.class);
 
     public QLesson(String variable) {
         this(Lesson.class, forVariable(variable), INITS);
@@ -56,7 +62,7 @@ public class QLesson extends EntityPathBase<Lesson> {
 
     public QLesson(Class<? extends Lesson> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.cultureCenter = inits.isInitialized("cultureCenter") ? new QCultureCenter(forProperty("cultureCenter")) : null;
+        this.cultureCenter = inits.isInitialized("cultureCenter") ? new QCultureCenter(forProperty("cultureCenter"), inits.get("cultureCenter")) : null;
         this.profile = inits.isInitialized("profile") ? new QProfile(forProperty("profile"), inits.get("profile")) : null;
     }
 

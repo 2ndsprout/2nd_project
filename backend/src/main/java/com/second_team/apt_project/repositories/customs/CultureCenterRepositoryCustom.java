@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface CultureCenterRepositoryCustom {
-    List<CultureCenter> getList();
+    List<CultureCenter> getList(Long aptId);
 }

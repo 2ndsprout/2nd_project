@@ -1,7 +1,7 @@
 package com.second_team.apt_project.services.module;
 
+import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.CultureCenter;
-import com.second_team.apt_project.dtos.CenterResponseDTO;
 import com.second_team.apt_project.enums.CenterType;
 import com.second_team.apt_project.repositories.CultureCenterRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +16,12 @@ import java.util.List;
 public class CultureCenterService {
     private final CultureCenterRepository cultureCenterRepository;
 
-    public CultureCenter save(int type, Time endDate, Time startDate) {
+    public CultureCenter save(int type, LocalDateTime endDate, LocalDateTime startDate, Apt apt) {
         return cultureCenterRepository.save(CultureCenter.builder()
                 .centerType(CenterType.values()[type])
                 .openTime(startDate)
                 .closeTime(endDate)
+                .apt(apt)
                 .build());
     }
 
@@ -28,7 +29,7 @@ public class CultureCenterService {
         return cultureCenterRepository.findById(centerId).orElse(null);
     }
 
-    public void update(CultureCenter cultureCenter, int type, Time endDate, Time startDate) {
+    public void update(CultureCenter cultureCenter, int type, LocalDateTime endDate, LocalDateTime startDate) {
         cultureCenter.setCenterType(CenterType.values()[type]);
         cultureCenter.setOpenTime(startDate);
         cultureCenter.setCloseTime(endDate);
@@ -40,7 +41,7 @@ public class CultureCenterService {
         cultureCenterRepository.delete(cultureCenter);
     }
 
-    public List<CultureCenter> getList() {
-        return cultureCenterRepository.getList();
+    public List<CultureCenter> getList(Long aptId) {
+        return cultureCenterRepository.getList(aptId);
     }
 }

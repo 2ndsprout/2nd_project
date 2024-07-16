@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/lesson")
@@ -26,9 +28,9 @@ public class LessonController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-//                LessonResponseDTO responseDTO = multiService.saveLesson(username, profileId, requestDTO.getCenterId(), requestDTO.getName(),
-//                        requestDTO.getContent(),requestDTO.getStartDate(), requestDTO.getEndDate());
-//                return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+                LessonResponseDTO responseDTO = multiService.saveLesson(username, profileId, requestDTO.getCenterId(), requestDTO.getName(),
+                        requestDTO.getContent(), requestDTO.getStartDate(), requestDTO.getEndDate(), requestDTO.getStartTime(), requestDTO.getEndTime());
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -36,4 +38,71 @@ public class LessonController {
         return tokenRecord.getResponseEntity();
     }
 
+    @GetMapping
+    public ResponseEntity<?> getLesson(@RequestHeader("Authorization") String accessToken,
+                                       @RequestHeader("PROFILE_ID") Long profileId,
+                                       @RequestHeader("lessonId") Long lessonId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                LessonResponseDTO responseDTO = multiService.getLesson(username, profileId, lessonId);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getLessonList(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                List<LessonResponseDTO> responseDTOList = multiService.getLessonList(username, profileId);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @PutMapping
+    public ResponseEntity<?> updateLesson(@RequestHeader("Authorization") String accessToken,
+                                          @RequestHeader("PROFILE_ID") Long profileId,
+                                          @RequestBody LessonRequestDTO requestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                LessonResponseDTO responseDTO = multiService.updateLesson(username, profileId, requestDTO.getId(), requestDTO.getCenterId(), requestDTO.getName(),
+                        requestDTO.getContent(), requestDTO.getStartDate(), requestDTO.getEndDate(), requestDTO.getStartTime(), requestDTO.getEndTime());
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteLesson(@RequestHeader("Authorization") String accessToken,
+                                          @RequestHeader("PROFILE_ID") Long profileId,
+                                          @RequestHeader("lessonId") Long lessonId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.deleteLesson(username, profileId, lessonId);
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }
