@@ -620,12 +620,14 @@ public class MultiService {
         if (category == null) throw new DataNotFoundException("카테고리 객체 없음");
         Article article = articleService.save(profile, title, content, category, topActive);
         List<TagResponseDTO> tagResponseDTOList = new ArrayList<>();
-        for (Long id : tagId) {
-            Tag tag = tagService.findById(id);
-            if (tag == null)
-                throw new DataNotFoundException("태그 객체 없음");
-            articleTagService.save(article, tag);
-            tagResponseDTOList.add(tagResponseDTO(tag));
+        if (tagId != null) {
+            for (Long id : tagId) {
+                Tag tag = tagService.findById(id);
+                if (tag == null)
+                    throw new DataNotFoundException("태그 객체 없음");
+                articleTagService.save(article, tag);
+                tagResponseDTOList.add(tagResponseDTO(tag));
+            }
         }
         List<Love> loveList = loveService.findByArticle(article.getId());
         if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
@@ -657,7 +659,10 @@ public class MultiService {
         List<TagResponseDTO> tagResponseDTOList = new ArrayList<>();
         for (Long id : tagId) {
             Tag tag = tagService.findById(id);
-            if (tag == null) throw new DataNotFoundException("태그 객체 없음");
+
+            if (tag == null)
+                throw new DataNotFoundException("태그 객체 없음");
+
             articleTagService.save(article, tag);
             tagResponseDTOList.add(tagResponseDTO(tag));
         }
@@ -1002,7 +1007,7 @@ public class MultiService {
         Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
         if (_oldMulti.isPresent())
             if (key != null) {
-                for (String k : key){
+                for (String k : key) {
                     Optional<FileSystem> _fileSystem = fileSystemService.get(k);
                     _fileSystem.ifPresent(fileSystem -> {
                         fileSystemService.delete(fileSystem);
@@ -1147,7 +1152,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Pageable pageable =PageRequest.of(page, 15);
+        Pageable pageable = PageRequest.of(page, 15);
 
         Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable);
         if (lessonPage == null)
@@ -1156,7 +1161,7 @@ public class MultiService {
         for (Lesson lesson : lessonPage)
             lessonResponseDTOS.add(this.lessonResponseDTO(lesson));
 
-        return new PageImpl<>(lessonResponseDTOS, pageable ,lessonPage.getTotalElements());
+        return new PageImpl<>(lessonResponseDTOS, pageable, lessonPage.getTotalElements());
     }
 
     @Transactional
@@ -1173,7 +1178,7 @@ public class MultiService {
         if (!lesson.getProfile().equals(profile))
             throw new IllegalArgumentException("프로필 불일치");
 
-        Lesson newLesson = lessonService.update(lesson, name, content, startDate, startTime, endDate,endTime);
+        Lesson newLesson = lessonService.update(lesson, name, content, startDate, startTime, endDate, endTime);
         return this.lessonResponseDTO(newLesson);
     }
 
