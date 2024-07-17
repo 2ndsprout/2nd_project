@@ -233,8 +233,22 @@ public class MultiService {
      */
 
     private AptResponseDTO getAptResponseDTO(Apt apt) {
-        if (apt == null) return null;
-        return AptResponseDTO.builder().aptId(apt.getId()).aptName(apt.getAptName()).roadAddress(apt.getRoadAddress()).x(apt.getX()).y(apt.getY()).build();
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        List<ImageListResponseDTO> imageListResponseDTOS = new ArrayList<>();
+        if (_multiKey.isPresent()) {
+            for (String value : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(value);
+                _fileSystem.ifPresent(fileSystem -> imageListResponseDTOS.add(ImageListResponseDTO.builder().key(fileSystem.getK()).value(fileSystem.getV()).build()));
+            }
+        }
+        return AptResponseDTO.builder()
+                .aptId(apt.getId())
+                .aptName(apt.getAptName())
+                .roadAddress(apt.getRoadAddress())
+                .x(apt.getX()).y(apt.getY())
+                .urlList(imageListResponseDTOS)
+                .build();
     }
 
     @Transactional
@@ -246,31 +260,48 @@ public class MultiService {
     }
 
     @Transactional
-    public AptResponseDTO updateApt(Long profileId, Long aptId, String roadAddress, String aptName, String url, String username) {
+    public AptResponseDTO updateApt(Long profileId, Long aptId, String roadAddress, String aptName, List<String> key, String username) {
         SiteUser user = userService.get(username);
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         Apt apt = aptService.get(aptId);
 
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
-        aptService.update(apt, roadAddress, aptName);
-        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
-        String path = AptProjectApplication.getOsType().getLoc();
-        if (_fileSystem.isPresent() && (url == null || !_fileSystem.get().getV().equals(url))) {
-            File old = new File(path + _fileSystem.get().getV());
-            if (old.exists()) old.delete();
-        }
-        if (url != null && !url.isBlank()) {
-            String newFile = "/api/apt/" + aptId.toString() + "/";
-            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
-            if (_newFileSystem.isPresent()) {
-                String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
-                fileSystemService.save(ImageKey.APT.getKey(apt.getId().toString()), newUrl);
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("권한 불일치");
+        apt = aptService.update(apt, roadAddress, aptName);
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        if (_oldMulti.isPresent())
+            if (key != null) {
+                for (String k : key) {
+                    Optional<FileSystem> _fileSystem = fileSystemService.get(k);
+                    _fileSystem.ifPresent(fileSystem -> {
+                        fileSystemService.delete(fileSystem);
+                        _oldMulti.get().getVs().remove(key);
+                        deleteFile(_fileSystem.get());
+                    });
+                }
             }
-        }
-        Optional<FileSystem> _newAptFileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        if (_newMultiKey.isPresent()) {
+            String newFile = "/api/apt" + "/" + apt.getId() + "/";
+            for (String values : _newMultiKey.get().getVs()) {
+                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
+                Optional<FileSystem> _newFileSystem = fileSystemService.get(values);
+                if (_newFileSystem.isPresent()) {
+                    String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                    if (_multiKey.isPresent()) {
+                        multiKeyService.add(_multiKey.get(), ImageKey.APT.getKey(apt.getId().toString() + "." + _multiKey.get().getVs().size()));
+                        fileSystemService.save(_multiKey.get().getVs().getLast(), newUrl);
+                    } else {
+                        MultiKey multiKey = multiKeyService.save(ImageKey.APT.getKey(apt.getId().toString()), ImageKey.APT.getKey(apt.getId().toString() + ".0"));
+                        fileSystemService.save(multiKey.getVs().getLast(), newUrl);
 
-        return _newAptFileSystem.map(fileSystem -> AptResponseDTO.builder().aptId(apt.getId()).aptName(apt.getAptName()).roadAddress(apt.getRoadAddress()).url(fileSystem.getV()).build()).orElse(null);
+                    }
+                }
+            }
+            multiKeyService.delete(_newMultiKey.get());
+        }
+
+        return getAptResponseDTO(apt);
     }
 
     @Transactional
@@ -280,22 +311,19 @@ public class MultiService {
         List<Apt> aptList = aptService.getAptList();
         List<AptResponseDTO> responseDTOList = new ArrayList<>();
         for (Apt apt : aptList) {
-            AptResponseDTO aptResponseDTO = this.getApt(apt);
+            AptResponseDTO aptResponseDTO = this.getAptResponseDTO(apt);
             responseDTOList.add(aptResponseDTO);
         }
         return responseDTOList;
     }
 
-    private AptResponseDTO getApt(Apt apt) {
-        return getAptResponseDTO(apt);
-    }
 
     @Transactional
     public AptResponseDTO getAptDetail(Long aptId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
         Apt apt = aptService.get(aptId);
-        AptResponseDTO aptResponseDTO = this.getApt(apt);
+        if (user.getRole() != UserRole.ADMIN && !user.getApt().equals(apt)) throw new IllegalArgumentException("권한 불일치");
+        AptResponseDTO aptResponseDTO = this.getAptResponseDTO(apt);
         return aptResponseDTO;
     }
 

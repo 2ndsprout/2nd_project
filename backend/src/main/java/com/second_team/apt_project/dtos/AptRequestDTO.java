@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,5 +17,5 @@ public class AptRequestDTO {
     private String aptName; // 아파트 이름
     private Double x; // 위도
     private Double y; // 경도
-    private String url;
+    private List<String> key;
 }
