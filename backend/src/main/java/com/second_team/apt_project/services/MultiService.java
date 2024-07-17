@@ -1154,6 +1154,7 @@ public class MultiService {
         this.userCheck(user, profile);
         Pageable pageable = PageRequest.of(page, 15);
 
+
         Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable);
         if (lessonPage == null)
             throw new DataNotFoundException("레슨 페이지 객체 없음");
@@ -1194,4 +1195,5 @@ public class MultiService {
             throw new IllegalArgumentException("프로필 불일치");
         this.lessonService.delete(lesson);
     }
+
 }
