@@ -1243,7 +1243,6 @@ public class MultiService {
         return LessonUserResponseDTO.builder()
                 .id(lessonUser.getId())
                 .lessonResponseDTO(lessonResponseDTO(lessonUser.getLesson()))
-                .profileResponseDTO(profileResponseDTO(lessonUser.getProfile()))
                 .type(lessonUser.getLessonStatus().toString())
                 .build();
     }
