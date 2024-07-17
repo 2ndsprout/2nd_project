@@ -26,7 +26,6 @@ export default function Page() {
                         case 'username':
                         case 'password':
                             setError('아이디 또는 비밀번호를 다시 확인해주세요.');
-                            break;
                         default:
                             console.log(error);
                     }
@@ -49,7 +48,7 @@ export default function Page() {
                         onBlur={e => e.target.style.border = ''}
                         onChange={e => setUsername(e.target.value)}
                         onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('password') })} />
-                        
+
                         <input id='password' type={canSee ? 'text' : 'password'} className='w-[396px] h-[46px] input input-bordered rounded-[0] text-black'
                         style={{ outline: '0px', color: 'black' }} placeholder='비밀번호 8자~20자'
                         onFocus={e => e.target.style.border = '2px solid red'}

@@ -100,20 +100,22 @@ export default function Page() {
         <>
             <div className="bg-black flex flex-col items-center min-h-screen relative" id="main">
                 <div className="flex justify-end w-full mt-[15px] mr-[50px]">
-                    <button id="profileSettings" className="btn btn-active btn-primary w-[200px] text-lg text-black" onClick={() => setOpenDropDown(!openDropDown)}>
+                    <button id="profileSettings" className="btn btn-active btn-primary w-[180px] text-lg text-black" onClick={() => setOpenDropDown(!openDropDown)}>
                         <FontAwesomeIcon icon={faBars} />프로필 설정
                     </button>
                     <div>
-                        <DropDown open={openDropDown} onClose={() => setOpenDropDown(false)} background="main" button="profileSettings" className="mt-[10px]" defaultDriection={Direcion.DOWN} height={200} width={250} x={-30} y={30}>
+                        <DropDown open={openDropDown} onClose={() => setOpenDropDown(false)} background="main" button="profileSettings" className="mt-[10px]" defaultDriection={Direcion.DOWN} height={200} width={180} x={-5} y={30}>
                             <button className="mt-0 btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(1)}>
-                                <FontAwesomeIcon icon={faGear} />계정 설정</button>
+                                <FontAwesomeIcon icon={faGear} />계정 설정
+                            </button>
                             <button className="mt-[5px] btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(2)}>
                                 <FontAwesomeIcon icon={faUserPlus} size="xs" />프로필 추가
                             </button>
+                            {user ? <a href='/' onClick={e => { e.preventDefault(); localStorage.clear(); window.location.reload(); }} className='mt-[5px] btn btn-active btn-secondary text-lg text-black'>로그아웃</a> : <></>}
                         </DropDown>
                     </div>
                 </div>
-                <div className="h-[20%]">
+                <div className="h-1/5">
                     <div className="w-full flex flex-col items-center py-3">
                         <img src='/user.png' className='w-[64px] h-[64px] mb-2' alt="로고" />
                         <label className="font-bold text-2xl text-white">Honey Danji</label>
@@ -130,8 +132,6 @@ export default function Page() {
                             </div>
                         </div>
                     ))}
-                </div>
-                <div className="h-[30%] w-full flex items-end justify-center">
                 </div>
             </div>
             <Modal open={isModalOpen === 1} onClose={() => setISModalOpen(-1)} className='modal-box w-[400px] h-[400px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
