@@ -5,6 +5,8 @@ import com.second_team.apt_project.domains.Comment;
 import com.second_team.apt_project.domains.Profile;
 import com.second_team.apt_project.repositories.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,10 +33,6 @@ public class CommentService {
                 .build());
     }
 
-    public List<Comment> getComment(Long articleId) {
-        return commentRepository.getComment(articleId);
-    }
-
     public Comment updateComment(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
         comment.setContent(content);
@@ -51,5 +49,9 @@ public class CommentService {
 
     public List<Comment> findByCommentList(Long commentId) {
         return this.commentRepository.findByChildren(commentId);
+    }
+
+    public Page<Comment> getCommentPaging(Pageable pageable, Long articleId) {
+        return this.commentRepository.findByCommentList(pageable, articleId);
     }
 }
