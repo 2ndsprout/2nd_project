@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
@@ -41,5 +43,9 @@ public class ArticleService {
         targetArticle.setCategory(category);
         targetArticle.setTopActive(topActive);
         return this.articleRepository.save(targetArticle);
+    }
+
+    public List<Article> topActive(Long aptId, Long categoryId, Boolean topActive) {
+        return this.articleRepository.findByTopActive(aptId, categoryId, topActive);
     }
 }

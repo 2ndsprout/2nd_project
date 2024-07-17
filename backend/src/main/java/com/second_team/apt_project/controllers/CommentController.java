@@ -19,13 +19,13 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<?> saveComment(@RequestHeader("Authorization") String accessToken,
                                          @RequestHeader("PROFILE_ID") Long profileId,
-                                         @RequestHeader("ArticleId") Long articleId,
                                          @RequestBody CommentRequestDTO commentRequestDTO) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                CommentResponseDTO commentResponseDTO = this.multiService.saveComment(username, articleId, commentRequestDTO.getParentId(), profileId, commentRequestDTO.getContent());
+                CommentResponseDTO commentResponseDTO = this.multiService.saveComment(username, commentRequestDTO.getArticleId(),
+                        commentRequestDTO.getParentId(), profileId, commentRequestDTO.getContent());
                 return ResponseEntity.status(HttpStatus.OK).body(commentResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {

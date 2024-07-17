@@ -739,6 +739,29 @@ public class MultiService {
     }
 
     @Transactional
+    public List<ArticleResponseDTO> topActive(String username, Long profileId, Long categoryId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Boolean topActive = true;
+        List<Article> articleList = articleService.topActive(user.getApt().getId(), categoryId, topActive);
+        List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
+        for (Article article : articleList) {
+            ArticleResponseDTO articleResponseDTO = ArticleResponseDTO.builder()
+                    .articleId(article.getId())
+                    .topActive(article.getTopActive())
+                    .title(article.getTitle())
+                    .content(article.getContent())
+                    .categoryName(article.getCategory().getName())
+                    .createDate(this.dateTimeTransfer(article.getCreateDate()))
+                    .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
+                    .build();
+            articleResponseDTOList.add(articleResponseDTO);
+        }
+        return articleResponseDTOList;
+    }
+
+    @Transactional
     public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long categoryId) {
         SiteUser user = userService.get(username);
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
@@ -817,7 +840,7 @@ public class MultiService {
         Article article = articleService.findById(articleId);
         if (article == null) throw new DataNotFoundException("게시물 객체 없음");
         Comment comment = commentService.saveComment(article, profile, content, parentId);
-        if (comment.getParent().getArticle().getId() != article.getId())
+        if (comment.getParent() != null && comment.getParent().getArticle().getId() != article.getId())
             throw new DataNotFoundException("부모 댓글의 게시글 객체와 해당 게시글 객체가 다름");
         return this.commentResponseDTO(comment, profile);
     }
