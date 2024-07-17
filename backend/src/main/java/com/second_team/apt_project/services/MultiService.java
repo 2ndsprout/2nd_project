@@ -122,7 +122,7 @@ public class MultiService {
     }
 
     @Transactional
-    private UserResponseDTO getUserResponseDTO(SiteUser siteUser, Apt apt) {
+    private UserResponseDTO getUserResponseDTO(SiteUser siteUser) {
         return UserResponseDTO.builder()
                 .aptNum(siteUser.getAptNum())
                 .username(siteUser.getUsername())
@@ -142,7 +142,7 @@ public class MultiService {
             throw new IllegalArgumentException("권한 불일치");
         if (email != null) userService.userEmailCheck(email);
         SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
-        return this.getUserResponseDTO(siteUser, siteUser.getApt());
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -170,12 +170,12 @@ public class MultiService {
         Page<SiteUser> userList = userService.getUserList(pageable, aptId);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && user.getApt().getId().equals(aptId))
             throw new IllegalArgumentException("권한 불일치");
         for (SiteUser siteUser : userList) {
             Apt apt = aptService.get(siteUser.getApt().getId());
             if (apt == null) throw new DataNotFoundException("apt not data");
-            UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser, apt);
+            UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser);
             responseDTOList.add(userResponseDTO);
         }
         return new PageImpl<>(responseDTOList, pageable, userList.getTotalElements());
@@ -184,12 +184,13 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username))
-            throw new IllegalArgumentException("권한 불일치");
         SiteUser user1 = userService.getUser(userId);
         Apt apt = aptService.get(user1.getApt().getId());
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getApt().equals(apt)) {
+            throw new IllegalArgumentException("권한 불일치");
+        }
         if (apt == null) throw new DataNotFoundException("apt not data");
-        return this.getUserResponseDTO(user1, apt);
+        return this.getUserResponseDTO(user1);
     }
 
 
@@ -202,7 +203,7 @@ public class MultiService {
         SiteUser siteUser = userService.update(user, email);
         Apt apt = aptService.get(siteUser.getApt().getId());
         if (apt == null) throw new DataNotFoundException("apt not data");
-        return this.getUserResponseDTO(siteUser, apt);
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -224,7 +225,7 @@ public class MultiService {
     public UserResponseDTO getUser(String username) {
         SiteUser user = userService.get(username);
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
-        return this.getUserResponseDTO(user, user.getApt());
+        return this.getUserResponseDTO(user);
     }
 
 
@@ -233,7 +234,8 @@ public class MultiService {
      */
 
     private AptResponseDTO getAptResponseDTO(Apt apt) {
-        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+//        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+        if (apt == null) return null;
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
         List<ImageListResponseDTO> imageListResponseDTOS = new ArrayList<>();
         if (_multiKey.isPresent()) {
@@ -265,8 +267,7 @@ public class MultiService {
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         Apt apt = aptService.get(aptId);
-
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY) throw new IllegalArgumentException("권한 불일치");
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY ) throw new IllegalArgumentException("권한 불일치");
         apt = aptService.update(apt, roadAddress, aptName);
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
         Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
