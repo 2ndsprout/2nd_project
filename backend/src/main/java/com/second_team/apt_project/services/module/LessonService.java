@@ -33,8 +33,8 @@ public class LessonService {
         return lessonRepository.findById(lessonId).orElse(null);
     }
 
-    public Page<Lesson> getPage(Long aptId, Pageable pageable) {
-        return lessonRepository.findByApt(aptId, pageable);
+    public Page<Lesson> getPage(Long aptId, Pageable pageable, CultureCenter cultureCenter) {
+        return lessonRepository.findByApt(aptId, pageable, cultureCenter);
     }
 
     public Lesson update(Lesson lesson, String name, String content, LocalDateTime startDate, LocalDateTime startTime, LocalDateTime endDate, LocalDateTime endTime) {

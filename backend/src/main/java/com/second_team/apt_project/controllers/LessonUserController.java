@@ -67,8 +67,8 @@ public class LessonUserController {
         }
         return tokenRecord.getResponseEntity();
     }
-    @GetMapping("/security/list")
-    public ResponseEntity<?> getLessonUserSecurityList(@RequestHeader("Authorization") String accessToken,
+    @GetMapping("/staff/list")
+    public ResponseEntity<?> getLessonUserStaffList(@RequestHeader("Authorization") String accessToken,
                                                  @RequestHeader("PROFILE_ID") Long profileId,
                                                        @RequestHeader("Type") int type,
                                                        @RequestHeader("LessonId") Long lessonId) {
@@ -76,7 +76,7 @@ public class LessonUserController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<LessonUserResponseDTO> responseDTO = multiService.getLessonUserSecurityList(username, profileId, type, lessonId);
+                List<LessonUserResponseDTO> responseDTO = multiService.getLessonUserStaffList(username, profileId, type, lessonId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
