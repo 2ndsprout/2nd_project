@@ -4,8 +4,8 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0; /* 블랙 배경 시작 색상 */
+  --background-end-rgb: 255, 255, 255; /* 블랙 배경 끝 색상 */
 }
 
 body {
@@ -17,8 +17,42 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+:root, [data-theme] {
+  --b1: 0, 0, 0; /* 블랙 배경 색상 */
+  --bc: 255, 255, 255; /* 흰색 텍스트 색상 */
+  background-color: rgb(var(--b1));
+  color: rgb(var(--bc));
+}
+
 .navbar {
   padding: 0 !important;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+}
+
+.swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+
+  /* Center slide text vertically */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.input {
+  background-color: #fff;
+}
+.swiper-slide img {
+  display: block;
+  width: auto;
+  height: auto;
+  object-fit: cover;
 }
 
 @layer utilities {
