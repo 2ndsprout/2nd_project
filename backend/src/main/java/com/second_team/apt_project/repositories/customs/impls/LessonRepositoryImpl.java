@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -20,12 +21,12 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
     QSiteUser qSiteUser = QSiteUser.siteUser;
 
     @Override
-    public Page<Lesson> findByApt(Long aptId,  Pageable pageable) {
+    public Page<Lesson> findByApt(Long aptId, Pageable pageable) {
         QueryResults<Lesson> results = jpaQueryFactory.selectFrom(qLesson)
                 .leftJoin(qLesson.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qApt.id.eq(aptId)).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+                .where(qApt.id.eq(aptId), qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 }
