@@ -19,7 +19,7 @@ public class LessonUserRepositoryImpl implements LessonUserRepositoryCustom {
     }
 
     @Override
-    public List<LessonUser> getSecurityList(Lesson lesson, int type) {
+    public List<LessonUser> getStaffList(Lesson lesson, int type) {
         return jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.lesson.eq(lesson), qLessonUser.lessonStatus.eq(LessonStatus.values()[type])).fetch();
     }
 }

@@ -1259,14 +1259,17 @@ public class MultiService {
     }
 
     @Transactional
-    public Page<LessonResponseDTO> getLessonPage(String username, Long profileId, int page) {
+    public Page<LessonResponseDTO> getLessonPage(String username, Long profileId, int page, Long centerId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Pageable pageable = PageRequest.of(page, 15);
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
 
 
-        Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable);
+        Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable, cultureCenter);
         if (lessonPage == null)
             throw new DataNotFoundException("레슨 페이지 객체 없음");
         List<LessonResponseDTO> lessonResponseDTOS = new ArrayList<>();
@@ -1338,7 +1341,7 @@ public class MultiService {
         LessonUser lessonUser = lessonUserService.findById(lessonUserId);
         if (lessonUser == null)
             throw new DataNotFoundException("레슨신청 객체 없음");
-        if (!lessonUser.getProfile().equals(profile) && user.getRole() != UserRole.STAFF )
+        if (!lessonUser.getProfile().equals(profile) && user.getRole() == UserRole.USER )
             throw new IllegalArgumentException("권한이 없음");
         return lessonUserResponseDTO(lessonUser);
     }
@@ -1357,7 +1360,7 @@ public class MultiService {
     }
 
     @Transactional
-    public List<LessonUserResponseDTO> getLessonUserSecurityList(String username, Long profileId, int type, Long lessonId) {
+    public List<LessonUserResponseDTO> getLessonUserStaffList(String username, Long profileId, int type, Long lessonId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
@@ -1366,7 +1369,7 @@ public class MultiService {
             throw new DataNotFoundException("레슨 객체 없음");
         if (!lesson.getProfile().equals(profile))
             throw new IllegalArgumentException("레슨 강사 아님");
-        List<LessonUser> lessonUserList = lessonUserService.getSecurityList(lesson, type);
+        List<LessonUser> lessonUserList = lessonUserService.getStaffList(lesson, type);
         List<LessonUserResponseDTO> userResponseDTOS = new ArrayList<>();
         for (LessonUser lessonUser : lessonUserList) {
             userResponseDTOS.add(lessonUserResponseDTO(lessonUser));
@@ -1382,7 +1385,7 @@ public class MultiService {
         LessonUser lessonUser = lessonUserService.findById(id);
         if (lessonUser == null)
             throw new DataNotFoundException("레슨신청 객체 없음");
-        if (!lessonUser.getProfile().equals(profile) && user.getRole() != UserRole.STAFF )
+        if (!lessonUser.getProfile().equals(profile) && !lessonUser.getLesson().getProfile().equals(profile) )
             throw new IllegalArgumentException("권한이 없음");
         return lessonUserResponseDTO(lessonUserService.update(lessonUser, type));
     }
