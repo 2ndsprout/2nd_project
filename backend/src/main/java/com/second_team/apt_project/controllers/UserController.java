@@ -118,4 +118,20 @@ public class UserController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> updatePassword(@RequestHeader("Authorization") String accessToken,
+                                            @RequestBody UserSaveRequestDTO userSaveRequestDTO) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.updatePassword(username, userSaveRequestDTO.getPassword(), userSaveRequestDTO.getNewPassword1(), userSaveRequestDTO.getNewPassword2());
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }

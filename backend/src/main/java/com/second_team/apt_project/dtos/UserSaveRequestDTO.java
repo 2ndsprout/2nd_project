@@ -9,6 +9,8 @@ public class UserSaveRequestDTO {
     private Long aptId;
     private int aptNum;
     private String password;
+    private String newPassword1;
+    private String newPassword2;
     @Email
     private String email;
     private int role;

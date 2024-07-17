@@ -204,6 +204,20 @@ public class MultiService {
         return this.getUserResponseDTO(siteUser, apt);
     }
 
+    @Transactional
+    public void updatePassword(String username, String password, String newPassword1, String newPassword2) {
+        SiteUser user = userService.get(username);
+        if (!user.getUsername().equals(username)) throw new IllegalArgumentException("로그인 유저와 불일치");
+        if (!this.userService.isMatch(password, user.getPassword()))
+            throw new IllegalArgumentException("기존 비밀번호 일치 X");
+        else if (!newPassword1.equals(newPassword2))
+            throw new IllegalArgumentException("새 비밀번호 일치 X");
+        else
+            if (!this.userService.isMatch(newPassword1, user.getPassword()))
+                userService.updatePassword(user, newPassword1);
+            else
+                throw new IllegalArgumentException("기존 비밀번호와 새 비밀번호가 일치함");
+    }
 
     @Transactional
     public UserResponseDTO getUser(String username) {
@@ -770,7 +784,7 @@ public class MultiService {
         }
         multiKeyService.delete(multiKey);
         articleService.updateContent(article, content);
-    }   
+    }
 
     /**
      * Comment
