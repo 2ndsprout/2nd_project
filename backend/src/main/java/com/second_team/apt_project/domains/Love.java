@@ -22,6 +22,7 @@ public class Love {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Article article;
+
     private LocalDateTime createDate;
 
     @Builder

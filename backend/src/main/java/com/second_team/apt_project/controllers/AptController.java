@@ -36,7 +36,6 @@ public class AptController {
     }
 
     @PutMapping
-
     public ResponseEntity<?> updateApt(@RequestBody AptRequestDTO aptRequestDTO,
                                        @RequestHeader("Authorization") String accessToken,
                                        @RequestHeader("PROFILE_ID") Long profileId) {
@@ -44,8 +43,7 @@ public class AptController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                AptResponseDTO aptResponseDTO = multiService.updateApt(profileId, aptRequestDTO.getAptId(), aptRequestDTO.getRoadAddress(), aptRequestDTO.getAptName(), aptRequestDTO.getUrl(), username);
-                return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTO);
+                AptResponseDTO aptResponseDTO = multiService.updateApt(profileId, aptRequestDTO.getAptId(), aptRequestDTO.getRoadAddress(), aptRequestDTO.getAptName(), aptRequestDTO.getKey(), username);                return ResponseEntity.status(HttpStatus.OK).body(aptResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,5 +31,9 @@ public class CategoryService {
         category.setName(name);
         category.setModifyDate(LocalDateTime.now());
         return categoryRepository.save(category);
+    }
+
+    public List<Category> getList() {
+        return categoryRepository.getList();
     }
 }

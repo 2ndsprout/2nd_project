@@ -28,10 +28,10 @@ public class AptService {
                 .build());
     }
 
-    public void update(Apt apt, String roadAddress, String aptName) {
+    public Apt update(Apt apt, String roadAddress, String aptName) {
         apt.setAptName(aptName);
         apt.setRoadAddress(roadAddress);
-        aptRepository.save(apt);
+        return aptRepository.save(apt);
     }
 
     public List<Apt> getAptList() {

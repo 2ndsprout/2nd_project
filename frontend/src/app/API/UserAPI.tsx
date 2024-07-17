@@ -16,7 +16,6 @@ UserApi.interceptors.request.use(
         return config;
     },
     (error) => {
-        console.log(error);
         return Promise.reject(error);
     }
 );
@@ -229,15 +228,14 @@ export const getCategory = async (data: number) => {
     return response.data;
 }
 
-export const getCategoryList = async () => {
-    const response = await UserApi.get('/api/category/list');
-    return response.data;
+// Article
+interface getArticleList {
+    CategoryId: number;
+    Page: number;
 }
 
-// Article
-export const getArticleList = async ( categoryId: number ) => {
-    const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
-    console.log("Sending request with CategoryId:", categoryId);
+export const getArticleList = async ( data: getArticleList ) => {
+    const response = await UserApi.get('/api/article/page', { headers: { ...data } });
     return response.data;
 }
 

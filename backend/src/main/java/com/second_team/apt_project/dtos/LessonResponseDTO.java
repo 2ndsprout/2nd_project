@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LessonResponseDTO {
     private Long id;
-        private CenterResponseDTO centerResponseDTO;
+    private CenterResponseDTO centerResponseDTO;
     private ProfileResponseDTO profileResponseDTO;
     private String name;
     private String content;

@@ -61,12 +61,13 @@ public class ArticleController {
     @GetMapping
     public ResponseEntity<?> articleDetail(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader(value = "Page", defaultValue = "0") int page,
                                            @RequestHeader("ArticleId") Long articleId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username);
+                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username, page);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
         } catch (DataNotFoundException ex) {
@@ -85,6 +86,23 @@ public class ArticleController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId, categoryId);
+                return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/topActive")
+    public ResponseEntity<?> topActive(@RequestHeader("Authorization") String accessToken,
+                                       @RequestHeader("PROFILE_ID") Long profileId,
+                                       @RequestHeader("CategoryId") Long categoryId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                List<ArticleResponseDTO> articleResponseDTOList = this.multiService.topActive(username, profileId, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
