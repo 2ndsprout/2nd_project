@@ -3,19 +3,16 @@ package com.second_team.apt_project.services.module;
 import com.second_team.apt_project.exceptions.DataDuplicateException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.domains.SiteUser;
-import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,5 +68,10 @@ public class UserService {
         updateUser.setEmail(email);
         updateUser.setModifyDate(LocalDateTime.now());
         return userRepository.save(updateUser);
+    }
+
+    public void updatePassword(SiteUser user,  String newPassword1) {
+        user.setPassword(passwordEncoder.encode(newPassword1));
+        this.userRepository.save(user);
     }
 }
