@@ -213,9 +213,13 @@ export const deleteCategory = async (data: number) => {
 
 // Article
 
-export const getArticleList = async ( categoryId: number ) => {
-    const response = await UserApi.get('/api/article', { headers: { CategoryId: categoryId } });
-    console.log("Sending request with CategoryId:", categoryId);
+interface getArticleList {
+    CategoryId: number;
+    Page: number;
+}
+
+export const getArticleList = async ( data: getArticleList ) => {
+    const response = await UserApi.get('/api/article/page', { headers: { ...data } });
     return response.data;
 }
 
