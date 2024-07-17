@@ -35,7 +35,6 @@ public class CultureCenter {
     @Builder
     public CultureCenter(LocalDateTime openTime, LocalDateTime closeTime, CenterType centerType, Apt apt) {
         this.createDate = LocalDateTime.now();
-        this.apt = apt;
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.centerType = centerType;

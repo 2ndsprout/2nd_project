@@ -2,25 +2,27 @@ import React, { Dispatch, SetStateAction } from "react";
 
 interface Props {
   currentPage: number;
-  setCurrentPage: Dispatch<SetStateAction<number>>;
-  viewPageList: number[];
+  totalPages: number;
+  onPageChange: (newPage: number) => void;
 }
 
-const Pagination: React.FC<Props> = ({ currentPage, setCurrentPage, viewPageList }) => {
+const Pagination: React.FC<Props> = ({ currentPage, totalPages, onPageChange }) => {
+  const viewPageList = Array.from({ length: totalPages }, (_, index) => index + 1);
+
   const onPageClickHandler = (page: number) => {
-    setCurrentPage(page);
+    onPageChange(page);
   };
 
   const onPreviousClickHandler = () => {
     const prevPage = currentPage - 1;
-    if (prevPage < 1 || !viewPageList.includes(prevPage)) return;
-    setCurrentPage(prevPage);
+    if (prevPage < 1) return;
+    onPageChange(prevPage);
   };
 
   const onNextClickHandler = () => {
     const nextPage = currentPage + 1;
-    if (!viewPageList.includes(nextPage)) return;
-    setCurrentPage(nextPage);
+    if (nextPage > totalPages) return;
+    onPageChange(nextPage);
   };
 
   return (
@@ -52,7 +54,7 @@ const Pagination: React.FC<Props> = ({ currentPage, setCurrentPage, viewPageList
       <div className="pagination-divider text-gray-500 mx-2">|</div>
       <div className="flex items-center gap-2 cursor-pointer pagination-change-link-box">
         <div
-          className={`pagination-change-link-text ${!viewPageList.includes(currentPage + 1) ? "cursor-not-allowed" : "cursor-pointer"}`}
+          className={`pagination-change-link-text ${currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer"}`}
           onClick={onNextClickHandler}
         >
           다음
