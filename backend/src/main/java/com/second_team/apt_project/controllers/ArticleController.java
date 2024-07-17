@@ -61,12 +61,13 @@ public class ArticleController {
     @GetMapping
     public ResponseEntity<?> articleDetail(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader(value = "Page", defaultValue = "0") int page,
                                            @RequestHeader("ArticleId") Long articleId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username);
+                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username, page);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
         } catch (DataNotFoundException ex) {
