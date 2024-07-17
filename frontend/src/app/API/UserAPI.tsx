@@ -1,3 +1,4 @@
+import exp from 'constants';
 import { getAPI } from './AxiosAPI';
 
 
@@ -15,7 +16,6 @@ UserApi.interceptors.request.use(
         return config;
     },
     (error) => {
-        console.log(error);
         return Promise.reject(error);
     }
 );
