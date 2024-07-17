@@ -39,26 +39,26 @@ export default function Main(props: Readonly<pageInterface>) {
 
   return (
     <main id='main' className={'bg-black min-h-screen min-w-screen flex flex-col items-center relative ' + className}>
-      <header className='bg-gray-700 flex w-screen items-center h-1/5'>
+      <header className='bg-gray-700 flex w-max items-center h-[80px]'>
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
-              <img src="/user.png" alt="logo" className="w-[64px] h-[64px] ml-10" />
+              <img src="/user.png" alt="logo" className="w-[48px] h-[48px] ml-10" />
               <label className="text-xl font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
             </a>
           </div>
-          <div className="navbar-center justify-between w-[1200px]">
-            <a id="center" href="/" className="btn btn-ghost text-2xl hover:text-secondary"
+          <div className="navbar-center justify-between w-[900px]">
+            <a id="center" href="/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
               문화센터
             </a>
-            <a id="board" href="/" className="btn btn-ghost text-2xl hover:text-secondary"
+            <a id="board" href="/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setBoardHover)}
               onMouseLeave={() => closeHover(setBoardHover)}>
               게시판
             </a>
-            <a id="manage" href="/" className="btn btn-ghost text-2xl hover:text-secondary"
+            <a id="manage" href="/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
               관리사무소
@@ -93,10 +93,16 @@ export default function Main(props: Readonly<pageInterface>) {
             </div>
           </DropDown>
           <div className="navbar-end">
+            <div className='flex items-center border-2 border-gray-300 rounded-full px-5'>
+              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] mr-[20px] outline-none' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key == 'Enter') document.getElementById('search')?.click() }}></input>              
+            </div>
+            <button id='search' onClick={() => { const value = (document.getElementById('keyword') as HTMLInputElement)?.value; location.href = '/search?keyword=' + (value ? value : '') }}>
+                <img src='/user.png' className='rounded-full p-2 w-[64px] h-[64px]' />
+              </button>
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
-              onMouseLeave={() => closeHover(setUserHover)} className="mr-10 rounded-full flex flex-col">
-              <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px]' alt="default" />
+              onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
+              <img src={profile?.url ? profile.url : '/user.png'} className='w-[48px] h-[48px]' alt="default" />
             </button>
             <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={5}>
               <div
