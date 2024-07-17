@@ -50,6 +50,7 @@ public class MultiService {
     private final CommentService commentService;
     private final CultureCenterService cultureCenterService;
     private final LessonService lessonService;
+    private final LessonUserService lessonUserService;
 
     /**
      * Auth
@@ -486,9 +487,24 @@ public class MultiService {
                 FileSystem fileSystem = fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
                 url = fileSystem.getV();
             }
-            return ProfileResponseDTO.builder().id(profile.getId()).username(user.getUsername()).url(url).name(profile.getName()).build();
+            return ProfileResponseDTO.builder()
+                    .id(profile.getId())
+                    .url(url)
+                    .name(profile.getName())
+                    .username(profile.getUser().getUsername()).build();
         }
         return null;
+    }
+
+    private ProfileResponseDTO profileResponseDTO(Profile profile) {
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(profile.getUser().getUsername() + "." + profile.getId()));
+        String url = null;
+        if (_fileSystem.isPresent()) url = _fileSystem.get().getV();
+        return ProfileResponseDTO.builder()
+                .id(profile.getId())
+                .url(url)
+                .name(profile.getName())
+                .username(profile.getUser().getUsername()).build();
     }
 
     @Transactional
@@ -496,10 +512,8 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-        String url = null;
-        if (_fileSystem.isPresent()) url = _fileSystem.get().getV();
-        return ProfileResponseDTO.builder().id(profile.getId()).name(profile.getName()).url(url).username(user.getUsername()).build();
+
+        return profileResponseDTO(profile);
 
     }
 
@@ -1210,4 +1224,97 @@ public class MultiService {
         this.lessonService.delete(lesson);
     }
 
+    /**
+     * LessonUser
+     */
+
+    @Transactional
+    public LessonUserResponseDTO saveLessonUser(String username, Long profileId, Long lessonId, int type) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Lesson lesson = lessonService.findById(lessonId);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        return lessonUserResponseDTO(lessonUserService.save(lesson,profile,type));
+    }
+
+    private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {
+        return LessonUserResponseDTO.builder()
+                .id(lessonUser.getId())
+                .lessonResponseDTO(lessonResponseDTO(lessonUser.getLesson()))
+                .profileResponseDTO(profileResponseDTO(lessonUser.getProfile()))
+                .type(lessonUser.getLessonStatus().toString())
+                .build();
+    }
+
+    @Transactional
+    public LessonUserResponseDTO getLessonUser(String username, Long profileId, Long lessonUserId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        LessonUser lessonUser = lessonUserService.findById(lessonUserId);
+        if (lessonUser == null)
+            throw new DataNotFoundException("레슨신청 객체 없음");
+        if (!lessonUser.getProfile().equals(profile) && user.getRole() != UserRole.STAFF )
+            throw new IllegalArgumentException("권한이 없음");
+        return lessonUserResponseDTO(lessonUser);
+    }
+
+    @Transactional
+    public List<LessonUserResponseDTO> getLessonUserMyList(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        List<LessonUser> lessonUserList = lessonUserService.getMyList(profile);
+        List<LessonUserResponseDTO> userResponseDTOS = new ArrayList<>();
+        for (LessonUser lessonUser : lessonUserList) {
+            userResponseDTOS.add(lessonUserResponseDTO(lessonUser));
+        }
+        return userResponseDTOS;
+    }
+
+    @Transactional
+    public List<LessonUserResponseDTO> getLessonUserSecurityList(String username, Long profileId, int type, Long lessonId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Lesson lesson = lessonService.findById(lessonId);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        if (!lesson.getProfile().equals(profile))
+            throw new IllegalArgumentException("레슨 강사 아님");
+        List<LessonUser> lessonUserList = lessonUserService.getSecurityList(lesson, type);
+        List<LessonUserResponseDTO> userResponseDTOS = new ArrayList<>();
+        for (LessonUser lessonUser : lessonUserList) {
+            userResponseDTOS.add(lessonUserResponseDTO(lessonUser));
+        }
+        return userResponseDTOS;
+    }
+
+    @Transactional
+    public LessonUserResponseDTO updateLessonUser(String username, Long profileId, Long id, int type) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        LessonUser lessonUser = lessonUserService.findById(id);
+        if (lessonUser == null)
+            throw new DataNotFoundException("레슨신청 객체 없음");
+        if (!lessonUser.getProfile().equals(profile) && user.getRole() != UserRole.STAFF )
+            throw new IllegalArgumentException("권한이 없음");
+        return lessonUserResponseDTO(lessonUserService.update(lessonUser, type));
+    }
+
+    @Transactional
+    public void deleteLessonUser(String username, Long profileId, Long lessonUserId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        LessonUser lessonUser = lessonUserService.findById(lessonUserId);
+        if (lessonUser == null)
+            throw new DataNotFoundException("레슨신청 객체 없음");
+        if (!lessonUser.getProfile().equals(profile))
+            throw new IllegalArgumentException("신청유저가 아님");
+        lessonUserService.delete(lessonUser);
+    }
 }
