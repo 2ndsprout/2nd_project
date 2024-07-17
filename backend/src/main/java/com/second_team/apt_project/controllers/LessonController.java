@@ -52,7 +52,7 @@ public class LessonController {
         return tokenRecord.getResponseEntity();
     }
 
-    @GetMapping("/page")
+    @GetMapping("/list")
     public ResponseEntity<?> getLessonPage(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
                                            @RequestHeader(value = "Page", defaultValue = "0") int page) {
