@@ -608,6 +608,19 @@ public class MultiService {
 
         return categoryResponseDTO(category);
     }
+    @Transactional
+    public List<CategoryResponseDTO> getCategoryList(String username, Long profileId) {
+        SiteUser siteUser = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(siteUser, profile);
+        List<Category> categoryList = categoryService.getList();
+        List<CategoryResponseDTO> responseDTOList = new ArrayList<>();
+        for (Category category : categoryList){
+            responseDTOList.add(categoryResponseDTO(category));
+        }
+        return responseDTOList;
+
+    }
 
     @Transactional
     public CategoryResponseDTO updateCategory(String username, Long profileId, Long id, String name) {
@@ -1339,4 +1352,5 @@ public class MultiService {
             throw new IllegalArgumentException("신청유저가 아님");
         lessonUserService.delete(lessonUser);
     }
+
 }
