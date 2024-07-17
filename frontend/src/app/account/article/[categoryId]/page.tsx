@@ -8,6 +8,7 @@ import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Article {
+    categoryId: number;
     articleId: number;
     title: string;
     content: string;
