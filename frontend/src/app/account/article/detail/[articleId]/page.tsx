@@ -33,6 +33,7 @@ export default function ArticleDetail () {
     const [profile, setProfile] = useState(null as any);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    
     useEffect(() => {
         if (ACCESS_TOKEN)
             getUser()
@@ -43,6 +44,7 @@ export default function ArticleDetail () {
         else
             redirect('/account/login');
     }, [ACCESS_TOKEN]);
+
     useEffect(() => {
       if (PROFILE_ID)
           getProfile()
@@ -53,6 +55,7 @@ export default function ArticleDetail () {
       else
           redirect('/account/profile');
     }, [PROFILE_ID]);
+
     useEffect(() => {
         console.log("articleId:", articleId);
     }, [articleId]);
