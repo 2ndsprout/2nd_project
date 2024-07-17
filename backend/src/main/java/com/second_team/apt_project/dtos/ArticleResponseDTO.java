@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -23,10 +24,10 @@ public class ArticleResponseDTO {
     private Boolean topActive;
     private List<TagResponseDTO> tagResponseDTOList;
     private int loveCount;
-    private List<CommentResponseDTO> commentResponseDTOList;
+    private Page<CommentResponseDTO> commentResponseDTOList;
 
     @Builder
-    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList, Boolean topActive, int loveCount, List<CommentResponseDTO> commentResponseDTOList) {
+    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList, Boolean topActive, int loveCount, Page<CommentResponseDTO> commentResponseDTOList) {
         this.articleId = articleId;
         this.title = title;
         this.content = content;

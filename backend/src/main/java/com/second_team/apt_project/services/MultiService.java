@@ -50,6 +50,7 @@ public class MultiService {
     private final CommentService commentService;
     private final CultureCenterService cultureCenterService;
     private final LessonService lessonService;
+    private final LessonUserService lessonUserService;
 
     /**
      * Auth
@@ -121,7 +122,7 @@ public class MultiService {
     }
 
     @Transactional
-    private UserResponseDTO getUserResponseDTO(SiteUser siteUser, Apt apt) {
+    private UserResponseDTO getUserResponseDTO(SiteUser siteUser) {
         return UserResponseDTO.builder()
                 .aptNum(siteUser.getAptNum())
                 .username(siteUser.getUsername())
@@ -141,7 +142,7 @@ public class MultiService {
             throw new IllegalArgumentException("권한 불일치");
         if (email != null) userService.userEmailCheck(email);
         SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
-        return this.getUserResponseDTO(siteUser, siteUser.getApt());
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -169,12 +170,12 @@ public class MultiService {
         Page<SiteUser> userList = userService.getUserList(pageable, aptId);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
 
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && user.getApt().getId().equals(aptId))
             throw new IllegalArgumentException("권한 불일치");
         for (SiteUser siteUser : userList) {
             Apt apt = aptService.get(siteUser.getApt().getId());
             if (apt == null) throw new DataNotFoundException("apt not data");
-            UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser, apt);
+            UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser);
             responseDTOList.add(userResponseDTO);
         }
         return new PageImpl<>(responseDTOList, pageable, userList.getTotalElements());
@@ -183,12 +184,13 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getUsername().equals(username))
-            throw new IllegalArgumentException("권한 불일치");
         SiteUser user1 = userService.getUser(userId);
         Apt apt = aptService.get(user1.getApt().getId());
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getApt().equals(apt)) {
+            throw new IllegalArgumentException("권한 불일치");
+        }
         if (apt == null) throw new DataNotFoundException("apt not data");
-        return this.getUserResponseDTO(user1, apt);
+        return this.getUserResponseDTO(user1);
     }
 
 
@@ -201,7 +203,7 @@ public class MultiService {
         SiteUser siteUser = userService.update(user, email);
         Apt apt = aptService.get(siteUser.getApt().getId());
         if (apt == null) throw new DataNotFoundException("apt not data");
-        return this.getUserResponseDTO(siteUser, apt);
+        return this.getUserResponseDTO(siteUser);
     }
 
     @Transactional
@@ -223,7 +225,7 @@ public class MultiService {
     public UserResponseDTO getUser(String username) {
         SiteUser user = userService.get(username);
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
-        return this.getUserResponseDTO(user, user.getApt());
+        return this.getUserResponseDTO(user);
     }
 
 
@@ -232,8 +234,23 @@ public class MultiService {
      */
 
     private AptResponseDTO getAptResponseDTO(Apt apt) {
+//        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         if (apt == null) return null;
-        return AptResponseDTO.builder().aptId(apt.getId()).aptName(apt.getAptName()).roadAddress(apt.getRoadAddress()).x(apt.getX()).y(apt.getY()).build();
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        List<ImageListResponseDTO> imageListResponseDTOS = new ArrayList<>();
+        if (_multiKey.isPresent()) {
+            for (String value : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(value);
+                _fileSystem.ifPresent(fileSystem -> imageListResponseDTOS.add(ImageListResponseDTO.builder().key(fileSystem.getK()).value(fileSystem.getV()).build()));
+            }
+        }
+        return AptResponseDTO.builder()
+                .aptId(apt.getId())
+                .aptName(apt.getAptName())
+                .roadAddress(apt.getRoadAddress())
+                .x(apt.getX()).y(apt.getY())
+                .urlList(imageListResponseDTOS)
+                .build();
     }
 
     @Transactional
@@ -245,31 +262,47 @@ public class MultiService {
     }
 
     @Transactional
-    public AptResponseDTO updateApt(Long profileId, Long aptId, String roadAddress, String aptName, String url, String username) {
+    public AptResponseDTO updateApt(Long profileId, Long aptId, String roadAddress, String aptName, List<String> key, String username) {
         SiteUser user = userService.get(username);
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         Apt apt = aptService.get(aptId);
-
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
-        aptService.update(apt, roadAddress, aptName);
-        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
-        String path = AptProjectApplication.getOsType().getLoc();
-        if (_fileSystem.isPresent() && (url == null || !_fileSystem.get().getV().equals(url))) {
-            File old = new File(path + _fileSystem.get().getV());
-            if (old.exists()) old.delete();
-        }
-        if (url != null && !url.isBlank()) {
-            String newFile = "/api/apt/" + aptId.toString() + "/";
-            Optional<FileSystem> _newFileSystem = fileSystemService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
-            if (_newFileSystem.isPresent()) {
-                String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
-                fileSystemService.save(ImageKey.APT.getKey(apt.getId().toString()), newUrl);
+        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY ) throw new IllegalArgumentException("권한 불일치");
+        apt = aptService.update(apt, roadAddress, aptName);
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
+        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        if (_oldMulti.isPresent())
+            if (key != null) {
+                for (String k : key) {
+                    Optional<FileSystem> _fileSystem = fileSystemService.get(k);
+                    _fileSystem.ifPresent(fileSystem -> {
+                        fileSystemService.delete(fileSystem);
+                        _oldMulti.get().getVs().remove(key);
+                        deleteFile(_fileSystem.get());
+                    });
+                }
             }
-        }
-        Optional<FileSystem> _newAptFileSystem = fileSystemService.get(ImageKey.APT.getKey(apt.getId().toString()));
+        if (_newMultiKey.isPresent()) {
+            String newFile = "/api/apt" + "/" + apt.getId() + "/";
+            for (String values : _newMultiKey.get().getVs()) {
+                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
+                Optional<FileSystem> _newFileSystem = fileSystemService.get(values);
+                if (_newFileSystem.isPresent()) {
+                    String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
+                    if (_multiKey.isPresent()) {
+                        multiKeyService.add(_multiKey.get(), ImageKey.APT.getKey(apt.getId().toString() + "." + _multiKey.get().getVs().size()));
+                        fileSystemService.save(_multiKey.get().getVs().getLast(), newUrl);
+                    } else {
+                        MultiKey multiKey = multiKeyService.save(ImageKey.APT.getKey(apt.getId().toString()), ImageKey.APT.getKey(apt.getId().toString() + ".0"));
+                        fileSystemService.save(multiKey.getVs().getLast(), newUrl);
 
-        return _newAptFileSystem.map(fileSystem -> AptResponseDTO.builder().aptId(apt.getId()).aptName(apt.getAptName()).roadAddress(apt.getRoadAddress()).url(fileSystem.getV()).build()).orElse(null);
+                    }
+                }
+            }
+            multiKeyService.delete(_newMultiKey.get());
+        }
+
+        return getAptResponseDTO(apt);
     }
 
     @Transactional
@@ -279,22 +312,19 @@ public class MultiService {
         List<Apt> aptList = aptService.getAptList();
         List<AptResponseDTO> responseDTOList = new ArrayList<>();
         for (Apt apt : aptList) {
-            AptResponseDTO aptResponseDTO = this.getApt(apt);
+            AptResponseDTO aptResponseDTO = this.getAptResponseDTO(apt);
             responseDTOList.add(aptResponseDTO);
         }
         return responseDTOList;
     }
 
-    private AptResponseDTO getApt(Apt apt) {
-        return getAptResponseDTO(apt);
-    }
 
     @Transactional
     public AptResponseDTO getAptDetail(Long aptId, String username) {
         SiteUser user = userService.get(username);
-        if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
         Apt apt = aptService.get(aptId);
-        AptResponseDTO aptResponseDTO = this.getApt(apt);
+        if (user.getRole() != UserRole.ADMIN && !user.getApt().equals(apt)) throw new IllegalArgumentException("권한 불일치");
+        AptResponseDTO aptResponseDTO = this.getAptResponseDTO(apt);
         return aptResponseDTO;
     }
 
@@ -486,9 +516,24 @@ public class MultiService {
                 FileSystem fileSystem = fileSystemService.save(ImageKey.USER.getKey(username + "." + profile.getId()), newUrl);
                 url = fileSystem.getV();
             }
-            return ProfileResponseDTO.builder().id(profile.getId()).username(user.getUsername()).url(url).name(profile.getName()).build();
+            return ProfileResponseDTO.builder()
+                    .id(profile.getId())
+                    .url(url)
+                    .name(profile.getName())
+                    .username(profile.getUser().getUsername()).build();
         }
         return null;
+    }
+
+    private ProfileResponseDTO profileResponseDTO(Profile profile) {
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(profile.getUser().getUsername() + "." + profile.getId()));
+        String url = null;
+        if (_fileSystem.isPresent()) url = _fileSystem.get().getV();
+        return ProfileResponseDTO.builder()
+                .id(profile.getId())
+                .url(url)
+                .name(profile.getName())
+                .username(profile.getUser().getUsername()).build();
     }
 
     @Transactional
@@ -496,10 +541,8 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-        String url = null;
-        if (_fileSystem.isPresent()) url = _fileSystem.get().getV();
-        return ProfileResponseDTO.builder().id(profile.getId()).name(profile.getName()).url(url).username(user.getUsername()).build();
+
+        return profileResponseDTO(profile);
 
     }
 
@@ -594,6 +637,19 @@ public class MultiService {
 
         return categoryResponseDTO(category);
     }
+    @Transactional
+    public List<CategoryResponseDTO> getCategoryList(String username, Long profileId) {
+        SiteUser siteUser = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(siteUser, profile);
+        List<Category> categoryList = categoryService.getList();
+        List<CategoryResponseDTO> responseDTOList = new ArrayList<>();
+        for (Category category : categoryList){
+            responseDTOList.add(categoryResponseDTO(category));
+        }
+        return responseDTOList;
+
+    }
 
     @Transactional
     public CategoryResponseDTO updateCategory(String username, Long profileId, Long id, String name) {
@@ -646,17 +702,9 @@ public class MultiService {
         List<Love> loveList = loveService.findByArticle(article.getId());
         if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
         int loveCount = loveList.size();
-        List<Comment> commentList = commentService.getComment(article.getId());
-        if (commentList == null) throw new DataNotFoundException("댓글 객체 없음");
-        List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
-        for (Comment comment : commentList) {
-            CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
-            commentResponseDTOList.add(commentResponseDTO);
-        }
-        String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
-        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount, commentResponseDTOList);
+        return this.getArticleResponseDTO(article, tagResponseDTOList, loveCount);
     }
 
 
@@ -683,21 +731,13 @@ public class MultiService {
         List<Love> loveList = loveService.findByArticle(article.getId());
         if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
         int loveCount = loveList.size();
-        List<Comment> commentList = commentService.getComment(article.getId());
-        if (commentList == null) throw new DataNotFoundException("댓글 객체 없음");
-        List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
-        for (Comment comment : commentList) {
-            CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
-            commentResponseDTOList.add(commentResponseDTO);
-        }
-        String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
-        return this.getArticleResponseDTO(article, profileUrl, tagResponseDTOList, loveCount, commentResponseDTOList);
+        return this.getArticleResponseDTO(article, tagResponseDTOList, loveCount);
     }
 
     @Transactional
-    public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username) {
+    public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username, int page) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
@@ -713,15 +753,62 @@ public class MultiService {
         List<Love> loveList = loveService.findByArticle(article.getId());
         if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
         int loveCount = loveList.size();
-        List<Comment> commentList = commentService.getComment(article.getId());
+        Pageable pageable = PageRequest.of(page, 15);
+        Page<Comment> commentList = commentService.getCommentPaging(pageable, article.getId());
         if (commentList == null) throw new DataNotFoundException("댓글 객체 없음");
         List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
         for (Comment comment : commentList) {
             CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
             commentResponseDTOList.add(commentResponseDTO);
         }
-        String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
-        return this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount, commentResponseDTOList);
+        PageImpl<CommentResponseDTO> commentPage = new PageImpl<>(commentResponseDTOList, pageable, commentList.getTotalElements());
+        return this.getArticleResponseDTODetail(article, responseDTOList, loveCount, commentPage);
+    }
+
+    private ArticleResponseDTO getArticleResponseDTODetail(Article article, List<TagResponseDTO> responseDTOList, int loveCount, Page<CommentResponseDTO> commentResponseDTOList) {
+        String profileUrl = this.profileUrl(article.getProfile().getUser().getUsername(), article.getProfile().getId());
+
+        return ArticleResponseDTO.builder()
+                .articleId(article.getId())
+                .title(article.getTitle())
+                .content(article.getContent())
+                .loveCount(loveCount)
+                .createDate(this.dateTimeTransfer(article.getCreateDate()))
+                .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
+                .categoryName(article.getCategory().getName())
+                .profileResponseDTO(ProfileResponseDTO.builder()
+                        .id(article.getProfile().getId())
+                        .username(article.getProfile().getName())
+                        .url(profileUrl)
+                        .name(article.getProfile().getName())
+                        .build())
+                .tagResponseDTOList(responseDTOList)
+                .topActive(article.getTopActive())
+                .commentResponseDTOList(commentResponseDTOList)
+                .build();
+    }
+
+    @Transactional
+    public List<ArticleResponseDTO> topActive(String username, Long profileId, Long categoryId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Boolean topActive = true;
+        List<Article> articleList = articleService.topActive(user.getApt().getId(), categoryId, topActive);
+        List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
+        for (Article article : articleList) {
+            ArticleResponseDTO articleResponseDTO = ArticleResponseDTO.builder()
+                    .articleId(article.getId())
+                    .topActive(article.getTopActive())
+                    .title(article.getTitle())
+                    .content(article.getContent())
+                    .categoryName(article.getCategory().getName())
+                    .createDate(this.dateTimeTransfer(article.getCreateDate()))
+                    .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
+                    .build();
+            articleResponseDTOList.add(articleResponseDTO);
+        }
+        return articleResponseDTOList;
     }
 
     @Transactional
@@ -746,22 +833,32 @@ public class MultiService {
             List<Love> loveList = loveService.findByArticle(article.getId());
             if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
             int loveCount = loveList.size();
-            List<Comment> commentList = commentService.getComment(article.getId());
-            if (commentList == null) throw new DataNotFoundException("댓글 객체 없음");
-            List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
-            for (Comment comment : commentList) {
-                CommentResponseDTO commentResponseDTO = this.commentResponseDTO(comment, comment.getProfile());
-                commentResponseDTOList.add(commentResponseDTO);
-            }
-            String profileUrl = this.profileUrl(user.getUsername(), profile.getId());
-            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, profileUrl, responseDTOList, loveCount, commentResponseDTOList);
+            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, responseDTOList, loveCount);
             articleResponseDTOList.add(articleResponseDTO);
         }
         return new PageImpl<>(articleResponseDTOList, pageable, articleList.getTotalElements());
     }
 
-    private ArticleResponseDTO getArticleResponseDTO(Article article, String profileUrl, List<TagResponseDTO> responseDTOList, int loveCount, List<CommentResponseDTO> commentResponseDTOList) {
-        return ArticleResponseDTO.builder().articleId(article.getId()).title(article.getTitle()).content(article.getContent()).loveCount(loveCount).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getName()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).commentResponseDTOList(commentResponseDTOList).build();
+    private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList, int loveCount) {
+        String profileUrl = this.profileUrl(article.getProfile().getUser().getUsername(), article.getProfile().getId());
+
+        return ArticleResponseDTO.builder()
+                .articleId(article.getId())
+                .title(article.getTitle())
+                .content(article.getContent())
+                .loveCount(loveCount)
+                .createDate(this.dateTimeTransfer(article.getCreateDate()))
+                .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
+                .categoryName(article.getCategory().getName())
+                .profileResponseDTO(ProfileResponseDTO.builder()
+                        .id(article.getProfile().getId())
+                        .username(article.getProfile().getName())
+                        .url(profileUrl)
+                        .name(article.getProfile().getName())
+                        .build())
+                .tagResponseDTOList(responseDTOList)
+                .topActive(article.getTopActive())
+                .build();
     }
 
     private void updateArticleContent(Article article, MultiKey multiKey) {
@@ -803,7 +900,7 @@ public class MultiService {
         Article article = articleService.findById(articleId);
         if (article == null) throw new DataNotFoundException("게시물 객체 없음");
         Comment comment = commentService.saveComment(article, profile, content, parentId);
-        if (comment.getParent().getArticle().getId() != article.getId())
+        if (comment.getParent() != null && comment.getParent().getArticle().getId() != article.getId())
             throw new DataNotFoundException("부모 댓글의 게시글 객체와 해당 게시글 객체가 다름");
         return this.commentResponseDTO(comment, profile);
     }
@@ -1162,14 +1259,17 @@ public class MultiService {
     }
 
     @Transactional
-    public Page<LessonResponseDTO> getLessonPage(String username, Long profileId, int page) {
+    public Page<LessonResponseDTO> getLessonPage(String username, Long profileId, int page, Long centerId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Pageable pageable = PageRequest.of(page, 15);
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
 
 
-        Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable);
+        Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable, cultureCenter);
         if (lessonPage == null)
             throw new DataNotFoundException("레슨 페이지 객체 없음");
         List<LessonResponseDTO> lessonResponseDTOS = new ArrayList<>();
@@ -1208,6 +1308,99 @@ public class MultiService {
         if (!lesson.getProfile().equals(profile))
             throw new IllegalArgumentException("프로필 불일치");
         this.lessonService.delete(lesson);
+    }
+
+    /**
+     * LessonUser
+     */
+
+    @Transactional
+    public LessonUserResponseDTO saveLessonUser(String username, Long profileId, Long lessonId, int type) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Lesson lesson = lessonService.findById(lessonId);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        return lessonUserResponseDTO(lessonUserService.save(lesson,profile,type));
+    }
+
+    private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {
+        return LessonUserResponseDTO.builder()
+                .id(lessonUser.getId())
+                .lessonResponseDTO(lessonResponseDTO(lessonUser.getLesson()))
+                .type(lessonUser.getLessonStatus().toString())
+                .build();
+    }
+
+    @Transactional
+    public LessonUserResponseDTO getLessonUser(String username, Long profileId, Long lessonUserId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        LessonUser lessonUser = lessonUserService.findById(lessonUserId);
+        if (lessonUser == null)
+            throw new DataNotFoundException("레슨신청 객체 없음");
+        if (!lessonUser.getProfile().equals(profile) && user.getRole() == UserRole.USER )
+            throw new IllegalArgumentException("권한이 없음");
+        return lessonUserResponseDTO(lessonUser);
+    }
+
+    @Transactional
+    public List<LessonUserResponseDTO> getLessonUserMyList(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        List<LessonUser> lessonUserList = lessonUserService.getMyList(profile);
+        List<LessonUserResponseDTO> userResponseDTOS = new ArrayList<>();
+        for (LessonUser lessonUser : lessonUserList) {
+            userResponseDTOS.add(lessonUserResponseDTO(lessonUser));
+        }
+        return userResponseDTOS;
+    }
+
+    @Transactional
+    public List<LessonUserResponseDTO> getLessonUserStaffList(String username, Long profileId, int type, Long lessonId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Lesson lesson = lessonService.findById(lessonId);
+        if (lesson == null)
+            throw new DataNotFoundException("레슨 객체 없음");
+        if (!lesson.getProfile().equals(profile))
+            throw new IllegalArgumentException("레슨 강사 아님");
+        List<LessonUser> lessonUserList = lessonUserService.getStaffList(lesson, type);
+        List<LessonUserResponseDTO> userResponseDTOS = new ArrayList<>();
+        for (LessonUser lessonUser : lessonUserList) {
+            userResponseDTOS.add(lessonUserResponseDTO(lessonUser));
+        }
+        return userResponseDTOS;
+    }
+
+    @Transactional
+    public LessonUserResponseDTO updateLessonUser(String username, Long profileId, Long id, int type) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        LessonUser lessonUser = lessonUserService.findById(id);
+        if (lessonUser == null)
+            throw new DataNotFoundException("레슨신청 객체 없음");
+        if (!lessonUser.getProfile().equals(profile) && !lessonUser.getLesson().getProfile().equals(profile) )
+            throw new IllegalArgumentException("권한이 없음");
+        return lessonUserResponseDTO(lessonUserService.update(lessonUser, type));
+    }
+
+    @Transactional
+    public void deleteLessonUser(String username, Long profileId, Long lessonUserId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        LessonUser lessonUser = lessonUserService.findById(lessonUserId);
+        if (lessonUser == null)
+            throw new DataNotFoundException("레슨신청 객체 없음");
+        if (!lessonUser.getProfile().equals(profile))
+            throw new IllegalArgumentException("신청유저가 아님");
+        lessonUserService.delete(lessonUser);
     }
 
 }

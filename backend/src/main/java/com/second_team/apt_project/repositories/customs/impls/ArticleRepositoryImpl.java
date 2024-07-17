@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
@@ -22,13 +24,22 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
 
     @Override
     public Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId, Boolean topActive) {
-        JPAQuery<Article> query = jpaQueryFactory.selectFrom(qArticle)
+         QueryResults<Article> results= jpaQueryFactory.selectFrom(qArticle)
                 .leftJoin(qArticle.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qArticle.topActive.eq(topActive).and(qApt.id.eq(aptId)).and(qCategory.id.eq(categoryId)));
-
-        QueryResults<Article> results = query.fetchResults();
+                .where(qArticle.topActive.eq(topActive).and(qApt.id.eq(aptId)).and(qCategory.id.eq(categoryId))).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
+    }
+
+    @Override
+    public List<Article> findByTopActive(Long aptId, Long categoryId, Boolean topActive) {
+        return jpaQueryFactory.selectFrom(qArticle)
+                .leftJoin(qArticle.profile.user, qSiteUser)
+                .leftJoin(qSiteUser.apt, qApt)
+                .where(qArticle.topActive.eq(topActive)
+                        .and(qApt.id.eq(aptId))
+                        .and(qArticle.category.id.eq(categoryId)))
+                .fetch();
     }
 }

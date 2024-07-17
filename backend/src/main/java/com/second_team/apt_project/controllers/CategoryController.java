@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/category")
@@ -79,6 +81,22 @@ public class CategoryController {
                 return ResponseEntity.status(HttpStatus.OK).body(categoryResponseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getCategoryList(@RequestHeader("Authorization") String accessToken,
+                                         @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                List<CategoryResponseDTO> categoryResponseDTO = multiService.getCategoryList(username, profileId);
+                return ResponseEntity.status(HttpStatus.OK).body(categoryResponseDTO);
+            }
+        } catch (DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
