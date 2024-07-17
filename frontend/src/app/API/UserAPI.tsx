@@ -259,10 +259,27 @@ export const postArticle = async (data: PostArticleProps) => {
     return response.data;
 }
 
+interface UpdateArticleProps {
+    categoryId: number;
+    articleId: number; 
+    title: string;
+    content: string; 
+    topActive?: boolean; 
+    tagId?: number[];
+}
+
+export const updateArticle = async (data: UpdateArticleProps) => {
+    const response = await UserApi.put(`/api/article`, data);
+    return response.data;
+}
+
 export const getTopArticleList = async (data: number) => {
     const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId' :  data}});
     return response.data;
 }
+
+
+// Tag
 
 // Tag
 interface TagProps {

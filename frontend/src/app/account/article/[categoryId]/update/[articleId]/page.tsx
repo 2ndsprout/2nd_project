@@ -1,58 +1,71 @@
-'use client'
+'use client';
 
-import { getProfile, getUser, postArticle, saveImage, saveImageList } from '@/app/API/UserAPI';
-import { KeyDownCheck, Move } from  '@/app/Global/Method';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, redirect } from "next/navigation";
+import { useParams, redirect } from 'next/navigation';
 import Link from 'next/link';
+import { getProfile, getUser, saveImage, saveImageList, updateArticle, getArticle } from '@/app/API/UserAPI';
+import { KeyDownCheck, Move } from '@/app/Global/Method';
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
-export default function Page() {
-    const { categoryId } = useParams();
+export default function EditPage() {
+    const { categoryId, articleId } = useParams();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [error, setError] = useState('');
     const [preKey, setPreKey] = useState('');
-    const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
-    const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
+    const [showEditConfirm, setShowEditConfirm] = useState(false); // 수정 확인 창 상태 추가
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const quillInstance = useRef<ReactQuill>(null);
     const [url, setUrl] = useState('');
+    const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
+    const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
 
     useEffect(() => {
-        if (ACCESS_TOKEN)
+        if (ACCESS_TOKEN) {
             getUser()
                 .then(r => {
                     setUser(r);
                 })
                 .catch(e => console.log(e));
-        else
+        } else {
             redirect('/account/login');
+        }
     }, [ACCESS_TOKEN]);
-    
+
     useEffect(() => {
-      if (PROFILE_ID)
-          getProfile()
-              .then(r => {
-                  setProfile(r);
-              })
-              .catch(e => console.log(e));
-      else
-          redirect('/account/profile');
+        if (PROFILE_ID) {
+            getProfile()
+                .then(r => {
+                    setProfile(r);
+                })
+                .catch(e => console.log(e));
+        } else {
+            redirect('/account/profile');
+        }
     }, [PROFILE_ID]);
+
+    useEffect(() => {
+        if (articleId) {
+            getArticle(Number(articleId))
+                .then(article => {
+                    setTitle(article.title);
+                    setContent(article.content);
+                })
+                .catch(e => console.log(e));
+        }
+    }, [articleId, categoryId]);
 
     function stripHtmlTags(html: string) {
         const doc = new DOMParser().parseFromString(html, 'text/html');
         return doc.body.textContent || '';
     }
 
-
-    function Sumbit() {
+    function handleSubmit() {
         if (!title.trim()) {
             setError('제목을 입력해 주세요.');
             return;
@@ -64,36 +77,36 @@ export default function Page() {
 
         const plainContent = stripHtmlTags(content);  // HTML태그 제거
 
-        // POST 요청 데이터 준비
+        // PUT 요청 데이터 준비
         const requestData = {
+            articleId: Number(articleId),
             title,
-            content: plainContent,
             categoryId: Number(categoryId),
+            content: plainContent,
             tagId: tagIdArray, // 빈 배열 또는 실제 tagId 배열
-            boolean: false
+            topActive: false
         };
 
-
-        postArticle(requestData)
+        updateArticle(requestData)
             .then(() => {
-                console.log("게시물 등록 완료");
-                window.location.href = `/`;
-            }).catch((error) => {
+                console.log("게시물 수정 완료");
+                window.location.href = `/account/article/${categoryId}/detail/${articleId}`;
+            })
+            .catch((error) => {
                 console.log(error);
-                setError('게시물 작성 중 오류가 발생했습니다.');
-                
+                setError('게시물 수정 중 오류가 발생했습니다.');
             });
     }
+
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
-    
-    
+
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
-    
+
             try {
                 const formData = new FormData();
                 formData.append('file', file as any);
@@ -126,6 +139,7 @@ export default function Page() {
         }),
         [],
     );
+
     function Change(file: any) {
         const formData = new FormData();
         formData.append('file', file);
@@ -138,21 +152,25 @@ export default function Page() {
         return categoryId === String(id) ? "text-yellow-400 hover:underline" : "hover:underline";
     };
 
+    const confirmEdit = () => {
+        setShowEditConfirm(true);
+    };
+
     return (
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 bg-gray-800">
                 <div className="mt-5 ml-20">
                     <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
                     <ul>
-                    <li className="mb-2">
-                        <Link href="/account/article/1" className={getLinkClass(1)}>자유게시판</Link>
-                    </li>
-                    <li className="mb-2">
-                        <Link href="/account/article/2" className={getLinkClass(2)}>공지사항</Link>
-                    </li>
-                    <li className="mb-2">
-                        <Link href="/account/article/3" className={getLinkClass(3)}>중고거래 게시판</Link>
-                    </li>
+                        <li className="mb-2">
+                            <Link href="/account/article/1" className={getLinkClass(1)}>자유게시판</Link>
+                        </li>
+                        <li className="mb-2">
+                            <Link href="/account/article/2" className={getLinkClass(2)}>공지사항</Link>
+                        </li>
+                        <li className="mb-2">
+                            <Link href="/account/article/3" className={getLinkClass(3)}>중고거래 게시판</Link>
+                        </li>
                     </ul>
                 </div>
             </aside>
@@ -169,17 +187,8 @@ export default function Page() {
                         onBlur={e => e.target.style.border = ''}
                         onChange={e => setTitle(e.target.value)}
                         onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
+                        value={title}
                     />
-                    {/* <textarea
-                        id='content'
-                        className='w-full h-72 input input-bordered rounded-[0] text-black'
-                        style={{ outline: '0px', color: 'black' }}
-                        placeholder='내용 입력'
-                        onFocus={e => e.target.style.border = '2px solid red'}
-                        onBlur={e => e.target.style.border = ''}
-                        onChange={e => setContent(e.target.value)}
-                        onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, pre: () => Move('title'), next: () => document.getElementById('submit')?.click() })}
-                    /> */}
                     <QuillNoSSRWrapper
                         id={content}
                         forwardedRef={quillInstance}
@@ -190,29 +199,39 @@ export default function Page() {
                         className='w-full'
                         placeholder="내용을 입력해주세요."
                     />
-                    {/* <input type="file" onChange={(e) => Change(e.target.files[0])} /> */}
                 </div>
                 <div className="flex justify-end gap-4 mt-6">
                     <button
                         className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
-                        onClick={() => window.location.href = '/'}
+                        onClick={() => window.location.href = `/account/article/detail/${articleId}`}
                     >
                         취소
                     </button>
                     <button
                         id='submit'
                         className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
-                        onClick={() => Sumbit()}
+                        onClick={confirmEdit}
                     >
-                        작성
+                        수정
                     </button>
                 </div>
             </div>
             <aside className="w-1/6 p-6 flex flex-col items-start">
                 
             </aside>
+            {/* 수정 확인창 */}
+            {showEditConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 p-5 rounded shadow-lg">
+                        <div className="text-lg font-semibold text-white">수정 확인</div>
+                        <p className="text-gray-400">이 게시물을 수정하시겠습니까?</p>
+                        <div className="mt-4 flex justify-end">
+                            <button onClick={() => setShowEditConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
+                            <button onClick={handleSubmit} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">수정</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-
-
