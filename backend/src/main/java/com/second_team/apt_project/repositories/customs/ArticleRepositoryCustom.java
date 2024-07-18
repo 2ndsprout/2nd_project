@@ -10,4 +10,6 @@ public interface ArticleRepositoryCustom {
     Page<Article> findByArticleList(Pageable pageable, Long aptId, Long categoryId, Boolean topActive);
 
     List<Article> findByTopActive(Long aptId, Long categoryId, Boolean topActive);
+
+    List<Article> findByArticle(Long profileId);
 }

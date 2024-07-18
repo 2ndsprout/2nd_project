@@ -52,4 +52,8 @@ public class ArticleService {
     public void deleteArticle(Article article) {
         articleRepository.delete(article);
     }
+
+    public List<Article> findByArticle(Long profileId) {
+        return articleRepository.findByArticle(profileId);
+    }
 }
