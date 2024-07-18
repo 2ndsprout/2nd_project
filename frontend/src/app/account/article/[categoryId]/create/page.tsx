@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, redirect } from "next/navigation";
 import Link from 'next/link';
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
+import CategoryList from '@/app/Global/CategoryList';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -141,20 +142,7 @@ export default function Page() {
     return (
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 bg-gray-800">
-                <div className="mt-5 ml-20">
-                    <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
-                    <ul>
-                    <li className="mb-2">
-                        <Link href="/account/article/1" className={getLinkClass(1)}>자유게시판</Link>
-                    </li>
-                    <li className="mb-2">
-                        <Link href="/account/article/2" className={getLinkClass(2)}>공지사항</Link>
-                    </li>
-                    <li className="mb-2">
-                        <Link href="/account/article/3" className={getLinkClass(3)}>중고거래 게시판</Link>
-                    </li>
-                    </ul>
-                </div>
+                <CategoryList />
             </aside>
             <div className="flex-1 p-10">
                 <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
