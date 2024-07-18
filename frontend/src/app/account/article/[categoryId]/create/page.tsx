@@ -73,7 +73,7 @@ export default function Page() {
             content: plainContent,
             categoryId: Number(categoryId),
             tagId: tagIdArray, // 빈 배열 또는 실제 tagId 배열
-            boolean: false
+            topActive: false
         };
 
 
@@ -160,27 +160,19 @@ export default function Page() {
                         onChange={e => setTitle(e.target.value)}
                         onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
                     />
-                    {/* <textarea
-                        id='content'
-                        className='w-full h-72 input input-bordered rounded-[0] text-black'
-                        style={{ outline: '0px', color: 'black' }}
-                        placeholder='내용 입력'
-                        onFocus={e => e.target.style.border = '2px solid red'}
-                        onBlur={e => e.target.style.border = ''}
-                        onChange={e => setContent(e.target.value)}
-                        onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, pre: () => Move('title'), next: () => document.getElementById('submit')?.click() })}
-                    /> */}
-                    <QuillNoSSRWrapper
-                        id={content}
-                        forwardedRef={quillInstance}
-                        value={content}
-                        onChange={(e: any) => setContent(e)}
-                        modules={modules}
-                        theme="snow"
-                        className='w-full'
-                        placeholder="내용을 입력해주세요."
-                    />
-                    {/* <input type="file" onChange={(e) => Change(e.target.files[0])} /> */}
+                    <div style={{ maxHeight: '600px', overflow: 'auto' }}>
+                        <QuillNoSSRWrapper
+                            id={content}
+                            forwardedRef={quillInstance}
+                            value={content}
+                            onChange={(e: any) => setContent(e)}
+                            modules={modules}
+                            theme="snow"
+                            className='w-full text-black'
+                            style={{ height: '70%', minHeight: '600px', background: 'white'}}
+                            placeholder="내용을 입력해주세요."
+                        />
+                    </div>
                 </div>
                 <div className="flex justify-end gap-4 mt-6">
                     <button

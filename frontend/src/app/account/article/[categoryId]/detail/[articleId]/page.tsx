@@ -1,10 +1,11 @@
 'use client'
 
+import React, { useEffect, useState } from 'react';
 import { getArticle, getProfile, getUser } from '@/app/API/UserAPI';
 import { getDateTimeFormat } from '@/app/Global/Method';
 import Link from 'next/link';
 import { redirect, useParams } from "next/navigation";
-import { useEffect, useState } from 'react';
+import CommentList from '../../../comment/page'
 
 interface Article {
     categoryId: number;
@@ -118,7 +119,7 @@ export default function ArticleDetail() {
     };
 
     if (!article) {
-        return <div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>;
+        return <div className="flex items-center justify-center h-screen text-gray-400">게시물을 불러오는 중입니다...</div>;
     }
 
     return (
@@ -129,15 +130,15 @@ export default function ArticleDetail() {
                     <div className="mt-2 ml-5 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
                 </div>
             </aside>
-            <div className="flex-1 p-10">
+            <div className="w-4/6 p-10">
                 <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                <div className="bg-gray-800 min-h-200 p-6 rounded-lg shadow-lg">
                     {article.content}
                 </div>
                 <div>
-                    좋아요 댓글수
                     {/* 좋아요 댓글수 표시, 댓글 입력창*/}
+                    <CommentList articleId={article.articleId} />
                 </div>
                 <div className="mt-6">
                     {/* <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
