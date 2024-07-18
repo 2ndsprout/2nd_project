@@ -25,14 +25,14 @@ UserApi.interceptors.response.use((response) => {
 }, async (error) => {
     const originalRequest = error.config;
     if (!originalRequest._retry)
-        if (error.response.status === 401 && (error.response.data == '' || error.response.data == null)) {
+        if (error.response.status === 401 && error.response.data == 'refresh') {
             await refreshAccessToken();
             return UserApi(originalRequest);
-        } else if (error.response.status === 403 && (error.response.data == '' || error.response.data == null)) {
+        } else if (error.response.status === 403 && error.response.data == 'logout') {
             localStorage.clear();
             window.location.href = '/account/login';
             return;
-        } else if (error.response.status === 403 && (error.response.data == '' || error.response.data == null)) {
+        } else if (error.response.status === 403 && error.response.data == 'unknown profile') {
             window.location.href = '/account/profile';
             return;
         }
@@ -208,6 +208,11 @@ interface UpdateCategoryProps {
     name: string
 }
 
+export const getCategoryList = async () => {
+    const response = await UserApi.get('/api/category/list');
+    return response.data;
+}
+
 export const postCategory = async (data: CategoryProps) => {
     const response = await UserApi.post('/api/category', data);
     return response.data;
@@ -235,7 +240,7 @@ interface getArticleList {
 }
 
 export const getArticleList = async ( data: getArticleList ) => {
-    const response = await UserApi.get('/api/article/page', { headers: { ...data } });
+    const response = await UserApi.get('/api/article/list', { headers: { ...data } });
     return response.data;
 }
 

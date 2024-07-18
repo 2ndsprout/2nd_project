@@ -37,27 +37,27 @@ export default function ArticleDetail() {
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser()
-                .then(r => {
-                    setUser(r);
-                })
-                .catch(e => console.log(e));
-        } else {
-            redirect('/account/login');
-        }
-    }, [ACCESS_TOKEN]);
-
-    useEffect(() => {
-        if (PROFILE_ID) {
+          getUser()
+            .then(r => {
+              setUser(r);
+            })
+            .catch(e => console.log(e));
+          if (PROFILE_ID)
             getProfile()
-                .then(r => {
-                    setProfile(r);
-                })
-                .catch(e => console.log(e));
-        } else {
+              .then(r => {
+                setProfile(r);
+                // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
+                // .then(r => setSearch(r))
+                // .catch(e => console.log
+              })
+              .catch(e => console.log(e));
+          else
             redirect('/account/profile');
         }
-    }, [PROFILE_ID]);
+        else
+          redirect('/account/login');
+    
+      }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         console.log("articleId:", articleId);

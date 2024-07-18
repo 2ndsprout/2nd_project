@@ -75,11 +75,11 @@ export default function Page() {
             getProfile()
                 .then(() => {
                     console.log("profile selected!");
-                    if (user.username === 'admin') {
-                        window.location.href = '/account/admin';
-                    } else {
+                    // if (user.username === 'admin') {
+                    //     window.location.href = '/account/admin';
+                    // } else {
                         window.location.href = '/';
-                    }
+                    // }
                 })
                 .catch(e => console.log(e));
         }
@@ -98,7 +98,7 @@ export default function Page() {
 
     return (
         <>
-            <div className="bg-black flex flex-col items-center min-h-screen relative" id="main">
+            <div className="bg-black flex flex-col items-center h-[953px] w-[1900px] relative" id="main">
                 <div className="flex justify-end w-full mt-[15px] mr-[50px]">
                     <button id="profileSettings" className="btn btn-active btn-primary w-[180px] text-lg text-black" onClick={() => setOpenDropDown(!openDropDown)}>
                         <FontAwesomeIcon icon={faBars} />프로필 설정
@@ -154,8 +154,8 @@ export default function Page() {
                     <input id='file' hidden type='file' onChange={e => Change(e.target.files?.[0])} />
                 </div>
                 <div className="mt-0 flex flex-col items-center">
-                    <label className="input input-lg w-full max-w-xs input-bordered flex items-center gap-2">
-                        <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className="grow text-black" placeholder="이름을 입력해주세요" />
+                    <label className="input input-lg w-full max-w-xs input-bordered flex items-center">
+                        <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요" />
                     </label>
                     <button className='btn btn-xl btn-accent mt-10 text-black' onClick={() => Regist()}>프로필 등록</button>
                 </div>

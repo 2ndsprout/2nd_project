@@ -38,8 +38,8 @@ export default function Main(props: Readonly<pageInterface>) {
   }
 
   return (
-    <main id='main' className={'bg-black min-h-screen min-w-screen flex flex-col items-center relative ' + className}>
-      <header className='bg-gray-700 flex w-max items-center h-[80px]'>
+    <main id='main' className={'bg-black h-[953px] w-[1903px] flex flex-col items-center relative ' + className}>
+      <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[80px]'>
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
@@ -47,7 +47,7 @@ export default function Main(props: Readonly<pageInterface>) {
               <label className="text-xl font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
             </a>
           </div>
-          <div className="navbar-center justify-between w-[900px]">
+          <div className="navbar-center justify-between w-[800px]">
             <a id="center" href="/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
@@ -65,16 +65,16 @@ export default function Main(props: Readonly<pageInterface>) {
             </a>
           </div>
 
-          <DropDown open={centerHover} onClose={() => !setCenterHover} className='bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={20} x={-20}>
+          <DropDown open={centerHover} onClose={() => !setCenterHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-30}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
-              <a href='/account/log/' className='hover:text-secondary text-sm'>시설 안내</a>
+              <a href='/account/log/' className='border-black hover:text-secondary text-sm'>시설 안내</a>
               <a href='/' className='hover:text-secondary text-sm'>프로그램 안내</a>
               {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>레슨 등록</a> : null}
             </div>
           </DropDown>
-          <DropDown open={boardHover} onClose={() => !setBoardHover} className='bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={20} x={-35}>
+          <DropDown open={boardHover} onClose={() => !setBoardHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-38}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setBoardHover)}
               onMouseLeave={() => closeHover(setBoardHover)}>
@@ -83,7 +83,7 @@ export default function Main(props: Readonly<pageInterface>) {
               {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>중고장터</a> : null}
             </div>
           </DropDown>
-          <DropDown open={manageHover} onClose={() => !setManageHover} className='bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={20} x={-10}>
+         <DropDown open={manageHover} onClose={() => !setManageHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-20}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
@@ -93,18 +93,18 @@ export default function Main(props: Readonly<pageInterface>) {
             </div>
           </DropDown>
           <div className="navbar-end">
-            <div className='flex items-center border-2 border-gray-300 rounded-full px-5'>
-              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] mr-[20px] outline-none' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key == 'Enter') document.getElementById('search')?.click() }}></input>              
+            <div className='flex items-center border-2 border-gray-300 rounded-full'>
+              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key == 'Enter') document.getElementById('search')?.click() }}></input>              
             </div>
             <button id='search' onClick={() => { const value = (document.getElementById('keyword') as HTMLInputElement)?.value; location.href = '/search?keyword=' + (value ? value : '') }}>
-                <img src='/user.png' className='rounded-full p-2 w-[64px] h-[64px]' />
+                <img src='/user.png' className='rounded-full mr-3 p-2 w-[64px] h-[64px]' />
               </button>
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
               <img src={profile?.url ? profile.url : '/user.png'} className='w-[48px] h-[48px]' alt="default" />
             </button>
-            <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={5}>
+            <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
               <div
                 onMouseEnter={() => openHover(setUserHover)}
                 onMouseLeave={() => closeHover(setUserHover)}>
@@ -125,15 +125,17 @@ export default function Main(props: Readonly<pageInterface>) {
 
       </nav>
       {props.children}
-      <footer className='flex flex-col w-screen mt-16 mb-8'>
+      <footer className='flex flex-col w-[1450px] mt-10 mb-8 ml-52 p-10'>
         <div className='flex justify-between'>
-          <div className='flex font-bold text-white'>상호명 및 호스팅 서비스 제공 :
-            <div className='text-white flex flex-col ml-2'> 꿀단지(주)</div>
+          <div className='text-secondary flex font-bold'>상호명 및 호스팅 서비스 제공 :
+            <span className='text-white flex flex-col ml-2'> 꿀단지(주)</span>
           </div>
           <a href="/help" className='mr-[300px] hover:underline text-white'>고객센터</a>
         </div>
-        <label className='text-xs text-white'>대표이사 : 이순재, 황준하, 정진석, 손혜승 주소: 대전광역시 서구 둔산로 52, Tel: 042-369-5890</label>
-        <label className='text-xs text-white'>사업자등록번호 : 889-86-02332</label>
+        <label className='text-xs text-secondary'>대표이사 : <span className="text-white">이순재, 황준하, 정진석, 손혜승</span></label>
+        <label className='text-xs text-secondary'>주소: <span className="text-white">대전광역시 서구 둔산로 52</span></label>
+        <label className='text-xs text-secondary'>Tel: <span className="text-white">042-369-5890</span></label>
+        <label className='text-xs text-secondary'>사업자등록번호 : <span className="text-white">889-86-02332</span></label>
       </footer>
     </main>
   )

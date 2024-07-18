@@ -2,7 +2,6 @@ package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.dtos.AuthRequestDTO;
 import com.second_team.apt_project.dtos.AuthResponseDTO;
-import com.second_team.apt_project.dtos.ProfileResponseDTO;
 import com.second_team.apt_project.services.MultiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,7 +26,11 @@ public class AuthController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader("REFRESH_TOKEN") String refreshToken) {
+    public ResponseEntity<?> refreshToken(@RequestHeader(value = "REFRESH_TOKEN", required = false)
+                                              String refreshToken) {
+        if (refreshToken==null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("logout");
+        }
         String newAccessToken = this.multiService.refreshToken(refreshToken);
         return ResponseEntity.status(HttpStatus.OK).body(newAccessToken);
     }
