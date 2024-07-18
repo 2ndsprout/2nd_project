@@ -234,10 +234,6 @@ export const getCategory = async (data: number) => {
     return response.data;
 }
 
-export const getCategoryList = async () => {
-    const response = await UserApi.get('/api/category/list');
-    return response.data;
-}
 
 // Article
 interface getArticleList {
