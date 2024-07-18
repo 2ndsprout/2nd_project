@@ -1,6 +1,6 @@
 'use client'
 
-import { getArticleList, getProfile, getUser } from "@/app/API/UserAPI";
+import { getArticleList, getProfile, getUser, getCategoryList } from "@/app/API/UserAPI";
 import { getDate } from "@/app/Global/Method";
 import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
@@ -30,6 +30,11 @@ interface ArticlePage {
     number: number;
 }
 
+interface Category {
+  id: number;
+  name: string;
+}
+
 export default function ArticleListPage() {
     const [articleList, setArticleList] = useState<Article[]>([]);
     const { categoryId } = useParams();
@@ -40,6 +45,7 @@ export default function ArticleListPage() {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
         if (ACCESS_TOKEN)
@@ -86,21 +92,33 @@ export default function ArticleListPage() {
         setCurrentPage(newPage);
     };
 
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const data = await getCategoryList();
+          setCategories(data);
+        } catch (error) {
+          console.error(error);
+          setError('카테고리를 불러오는데 실패했습니다.');
+        }
+      };
+    
+      fetchCategories();
+    }, []);
+
     return (
       <div className="bg-black w-full min-h-screen text-white flex">
         <aside className="w-1/6 p-6 bg-gray-800">
           <div className="mt-5 ml-20">
             <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
             <ul>
-              <li className="mb-2">
-                <Link href="/account/article/1" className={getLinkClass(1)}>자유게시판</Link>
-              </li>
-              <li className="mb-2">
-                <Link href="/account/article/2" className={getLinkClass(2)}>공지사항</Link>
-              </li>
-              <li className="mb-2">
-                <Link href="/account/article/3" className={getLinkClass(3)}>중고거래 게시판</Link>
-              </li>
+              {categories.map((category) => (
+                <li key={category.id} className="mb-2">
+                  <Link href={`/account/article/${category.id}`} className={getLinkClass(category.id)}>
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </aside>
@@ -122,7 +140,7 @@ export default function ArticleListPage() {
                 {articleList.map((article) => (
                   <tr key={article.articleId} className="border-b border-gray-700">
                     <td className="p-4 text-left">
-                      <Link href={`/account/article/detail/${article.articleId}`} className="hover:underline">
+                      <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
                         {article.title}
                       </Link>
                     </td>

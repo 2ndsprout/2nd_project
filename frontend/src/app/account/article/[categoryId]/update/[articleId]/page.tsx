@@ -203,7 +203,7 @@ export default function EditPage() {
                 <div className="flex justify-end gap-4 mt-6">
                     <button
                         className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
-                        onClick={() => window.location.href = `/account/article/detail/${articleId}`}
+                        onClick={() => window.location.href = `/account/article/${categoryId}/detail/${articleId}`}
                     >
                         취소
                     </button>
