@@ -81,4 +81,20 @@ public class ProfileController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteProfile(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.deleteProfile(username, profileId);
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
+            }
+        } catch (DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }

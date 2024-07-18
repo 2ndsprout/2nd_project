@@ -580,6 +580,18 @@ public class MultiService {
         return profileUrl;
     }
 
+    @Transactional
+    public void deleteProfile(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        List<Article> articleList = articleService.findByArticle(profile.getId());
+        for (Article article : articleList)
+            this.deleteArticle(username, profileId, article.getId());
+
+        profileService.deleteProfile(profile);
+    }
+
     /**
      * Category
      */
@@ -796,6 +808,20 @@ public class MultiService {
                 }
             }
             articleTagService.delete(articleTag);
+        }
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.ARTICLE.getKey(article.getId().toString()));
+        String path = AptProjectApplication.getOsType().getLoc();
+        if (_multiKey.isPresent()) {
+            for (String values : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(values);
+                if (_fileSystem.isPresent()) {
+                    Path filePath = Paths.get(path + _fileSystem.get().getV());
+                    File file = filePath.toFile();
+                    this.deleteFolder(file.getParentFile());
+                    fileSystemService.delete(_fileSystem.get());
+                }
+            }
+            multiKeyService.delete(_multiKey.get());
         }
         articleService.deleteArticle(article);
 

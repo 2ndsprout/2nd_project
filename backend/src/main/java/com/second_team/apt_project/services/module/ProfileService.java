@@ -30,4 +30,8 @@ public class ProfileService {
         profile.setName(name);
         profileRepository.save(profile);
     }
+
+    public void deleteProfile(Profile profile) {
+        profileRepository.delete(profile);
+    }
 }

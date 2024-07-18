@@ -1,6 +1,6 @@
 package com.second_team.apt_project.domains;
 
-import com.second_team.apt_project.enums.ChatType;
+import com.second_team.apt_project.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,15 +29,15 @@ public class Notification { // 알림
 
     private Boolean active;
 
-    private ChatType chatType;
+    private NotificationType notificationType;
 
 
     @Builder
-    public Notification(Profile profile, String content, Boolean active, ChatType chatType) {
+    public Notification(Profile profile, String content, Boolean active, NotificationType notificationType) {
         this.createDate = LocalDateTime.now();
         this.profile = profile;
         this.content = content;
         this.active = active;
-        this.chatType = chatType;
+        this.notificationType = notificationType;
     }
 }

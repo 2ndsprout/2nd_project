@@ -43,4 +43,9 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                         .and(qArticle.category.id.eq(categoryId)))
                 .fetch();
     }
+
+    @Override
+    public List<Article> findByArticle(Long profileId) {
+        return jpaQueryFactory.selectFrom(qArticle).where(qArticle.profile.id.eq(profileId)).fetch();
+    }
 }
