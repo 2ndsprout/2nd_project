@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ArticleTagRepositoryCustom {
     List<ArticleTag> findByArticle(Long id);
 
+    List<ArticleTag> findByTagList(Long id);
 }

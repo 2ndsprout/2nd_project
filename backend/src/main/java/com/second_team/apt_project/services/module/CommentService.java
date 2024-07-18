@@ -64,4 +64,8 @@ public class CommentService {
     public Comment findByChildren(Long parentId) {
         return this.commentRepository.findByChildrenId(parentId);
     }
+
+    public List<Comment> findByArticle(Long articleId) {
+        return commentRepository.findByArticle(articleId);
+    }
 }

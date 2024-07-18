@@ -48,4 +48,8 @@ public class ArticleService {
     public List<Article> topActive(Long aptId, Long categoryId, Boolean topActive) {
         return this.articleRepository.findByTopActive(aptId, categoryId, topActive);
     }
+
+    public void deleteArticle(Article article) {
+        articleRepository.delete(article);
+    }
 }

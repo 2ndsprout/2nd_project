@@ -28,7 +28,8 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                 .leftJoin(qArticle.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qArticle.topActive.eq(topActive).and(qApt.id.eq(aptId)).and(qCategory.id.eq(categoryId))).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+                .where(qArticle.topActive.eq(topActive).and(qApt.id.eq(aptId)).and(qCategory.id.eq(categoryId)))
+                .orderBy(qArticle.createDate.desc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 
