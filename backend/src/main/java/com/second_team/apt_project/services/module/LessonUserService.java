@@ -39,4 +39,8 @@ public class LessonUserService {
     public void delete(LessonUser lessonUser) {
         lessonUserRepository.delete(lessonUser);
     }
+
+    public List<LessonUser> findByLessonId(Long id) {
+        return lessonUserRepository.findByLessonId(id);
+    }
 }

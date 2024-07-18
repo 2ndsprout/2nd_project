@@ -1267,6 +1267,11 @@ public class MultiService {
             throw new DataNotFoundException("레슨 객체 없음");
         if (!lesson.getProfile().equals(profile))
             throw new IllegalArgumentException("레슨 강사 아님");
+        List<LessonUser> lessonUserList = lessonUserService.findByLessonId(lesson.getId());
+        if (lessonUserList != null)
+            for (LessonUser lessonUser : lessonUserList){
+                lessonUserService.delete(lessonUser);
+            }
         this.lessonService.delete(lesson);
     }
 
