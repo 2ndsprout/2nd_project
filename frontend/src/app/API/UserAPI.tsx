@@ -234,7 +234,6 @@ export const getCategory = async (data: number) => {
     return response.data;
 }
 
-
 // Article
 interface getArticleList {
     CategoryId: number;
@@ -249,7 +248,6 @@ export const getArticleList = async ( data: getArticleList ) => {
 
 export const getArticle = async ( data: number ) => {
     const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data }} );
-    console.log("Sending request with ArticleId:", data);
     return response.data
 }
 
@@ -262,7 +260,6 @@ interface PostArticleProps {
 
 export const postArticle = async (data: PostArticleProps) => {
     const response = await UserApi.post(`/api/article`, data);
-    console.log("Sending request with ArticleId:", data);
     return response.data;
 }
 
@@ -430,6 +427,11 @@ export const updateComment = async (data: UpdateCommentProps) => {
 
 export const deleteComment = async (data: number) => {
     await UserApi.delete('/api/comment', {headers: {'CommentId': data}});
+}
+
+export const getCommentList = async (data: number) => {
+    const response = await UserApi.get('/api/comment/list', {headers: {'ArticleId': data}});
+    return response.data;
 }
 
 // Lesson Request
