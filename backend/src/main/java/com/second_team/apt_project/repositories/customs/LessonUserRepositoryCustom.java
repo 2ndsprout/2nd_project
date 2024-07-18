@@ -10,4 +10,6 @@ public interface LessonUserRepositoryCustom {
     List<LessonUser> getMyList(Profile profile);
 
     List<LessonUser> getStaffList(Lesson lesson, int type);
+
+    List<LessonUser> findByLessonId(Long id);
 }
