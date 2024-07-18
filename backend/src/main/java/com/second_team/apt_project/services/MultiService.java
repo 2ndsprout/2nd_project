@@ -1153,9 +1153,7 @@ public class MultiService {
                 if (_fileSystem.isPresent()) {
                     Path tempPath = Paths.get(path + _fileSystem.get().getV());
                     File file = tempPath.toFile();
-                    if (file.getParentFile().list().length == 1)
-                        this.deleteFolder(file.getParentFile());
-                    else file.delete();
+                    this.deleteFolder(file.getParentFile());
                     fileSystemService.delete(_fileSystem.get());
                 }
             }
