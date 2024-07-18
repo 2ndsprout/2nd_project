@@ -713,7 +713,7 @@ public class MultiService {
         this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null) throw new DataNotFoundException("게시물 객체 없음");
-        List<ArticleTag> articleTagList = articleTagService.getArticle(article);
+        List<ArticleTag> articleTagList = articleTagService.getArticle(article.getId());
         if (articleTagList == null) throw new DataNotFoundException("게시물태그 객체 없음");
         List<TagResponseDTO> responseDTOList = new ArrayList<>();
         for (ArticleTag articleTag : articleTagList) {
@@ -752,7 +752,7 @@ public class MultiService {
         Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId, topActive);
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
-            List<ArticleTag> articleTagList = articleTagService.getArticle(article);
+            List<ArticleTag> articleTagList = articleTagService.getArticle(article.getId());
             if (articleTagList == null) throw new DataNotFoundException("게시물태그 객체 없음");
             List<TagResponseDTO> responseDTOList = new ArrayList<>();
             for (ArticleTag articleTag : articleTagList) {
@@ -766,6 +766,39 @@ public class MultiService {
             articleResponseDTOList.add(articleResponseDTO);
         }
         return new PageImpl<>(articleResponseDTOList, pageable, articleList.getTotalElements());
+    }
+
+    @Transactional
+    public void deleteArticle(String username, Long profileId, Long articleId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Article article = articleService.findById(articleId);
+        if (article == null)
+            throw new DataNotFoundException("게시물 객체 없음");
+        if (!article.getProfile().equals(profile))
+            throw new IllegalArgumentException("작성자의 프로필이 일치하지 않습니다");
+        List<Comment> commentList = commentService.findByArticle(article.getId());
+        for (Comment comment : commentList)
+            deleteChildren(comment);
+        List<Love> loveList = loveService.findByArticle(article.getId());
+        for (Love love : loveList)
+            loveService.delete(love);
+        List<ArticleTag> articleTagList = articleTagService.getArticle(article.getId());
+        for (ArticleTag articleTag : articleTagList) {
+            List<ArticleTag> articleTags = articleTagService.findByTagList(articleTag.getTag().getId());
+            if (articleTags.size() == 1L) {
+                for (ArticleTag articleTag1 : articleTags) {
+                    List<Tag> tagList1 = tagService.findByIdList(articleTag1.getTag().getId());
+                    for (Tag tag : tagList1) {
+                        tagService.delete(tag);
+                    }
+                }
+            }
+            articleTagService.delete(articleTag);
+        }
+        articleService.deleteArticle(article);
+
     }
 
     private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList, int loveCount) {
@@ -865,6 +898,8 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
+        if (article == null)
+            throw new DataNotFoundException("게시물 객체 없음");
         Pageable pageable = PageRequest.of(page, 15);
         Page<Comment> commentList = commentService.getCommentPaging(pageable, article.getId());
         if (commentList == null) throw new DataNotFoundException("댓글 객체 없음");

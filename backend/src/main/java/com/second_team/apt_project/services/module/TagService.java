@@ -5,6 +5,8 @@ import com.second_team.apt_project.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TagService {
@@ -21,5 +23,13 @@ public class TagService {
 
     public Tag findById(Long tagId) {
         return tagRepository.findById(tagId).orElse(null);
+    }
+
+    public List<Tag> findByIdList(Long tagId) {
+        return tagRepository.findByIdList(tagId);
+    }
+
+    public void delete(Tag tag) {
+        tagRepository.delete(tag);
     }
 }

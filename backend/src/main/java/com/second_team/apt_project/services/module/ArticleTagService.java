@@ -23,7 +23,15 @@ public class ArticleTagService {
     }
 
 
-    public List<ArticleTag> getArticle(Article article) {
-        return articleTagRepository.findByArticle(article.getId());
+    public List<ArticleTag> getArticle(Long articleId) {
+        return articleTagRepository.findByArticle(articleId);
+    }
+
+    public void delete(ArticleTag articleTag) {
+        articleTagRepository.delete(articleTag);
+    }
+
+    public List<ArticleTag> findByTagList(Long id) {
+        return articleTagRepository.findByTagList(id);
     }
 }

@@ -30,13 +30,18 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
 
     @Override
     public Page<Comment> findByCommentList(Pageable pageable, Long articleId) {
-        QueryResults<Comment> results = jpaQueryFactory.selectFrom(qComment).where(qComment.article.id.eq(articleId), qComment.parent.isNull()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+        QueryResults<Comment> results = jpaQueryFactory.selectFrom(qComment).where(qComment.article.id.eq(articleId).and(qComment.parent.isNull())).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 
     @Override
     public Comment findByChildrenId(Long parentId) {
         return jpaQueryFactory.selectFrom(qComment).where(qComment.parent.id.eq(parentId)).fetchOne();
+    }
+
+    @Override
+    public List<Comment> findByArticle(Long articleId) {
+        return jpaQueryFactory.selectFrom(qComment).where(qComment.article.id.eq(articleId).and(qComment.parent.isNull())).fetch();
     }
 
 }

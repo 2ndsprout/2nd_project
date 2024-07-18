@@ -1,10 +1,7 @@
 package com.second_team.apt_project.repositories.customs.impls;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.second_team.apt_project.domains.ArticleTag;
-import com.second_team.apt_project.domains.QArticleTag;
-import com.second_team.apt_project.domains.QTag;
-import com.second_team.apt_project.domains.Tag;
+import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.repositories.customs.ArticleTagRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 
@@ -16,12 +13,19 @@ public class ArticleTagRepositoryImpl implements ArticleTagRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     QArticleTag qArticleTag = QArticleTag.articleTag;
-    QTag qTag = QTag.tag;
+    QArticle qArticle = QArticle.article;
 
 
     @Override
     public List<ArticleTag> findByArticle(Long id) {
-        return jpaQueryFactory.selectFrom(qArticleTag).where(qArticleTag.article.id.eq(id)).fetch();
+        return jpaQueryFactory.selectFrom(qArticleTag)
+                .leftJoin(qArticleTag.article, qArticle)
+                .where(qArticle.id.eq(id)).fetch();
+    }
+
+    @Override
+    public List<ArticleTag> findByTagList(Long id) {
+        return jpaQueryFactory.selectFrom(qArticleTag).where(qArticleTag.tag.id.eq(id)).fetch();
     }
 
 }
