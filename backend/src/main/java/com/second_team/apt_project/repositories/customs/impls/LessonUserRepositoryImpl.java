@@ -22,4 +22,9 @@ public class LessonUserRepositoryImpl implements LessonUserRepositoryCustom {
     public List<LessonUser> getStaffList(Lesson lesson, int type) {
         return jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.lesson.eq(lesson), qLessonUser.lessonStatus.eq(LessonStatus.values()[type])).fetch();
     }
+
+    @Override
+    public List<LessonUser> findByLessonId(Long id) {
+        return jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.lesson.id.eq(id)).fetch();
+    }
 }
