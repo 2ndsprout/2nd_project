@@ -125,7 +125,7 @@ export default function Main(props: Readonly<pageInterface>) {
 
       </nav>
       {props.children}
-      <footer className='flex flex-col w-[1450px] mt-10 mb-8 ml-52 p-10'>
+      <footer className='flex flex-col w-[1450px] mt-10 mb-8 ml-52 p-10 gap-2'>
         <div className='flex justify-between'>
           <div className='text-secondary flex font-bold'>상호명 및 호스팅 서비스 제공 :
             <span className='text-white flex flex-col ml-2'> 꿀단지(주)</span>
@@ -133,8 +133,8 @@ export default function Main(props: Readonly<pageInterface>) {
           <a href="/help" className='mr-[300px] hover:underline text-white'>고객센터</a>
         </div>
         <label className='text-xs text-secondary'>대표이사 : <span className="text-white">이순재, 황준하, 정진석, 손혜승</span></label>
-        <label className='text-xs text-secondary'>주소: <span className="text-white">대전광역시 서구 둔산로 52</span></label>
-        <label className='text-xs text-secondary'>Tel: <span className="text-white">042-369-5890</span></label>
+        <label className='text-xs text-secondary'>주소 : <span className="text-white">대전광역시 서구 둔산로 52</span></label>
+        <label className='text-xs text-secondary'>Tel : <span className="text-white">042-369-5890</span></label>
         <label className='text-xs text-secondary'>사업자등록번호 : <span className="text-white">889-86-02332</span></label>
       </footer>
     </main>
