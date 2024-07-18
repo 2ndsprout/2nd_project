@@ -29,7 +29,7 @@ public class ImageController {
                 ImageResponseDTO imageResponseDTO = multiService.tempUpload(requestDTO.getFile(),profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(imageResponseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -64,7 +64,7 @@ public class ImageController {
                 List<ImageListResponseDTO> imageListResponseDTOS = multiService.tempUploadList(requestDTO.getFile(),profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(imageListResponseDTOS);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -80,7 +80,7 @@ public class ImageController {
                 this.multiService.deleteImageList(username,profileId);
                 return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

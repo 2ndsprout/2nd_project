@@ -26,7 +26,7 @@ public class LoveController {
                 multiService.saveLove(username, loveRequestDTO.getArticleId(), profileId);
                 return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -44,7 +44,7 @@ public class LoveController {
                 multiService.deleteLove(username, articleId, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
