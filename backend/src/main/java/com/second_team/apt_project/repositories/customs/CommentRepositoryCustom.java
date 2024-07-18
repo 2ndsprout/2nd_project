@@ -13,4 +13,6 @@ public interface CommentRepositoryCustom {
     List<Comment> findByChildren(Long commentId);
 
     Page<Comment> findByCommentList(Pageable pageable, Long articleId);
+
+    Comment findByChildrenId(Long parentId);
 }
