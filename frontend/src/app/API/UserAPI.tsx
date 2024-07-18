@@ -47,7 +47,7 @@ const refreshAccessToken = async () => {
     localStorage.setItem('accessToken', ACCESS_TOKEN);
     UserApi.defaults.headers.common['Authorization'] = `${TOKEN_TYPE} ${ACCESS_TOKEN}`;
 }
-
+// User
 interface RegisterProps {
     name: string,
     aptId: number,
@@ -111,7 +111,7 @@ export const updateUserPassword = async (data: UpdateProps) => {
 export const deleteUser = async () => {
     await UserApi.delete('/api/user');
 }
-
+// Profile
 interface ProfileProps {
     name: string,
     url: string,
@@ -143,7 +143,7 @@ export const upateProfile = async (data: UpdateProfileProps) => {
     return response.data;
 }
 
-
+// Image
 export const deleteImage = async () => {
     const response = await UserApi.delete('/api/image');
     return response.data;
@@ -169,6 +169,7 @@ export const deleteImageList = async () => {
     return response.data;
 }
 
+// Apt
 interface AptProps {
     id: number,
     roadAddress: string,
@@ -197,7 +198,14 @@ export const getApt = async (data: number) => {
     return response.data;
 }
 
+// Category
 interface CategoryProps {
+    id: number,
+    name: string
+}
+
+interface UpdateCategoryProps {
+    id: number,
     name: string
 }
 
@@ -206,20 +214,34 @@ export const postCategory = async (data: CategoryProps) => {
     return response.data;
 }
 
+export const updateCategory = async (data: UpdateCategoryProps) => {
+    const response = await UserApi.put('/api/category', data);
+    return response.data;
+}
+
 export const deleteCategory = async (data: number) => {
     await UserApi.delete('/api/category', {headers: {'CategoryId': data}});
 
 }
 
-// Article
+export const getCategory = async (data: number) => {
+    const response = await UserApi.get('/api/category', { headers: { 'CategoryId': data } });
+    return response.data;
+}
 
+export const getCategoryList = async () => {
+    const response = await UserApi.get('/api/category/list');
+    return response.data;
+}
+
+// Article
 interface getArticleList {
     CategoryId: number;
     Page: number;
 }
 
 export const getArticleList = async ( data: getArticleList ) => {
-    const response = await UserApi.get('/api/article/page', { headers: { ...data } });
+    const response = await UserApi.get('/api/article/list', { headers: { ...data } });
     return response.data;
 }
 
@@ -243,19 +265,35 @@ export const postArticle = async (data: PostArticleProps) => {
     return response.data;
 }
 
+interface UpdateArticleProps {
+    categoryId: number;
+    articleId: number; 
+    title: string;
+    content: string; 
+    topActive?: boolean; 
+    tagId?: number[];
+}
+
+export const updateArticle = async (data: UpdateArticleProps) => {
+    const response = await UserApi.put(`/api/article`, data);
+    return response.data;
+}
+
+export const getTopArticleList = async (data: number) => {
+    const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId' :  data}});
+    return response.data;
+}
+
+
 // Tag
 
+// Tag
 interface TagProps {
     name: string
 }
 
 export const postTag = async (data: TagProps) => {
     const response = await UserApi.post('/api/tag', data);
-    return response.data;
-}
-
-export const getTagList = async (data: number) => {
-    const response = await UserApi.get('/api/tag/list', {headers: {'articleId': data}});
     return response.data;
 }
 
@@ -266,4 +304,156 @@ export const getTag = async (data: number) => {
 
 export const deleteTag = async (data: number) => {
     await UserApi.delete('/api/tag', {headers: {'tagId': data}});
+}
+// Love
+
+interface LoveProps {
+    articleId: number
+}
+
+export const postLove = async (data: LoveProps) => {
+    const response = await UserApi.post('/api/love', data);
+    return response.data;
+}
+
+export const deleteLove = async (data: number) => {
+    await UserApi.delete('/api/love', {headers: {'ArticleId': data}});
+}
+
+// Center
+interface CenterProps {
+    type: number,
+    startDate: Date,
+    endDate: Date
+}
+
+export const postCenter = async (data: CenterProps) => {
+    const response = await UserApi.post('/api/center', data);
+    return response.data;
+}
+
+export const getCenter = async (data: number) => {
+    const response = await UserApi.get('/api/center', {headers: {'CenterId': data}});
+    return response.data;
+}
+
+export const getCenterList = async () => {
+    const response = await UserApi.get('/api/center/list');
+    return response.data;
+}
+
+interface UpdateCenterProps {
+    id: number,
+    type: number,
+    startDate: Date,
+    endDate: Date,
+    key: string[],
+}
+
+export const updateCenter = async (data: UpdateCenterProps) => {
+    const response = await UserApi.put('/api/center', data);
+    return response.data;
+}
+
+export const deleteCenter = async (data: number) => {
+    await UserApi.delete('/api/center', {headers: {'CenterId': data}});
+}
+
+// Lesson
+interface LessonProps {
+    centerId: number,
+    name: string,
+    content: string,
+    startDate: Date,
+    endDate: Date,
+    startTime: Date,
+    endTime: Date
+}
+
+export const postLesson = async (data: LessonProps) => {
+    const response = await UserApi.post('/api/lesson', data);
+    return response.data;
+}
+
+export const getLesson = async (data: number) => {
+    const response = await UserApi.get('/api/lesson', {headers: {'LessonId': data}});
+    return response.data;
+}
+
+export const getLessonList = async (data: number) => {
+    const response = await UserApi.get('/api/lesson/list', {headers: {'Page': data}});
+    return response.data;
+}
+
+interface UpdateLessonProps {
+    id: number,
+    centerId: number,
+    name: string,
+    content: string,
+    startDate: Date,
+    endDate: Date,
+    startTime: Date,
+    endTime: Date
+}
+
+export const updateLesson = async (data: UpdateLessonProps) => {
+    const response = await UserApi.put('/api/lesson', data);
+    return response.data;
+}
+
+export const deleteLesson = async (data: number) => {
+    await UserApi.delete('/api/lesson', {headers: {'LessonId': data}});
+}
+
+// Comment
+interface CommentProps {
+    articleId: number,
+    content: string,
+    parentId: number
+}
+
+export const postComment = async (data: CommentProps) => {
+    const response = await UserApi.post('/api/comment', data);
+    return response.data;
+}
+
+interface UpdateCommentProps {
+    profileId: number,
+    commentId: number,
+    content: string
+}
+export const updateComment = async (data: UpdateCommentProps) => {
+    const response = await UserApi.put('/api/comment', data);
+    return response.data;
+}
+
+export const deleteComment = async (data: number) => {
+    await UserApi.delete('/api/comment', {headers: {'CommentId': data}});
+}
+
+// Lesson Request
+
+interface LessonRequestProps {
+    lessonId: number,
+    type: number
+}
+
+export const postLessonRequest = async (data: LessonRequestProps) => {
+    const response = await UserApi.post('/api/lesson/user', data);
+    return response.data;
+}
+
+export const getLessonRequest = async (data: number) => {
+    const response = await UserApi.get('/api/lesson/user', {headers: {'LessonUserId': data}});
+    return response.data;
+}
+
+export const getLessonRequestList = async () => {
+    const response = await UserApi.get('/api/lesson/my/list');
+    return response.data;
+}
+
+export const getLessonRequestListByStaff = async () => {
+    const response = await UserApi.get('/api/lesson/staff/list');
+    return response.data;
 }

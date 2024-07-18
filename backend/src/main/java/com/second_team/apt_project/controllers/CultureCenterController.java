@@ -38,7 +38,7 @@ public class CultureCenterController {
     @GetMapping
     public ResponseEntity<?> getCenter(@RequestHeader("Authorization") String accessToken,
                                        @RequestHeader("PROFILE_ID") Long profileId,
-                                       @RequestHeader("CenterID") Long centerId) {
+                                       @RequestHeader("CenterId") Long centerId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
@@ -46,7 +46,7 @@ public class CultureCenterController {
                 CenterResponseDTO responseDTO = multiService.getCenter(username, profileId, centerId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -61,7 +61,7 @@ public class CultureCenterController {
                 List<CenterResponseDTO> responseDTOList = multiService.getCenterList(username, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

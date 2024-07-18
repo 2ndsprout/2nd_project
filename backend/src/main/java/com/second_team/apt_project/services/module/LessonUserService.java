@@ -27,8 +27,8 @@ public class LessonUserService {
         return lessonUserRepository.getMyList(profile);
     }
 
-    public List<LessonUser> getSecurityList(Lesson lesson, int type) {
-        return lessonUserRepository.getSecurityList(lesson, type);
+    public List<LessonUser> getStaffList(Lesson lesson, int type) {
+        return lessonUserRepository.getStaffList(lesson, type);
     }
 
     public LessonUser update(LessonUser lessonUser, int type) {

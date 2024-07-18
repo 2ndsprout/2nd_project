@@ -32,7 +32,7 @@ public class ArticleController {
                         articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
@@ -75,7 +75,7 @@ public class ArticleController {
         return tokenRecord.getResponseEntity();
     }
 
-    @GetMapping("/page")
+    @GetMapping("/list")
     public ResponseEntity<?> articleList(@RequestHeader("Authorization") String accessToken,
                                          @RequestHeader("PROFILE_ID") Long profileId,
                                          @RequestHeader(value = "Page", defaultValue = "0") int page,

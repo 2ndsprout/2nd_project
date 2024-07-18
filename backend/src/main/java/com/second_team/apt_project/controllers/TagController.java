@@ -27,7 +27,7 @@ public class TagController {
                 TagResponseDTO responseDTO = multiService.saveTag(requestDTO.getName(),profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

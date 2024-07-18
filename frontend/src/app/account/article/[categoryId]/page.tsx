@@ -6,8 +6,10 @@ import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import CategoryList from "@/app/Global/CategoryList"; // 적절한 경로로 변경하세요.
 
 interface Article {
+    categoryId: number;
     articleId: number;
     title: string;
     content: string;
@@ -77,10 +79,6 @@ export default function ArticleListPage() {
         fetchArticles(currentPage);
     }, [categoryId, currentPage]);
 
-    const getLinkClass = (id: number) => {
-        return categoryId === String(id) ? "text-yellow-400 hover:underline" : "hover:underline";
-    };
-
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
     };
@@ -88,20 +86,7 @@ export default function ArticleListPage() {
     return (
       <div className="bg-black w-full min-h-screen text-white flex">
         <aside className="w-1/6 p-6 bg-gray-800">
-          <div className="mt-5 ml-20">
-            <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
-            <ul>
-              <li className="mb-2">
-                <Link href="/account/article/1" className={getLinkClass(1)}>자유게시판</Link>
-              </li>
-              <li className="mb-2">
-                <Link href="/account/article/2" className={getLinkClass(2)}>공지사항</Link>
-              </li>
-              <li className="mb-2">
-                <Link href="/account/article/3" className={getLinkClass(3)}>중고거래 게시판</Link>
-              </li>
-            </ul>
-          </div>
+          <CategoryList />
         </aside>
         <div className="flex-1 max-w-7xl p-10">
           {error ? (
@@ -121,7 +106,7 @@ export default function ArticleListPage() {
                 {articleList.map((article) => (
                   <tr key={article.articleId} className="border-b border-gray-700">
                     <td className="p-4 text-left">
-                      <Link href={`/account/article/detail/${article.articleId}`} className="hover:underline">
+                      <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
                         {article.title}
                       </Link>
                     </td>
