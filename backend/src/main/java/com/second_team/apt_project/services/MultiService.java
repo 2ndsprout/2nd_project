@@ -137,6 +137,8 @@ public class MultiService {
     @Transactional
     public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         Apt apt = aptService.get(aptId);
         if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
             throw new IllegalArgumentException("권한 불일치");
@@ -148,6 +150,8 @@ public class MultiService {
     @Transactional
     public List<UserResponseDTO> saveUserGroup(int aptNum, Long aptId, String username, int h, int w) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         Apt apt = aptService.get(aptId);
         List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
         if (user.getRole() == UserRole.SECURITY || user.getRole() == UserRole.ADMIN) {
@@ -174,7 +178,7 @@ public class MultiService {
             throw new IllegalArgumentException("권한 불일치");
         for (SiteUser siteUser : userList) {
             Apt apt = aptService.get(siteUser.getApt().getId());
-            if (apt == null) throw new DataNotFoundException("apt not data");
+            if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
             UserResponseDTO userResponseDTO = getUserResponseDTO(siteUser);
             responseDTOList.add(userResponseDTO);
         }
@@ -184,12 +188,15 @@ public class MultiService {
     @Transactional
     public UserResponseDTO getUserDetail(String userId, String username) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         SiteUser user1 = userService.getUser(userId);
+        if (user1 == null)
+            throw new DataNotFoundException("타깃 유저 객체 없음");
         Apt apt = aptService.get(user1.getApt().getId());
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY && !user.getApt().equals(apt)) {
+        if (user.getRole() != UserRole.ADMIN && (user.getRole() != UserRole.SECURITY && !user.getApt().equals(apt)))
             throw new IllegalArgumentException("권한 불일치");
-        }
-        if (apt == null) throw new DataNotFoundException("apt not data");
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         return this.getUserResponseDTO(user1);
     }
 
@@ -197,12 +204,16 @@ public class MultiService {
     @Transactional
     public UserResponseDTO updateUser(String username, String email) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         if (!user.getUsername().equals(username)) throw new IllegalArgumentException("로그인 유저와 불일치");
         if (email != null) userService.userEmailCheck(email);
 
         SiteUser siteUser = userService.update(user, email);
+        if (siteUser == null)
+            throw new DataNotFoundException("수정할 유저 객체 없음");
         Apt apt = aptService.get(siteUser.getApt().getId());
-        if (apt == null) throw new DataNotFoundException("apt not data");
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         return this.getUserResponseDTO(siteUser);
     }
 
@@ -214,11 +225,10 @@ public class MultiService {
             throw new IllegalArgumentException("기존 비밀번호 일치 X");
         else if (!newPassword1.equals(newPassword2))
             throw new IllegalArgumentException("새 비밀번호 일치 X");
+        else if (!this.userService.isMatch(newPassword1, user.getPassword()))
+            userService.updatePassword(user, newPassword1);
         else
-            if (!this.userService.isMatch(newPassword1, user.getPassword()))
-                userService.updatePassword(user, newPassword1);
-            else
-                throw new IllegalArgumentException("기존 비밀번호와 새 비밀번호가 일치함");
+            throw new IllegalArgumentException("기존 비밀번호와 새 비밀번호가 일치함");
     }
 
     @Transactional
@@ -234,8 +244,6 @@ public class MultiService {
      */
 
     private AptResponseDTO getAptResponseDTO(Apt apt) {
-//        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
-        if (apt == null) return null;
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
         List<ImageListResponseDTO> imageListResponseDTOS = new ArrayList<>();
         if (_multiKey.isPresent()) {
@@ -256,8 +264,11 @@ public class MultiService {
     @Transactional
     public AptResponseDTO saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
         Apt apt = aptService.save(roadAddress, aptName, x, y);
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         return this.getAptResponseDTO(apt);
     }
 
@@ -267,7 +278,9 @@ public class MultiService {
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY ) throw new IllegalArgumentException("권한 불일치");
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+        if (user.getRole() != UserRole.ADMIN && (user.getRole() != UserRole.SECURITY && !user.getApt().equals(apt)))
+            throw new IllegalArgumentException("권한 불일치");
         apt = aptService.update(apt, roadAddress, aptName);
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
         Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.APT.getKey(apt.getId().toString()));
@@ -323,9 +336,10 @@ public class MultiService {
     public AptResponseDTO getAptDetail(Long aptId, String username) {
         SiteUser user = userService.get(username);
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN && !user.getApt().equals(apt)) throw new IllegalArgumentException("권한 불일치");
-        AptResponseDTO aptResponseDTO = this.getAptResponseDTO(apt);
-        return aptResponseDTO;
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+        if (user.getRole() != UserRole.ADMIN && (user.getRole() != UserRole.SECURITY && !user.getApt().equals(apt)))
+            throw new IllegalArgumentException("권한 불일치");
+        return this.getAptResponseDTO(apt);
     }
 
     /**
@@ -335,9 +349,8 @@ public class MultiService {
     @Transactional
     public ImageResponseDTO tempUpload(MultipartFile fileUrl, Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         if (!fileUrl.isEmpty()) {
             try {
                 String path = AptProjectApplication.getOsType().getLoc();
@@ -396,13 +409,12 @@ public class MultiService {
     @Transactional
     public List<ImageListResponseDTO> tempUploadList(MultipartFile fileUrl, Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
         if (!fileUrl.isEmpty()) {
             try {
                 String path = AptProjectApplication.getOsType().getLoc();
                 UUID uuid = UUID.randomUUID();
-                Profile profile = profileService.findById(profileId);
-                if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
                 String fileLoc = "/api/user" + "/" + username + "/temp_list/" + profile.getId() + "/" + uuid + "." + fileUrl.getContentType().split("/")[1];
                 File file = new File(path + fileLoc);
                 if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
@@ -552,7 +564,7 @@ public class MultiService {
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
         List<ProfileResponseDTO> responseDTOList = new ArrayList<>();
         List<Profile> profileList = profileService.findProfilesByUserList(user);
-        if (profileList == null) throw new DataNotFoundException("프로필 객체 없음");
+        if (profileList == null) throw new DataNotFoundException("프로필 리스트 객체 없음");
         for (Profile profile : profileList) {
             Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
             String url = null;
@@ -601,9 +613,8 @@ public class MultiService {
     @Transactional
     public CategoryResponseDTO saveCategory(String username, String name, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
         Category category = this.categoryService.save(name);
         return categoryResponseDTO(category);
@@ -613,9 +624,8 @@ public class MultiService {
     @Transactional
     public void deleteCategory(Long categoryId, String username, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
         Category category = categoryService.findById(categoryId);
         if (category == null) throw new DataNotFoundException("카테고리 객체 없음");
@@ -626,17 +636,15 @@ public class MultiService {
     @Transactional
     public CategoryResponseDTO getCategory(Long categoryId, String username, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Category category = categoryService.findById(categoryId);
         if (category == null)
             throw new DataNotFoundException("카테고리 객체 없음");
 
         return categoryResponseDTO(category);
     }
+
     @Transactional
     public List<CategoryResponseDTO> getCategoryList(String username, Long profileId) {
         SiteUser siteUser = userService.get(username);
@@ -644,7 +652,7 @@ public class MultiService {
         this.userCheck(siteUser, profile);
         List<Category> categoryList = categoryService.getList();
         List<CategoryResponseDTO> responseDTOList = new ArrayList<>();
-        for (Category category : categoryList){
+        for (Category category : categoryList) {
             responseDTOList.add(categoryResponseDTO(category));
         }
         return responseDTOList;
@@ -654,11 +662,8 @@ public class MultiService {
     @Transactional
     public CategoryResponseDTO updateCategory(String username, Long profileId, Long id, String name) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Category category = categoryService.findById(id);
         if (category == null)
             throw new DataNotFoundException("카테고리 객체 없음");
@@ -814,10 +819,8 @@ public class MultiService {
     @Transactional
     public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long categoryId) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Pageable pageable = PageRequest.of(page, 15);
         Boolean topActive = false;
         Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId, topActive);
@@ -951,9 +954,8 @@ public class MultiService {
     @Transactional
     public void saveLove(String username, Long articleId, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
@@ -964,13 +966,16 @@ public class MultiService {
     @Transactional
     public void deleteLove(String username, Long articleId, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
         Love love = loveService.findByArticleAndProfile(article, profile);
+        if (love == null)
+            throw new DataNotFoundException("게시물 좋아요 객체 없음");
+        if (love.getProfile() != profile)
+            throw new IllegalArgumentException("권한 없음");
         loveService.delete(love);
     }
 
@@ -983,9 +988,8 @@ public class MultiService {
     @Transactional
     public TagResponseDTO saveTag(String name, Long profileId, String username) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Tag tag = tagService.findByName(name);
         if (tag == null) tag = tagService.save(name);
         return this.tagResponseDTO(tag);
@@ -994,9 +998,8 @@ public class MultiService {
     @Transactional
     public TagResponseDTO getTag(String username, Long profileId, Long tagId) {
         SiteUser user = userService.get(username);
-        if (user == null) throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null) throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Tag tag = tagService.findById(tagId);
         if (tag == null) throw new DataNotFoundException("태그 객체 없음");
         return this.tagResponseDTO(tag);
@@ -1025,13 +1028,10 @@ public class MultiService {
     @Transactional
     public CenterResponseDTO saveCenter(String username, Long profileId, int type, LocalDateTime endDate, LocalDateTime startDate) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         if (user.getRole() == UserRole.USER)
             throw new IllegalArgumentException("권한 불일치");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         Apt apt = aptService.get(user.getApt().getId());
         if (apt == null)
             throw new DataNotFoundException("아파트 객체 없음");
@@ -1087,14 +1087,13 @@ public class MultiService {
     @Transactional
     public CenterResponseDTO getCenter(String username, Long profileId, Long centerId) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         CultureCenter cultureCenter = cultureCenterService.findById(centerId);
         if (cultureCenter == null)
             throw new DataNotFoundException("센터 객체 없음");
+        if (!cultureCenter.getApt().equals(user.getApt()) && UserRole.ADMIN != user.getRole())
+            throw new IllegalArgumentException("권한이 없음");
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
         return _newMultiKey.map(multiKey -> centerResponseDTO(cultureCenter, multiKey)).orElse(null);
     }
@@ -1103,16 +1102,13 @@ public class MultiService {
     public CenterResponseDTO updateCenter(String username, Long profileId, Long id, int type, LocalDateTime
             endDate, LocalDateTime startDate, List<String> key) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
-        if (user.getRole() == UserRole.USER)
-            throw new IllegalArgumentException("권한 불일치");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         CultureCenter cultureCenter = cultureCenterService.findById(id);
         if (cultureCenter == null)
             throw new DataNotFoundException("센터 객체 없음");
+        if (user.getRole() == UserRole.USER && !user.getApt().equals(cultureCenter.getApt()))
+            throw new IllegalArgumentException("권한 불일치");
         cultureCenterService.update(cultureCenter, type, endDate, startDate);
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
         Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
@@ -1155,16 +1151,13 @@ public class MultiService {
     @Transactional
     public void deleteCenter(String username, Long profileId, Long centerId) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
-        if (user.getRole() == UserRole.USER)
-            throw new IllegalArgumentException("권한 불일치");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         CultureCenter cultureCenter = cultureCenterService.findById(centerId);
         if (cultureCenter == null)
             throw new DataNotFoundException("센터 객체 없음");
+        if (user.getRole() == UserRole.USER && !user.getApt().equals(cultureCenter.getApt()))
+            throw new IllegalArgumentException("권한 불일치");
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
         if (_multiKey.isPresent()) {
             for (String values : _multiKey.get().getVs()) {
@@ -1179,11 +1172,8 @@ public class MultiService {
     @Transactional
     public List<CenterResponseDTO> getCenterList(String username, Long profileId) {
         SiteUser user = userService.get(username);
-        if (user == null)
-            throw new DataNotFoundException("유저 객체 없음");
         Profile profile = profileService.findById(profileId);
-        if (profile == null)
-            throw new DataNotFoundException("프로필 객체 없음");
+        this.userCheck(user, profile);
         List<CultureCenter> cultureCenterList = cultureCenterService.getList(user.getApt().getId());
         if (cultureCenterList == null)
             throw new DataNotFoundException("센터 리스트 없음");
@@ -1210,7 +1200,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         CultureCenter cultureCenter = cultureCenterService.findById(centerId);
-        if (user.getRole() != UserRole.STAFF)
+        if (user.getRole() != UserRole.STAFF && !user.getApt().equals(cultureCenter.getApt()))
             throw new IllegalArgumentException("권한 불일치");
         if (cultureCenter == null)
             throw new DataNotFoundException("센터 객체가 없음");
@@ -1255,6 +1245,9 @@ public class MultiService {
         Lesson lesson = lessonService.findById(lessonId);
         if (lesson == null)
             throw new DataNotFoundException("레슨 객체 없음");
+
+        if (!user.getApt().equals(lesson.getCultureCenter().getApt()))
+            throw new IllegalArgumentException("권한 없음");
         return this.lessonResponseDTO(lesson);
     }
 
@@ -1267,7 +1260,8 @@ public class MultiService {
         CultureCenter cultureCenter = cultureCenterService.findById(centerId);
         if (cultureCenter == null)
             throw new DataNotFoundException("센터 객체 없음");
-
+        if (!user.getApt().equals(cultureCenter.getApt()))
+            throw new IllegalArgumentException("권한 없음");
 
         Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable, cultureCenter);
         if (lessonPage == null)
@@ -1291,7 +1285,7 @@ public class MultiService {
         if (lesson == null)
             throw new DataNotFoundException("레슨 객체 없음");
         if (!lesson.getProfile().equals(profile))
-            throw new IllegalArgumentException("프로필 불일치");
+            throw new IllegalArgumentException("레슨 강사 아님");
 
         Lesson newLesson = lessonService.update(lesson, name, content, startDate, startTime, endDate, endTime);
         return this.lessonResponseDTO(newLesson);
@@ -1306,7 +1300,7 @@ public class MultiService {
         if (lesson == null)
             throw new DataNotFoundException("레슨 객체 없음");
         if (!lesson.getProfile().equals(profile))
-            throw new IllegalArgumentException("프로필 불일치");
+            throw new IllegalArgumentException("레슨 강사 아님");
         this.lessonService.delete(lesson);
     }
 
@@ -1322,7 +1316,9 @@ public class MultiService {
         Lesson lesson = lessonService.findById(lessonId);
         if (lesson == null)
             throw new DataNotFoundException("레슨 객체 없음");
-        return lessonUserResponseDTO(lessonUserService.save(lesson,profile,type));
+        if (user.getApt().equals(lesson.getCultureCenter().getApt()))
+            throw new IllegalArgumentException("같은 아파트 아님");
+        return lessonUserResponseDTO(lessonUserService.save(lesson, profile, type));
     }
 
     private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {
@@ -1341,7 +1337,7 @@ public class MultiService {
         LessonUser lessonUser = lessonUserService.findById(lessonUserId);
         if (lessonUser == null)
             throw new DataNotFoundException("레슨신청 객체 없음");
-        if (!lessonUser.getProfile().equals(profile) && user.getRole() == UserRole.USER )
+        if (!lessonUser.getProfile().equals(profile) && user.getRole() == UserRole.USER && !user.getApt().equals(lessonUser.getLesson().getCultureCenter().getApt()))
             throw new IllegalArgumentException("권한이 없음");
         return lessonUserResponseDTO(lessonUser);
     }
@@ -1385,7 +1381,7 @@ public class MultiService {
         LessonUser lessonUser = lessonUserService.findById(id);
         if (lessonUser == null)
             throw new DataNotFoundException("레슨신청 객체 없음");
-        if (!lessonUser.getProfile().equals(profile) && !lessonUser.getLesson().getProfile().equals(profile) )
+        if (!lessonUser.getProfile().equals(profile) && !lessonUser.getLesson().getProfile().equals(profile))
             throw new IllegalArgumentException("권한이 없음");
         return lessonUserResponseDTO(lessonUserService.update(lessonUser, type));
     }

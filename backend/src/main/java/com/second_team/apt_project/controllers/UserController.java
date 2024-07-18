@@ -95,7 +95,7 @@ public class UserController {
                 UserResponseDTO userResponseDTO = multiService.getUserDetail(userId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

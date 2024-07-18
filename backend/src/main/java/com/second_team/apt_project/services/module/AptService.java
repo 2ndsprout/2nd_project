@@ -15,7 +15,7 @@ public class AptService {
     private final AptRepository aptRepository;
 
     public Apt get(Long aptId) {
-        return this.aptRepository.get(aptId).orElseThrow(() -> new DataNotFoundException("아파트 객체 없음"));
+        return this.aptRepository.get(aptId).orElse(null);
     }
   
     public Apt save(String roadAddress, String aptName, Double x, Double y) {
