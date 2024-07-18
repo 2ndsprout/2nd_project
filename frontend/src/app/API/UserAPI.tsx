@@ -200,6 +200,7 @@ export const getApt = async (data: number) => {
 
 // Category
 interface CategoryProps {
+    id: number,
     name: string
 }
 
@@ -228,6 +229,11 @@ export const getCategory = async (data: number) => {
     return response.data;
 }
 
+export const getCategoryList = async () => {
+    const response = await UserApi.get('/api/category/list');
+    return response.data;
+}
+
 // Article
 interface getArticleList {
     CategoryId: number;
@@ -235,7 +241,7 @@ interface getArticleList {
 }
 
 export const getArticleList = async ( data: getArticleList ) => {
-    const response = await UserApi.get('/api/article/page', { headers: { ...data } });
+    const response = await UserApi.get('/api/article/list', { headers: { ...data } });
     return response.data;
 }
 
