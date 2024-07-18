@@ -25,14 +25,14 @@ UserApi.interceptors.response.use((response) => {
 }, async (error) => {
     const originalRequest = error.config;
     if (!originalRequest._retry)
-        if (error.response.status === 401 && (error.response.data == '' || error.response.data == null)) {
+        if (error.response.status === 401 && error.response.data == 'refresh') {
             await refreshAccessToken();
             return UserApi(originalRequest);
-        } else if (error.response.status === 403 && (error.response.data == '' || error.response.data == null)) {
+        } else if (error.response.status === 403 && error.response.data == 'logout') {
             localStorage.clear();
             window.location.href = '/account/login';
             return;
-        } else if (error.response.status === 403 && (error.response.data == '' || error.response.data == null)) {
+        } else if (error.response.status === 403 && error.response.data == 'unknown profile') {
             window.location.href = '/account/profile';
             return;
         }
@@ -207,6 +207,11 @@ interface CategoryProps {
 interface UpdateCategoryProps {
     id: number,
     name: string
+}
+
+export const getCategoryList = async () => {
+    const response = await UserApi.get('/api/category/list');
+    return response.data;
 }
 
 export const postCategory = async (data: CategoryProps) => {

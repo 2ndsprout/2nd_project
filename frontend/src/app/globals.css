@@ -10,11 +10,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
+  background:
     rgb(var(--background-start-rgb));
 }
 
@@ -58,5 +54,11 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light !important;
   }
 }
