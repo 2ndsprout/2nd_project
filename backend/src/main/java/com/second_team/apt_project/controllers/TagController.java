@@ -2,7 +2,6 @@ package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.dtos.TagRequestDTO;
 import com.second_team.apt_project.dtos.TagResponseDTO;
-import com.second_team.apt_project.dtos.UserResponseDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;

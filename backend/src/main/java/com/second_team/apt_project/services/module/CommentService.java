@@ -3,6 +3,7 @@ package com.second_team.apt_project.services.module;
 import com.second_team.apt_project.domains.Article;
 import com.second_team.apt_project.domains.Comment;
 import com.second_team.apt_project.domains.Profile;
+import com.second_team.apt_project.dtos.CommentResponseDTO;
 import com.second_team.apt_project.repositories.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,11 +48,20 @@ public class CommentService {
         return this.commentRepository.findById(commentId).orElse(null);
     }
 
-    public List<Comment> findByCommentList(Long commentId) {
+    public List<Comment> findByChildrentList(Long commentId) {
         return this.commentRepository.findByChildren(commentId);
     }
 
     public Page<Comment> getCommentPaging(Pageable pageable, Long articleId) {
         return this.commentRepository.findByCommentList(pageable, articleId);
+    }
+
+    public List<CommentResponseDTO> getChildrenList(List<CommentResponseDTO> commentResponseDTOList, CommentResponseDTO childrenResponseDTO) {
+        commentResponseDTOList.add(childrenResponseDTO);
+        return commentResponseDTOList;
+    }
+
+    public Comment findByChildren(Long parentId) {
+        return this.commentRepository.findByChildrenId(parentId);
     }
 }
