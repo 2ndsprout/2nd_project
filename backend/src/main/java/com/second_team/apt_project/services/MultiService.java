@@ -1146,10 +1146,18 @@ public class MultiService {
         if (user.getRole() == UserRole.USER && !user.getApt().equals(cultureCenter.getApt()))
             throw new IllegalArgumentException("권한 불일치");
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        String path = AptProjectApplication.getOsType().getLoc();
         if (_multiKey.isPresent()) {
             for (String values : _multiKey.get().getVs()) {
                 Optional<FileSystem> _fileSystem = fileSystemService.get(values);
-                _fileSystem.ifPresent(fileSystemService::delete);
+                if (_fileSystem.isPresent()) {
+                    Path tempPath = Paths.get(path + _fileSystem.get().getV());
+                    File file = tempPath.toFile();
+                    if (file.getParentFile().list().length == 1)
+                        this.deleteFolder(file.getParentFile());
+                    else file.delete();
+                    fileSystemService.delete(_fileSystem.get());
+                }
             }
             multiKeyService.delete(_multiKey.get());
         }
@@ -1269,7 +1277,7 @@ public class MultiService {
             throw new IllegalArgumentException("레슨 강사 아님");
         List<LessonUser> lessonUserList = lessonUserService.findByLessonId(lesson.getId());
         if (lessonUserList != null)
-            for (LessonUser lessonUser : lessonUserList){
+            for (LessonUser lessonUser : lessonUserList) {
                 lessonUserService.delete(lessonUser);
             }
         this.lessonService.delete(lesson);

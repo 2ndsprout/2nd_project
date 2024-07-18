@@ -43,6 +43,8 @@ export default function Page() {
     function Submit() {
         if (!Check('^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email))
             return setError('이메일 형식이 맞지 않습니다.');
+        if (!Check('^[가-힣]{1,6}$', name))
+            return setError('프로필 이름은 6자 내외 한글만 가능합니다.');
         updateEmail({ email: email })
             .then(r => {
                 setUser(r)
@@ -154,9 +156,10 @@ export default function Page() {
                     <input id='file' hidden type='file' onChange={e => Change(e.target.files?.[0])} />
                 </div>
                 <div className="mt-0 flex flex-col items-center">
-                    <label className="input input-lg w-full max-w-xs input-bordered flex items-center">
-                        <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요" />
-                    </label>
+                    <label className='text-xs font-bold text-red-500 pb-5'>{error}</label>
+                        <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
+                        onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
+                        onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
                     <button className='btn btn-xl btn-accent mt-10 text-black' onClick={() => Regist()}>프로필 등록</button>
                 </div>
             </Modal>

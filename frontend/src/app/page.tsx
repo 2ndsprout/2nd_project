@@ -18,6 +18,9 @@ export default function Page(props: pageProps) {
   const [notiArticleList, setNotiArticleList] = useState([] as any[]);
   const [freeArticleList, setFreeArticleList] = useState([] as any[]);
   const [saleArticleList, setSaleArticleList] = useState([] as any[]);
+  const [notiTotalElements, setNotiTotalElements] = useState(null as any);
+  const [freeTotalElements, setFreeTotalElements] = useState(null as any);
+  const [saleTotalElements, setSaleTotalElements] = useState(null as any);
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
   const [urlList, setUrlList] = useState([] as any[]);
@@ -64,15 +67,18 @@ export default function Page(props: pageProps) {
         switch (categoryId) {
           case 1:
             setNotiArticleList(r.content);
-            console.log(r.content);
+            setNotiTotalElements(r.totalElements);
+            console.log(r);
             break;
           case 2:
             setFreeArticleList(r.content);
-            console.log(r.content);
+            setFreeTotalElements(r.totalElements);
+            console.log(r);
             break;
           case 3:
             setSaleArticleList(r.content);
-            console.log(r.content);
+            setSaleTotalElements(r.totalElements);
+            console.log(r);
             break;
           default:
             console.log("Invalid category ID");
@@ -80,6 +86,20 @@ export default function Page(props: pageProps) {
       })
       .catch((e) => console.log(e));
   };
+
+  function getCategoryData( id: number ) {
+
+    switch (id) {
+      case 1:
+        return notiArticleList;
+      case 2:
+        return freeArticleList;
+      case 3:
+        return saleArticleList;
+      default:
+        return null;
+    }
+  }
 
   const defaultUrls = [
     '/apt1.png',
@@ -89,6 +109,7 @@ export default function Page(props: pageProps) {
 
   const displayUrls = urlList.length === 0 ? defaultUrls : urlList;
 
+
   return (
     <Main user={user} profile={profile} categories={categories}>
       <div className="mt-10 flex w-full mx-auto">
@@ -96,37 +117,57 @@ export default function Page(props: pageProps) {
           <Slider urlList={displayUrls} />
         </div>
       </div>
-      <div className="flex justify-center items-center text-center mx-auto w-full">
+      <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full">
         {categories?.slice(0, 3).map((category, index) => (
-          <div key={index} className="h-[400px] w-[500px] mb-10">
-            <h1 className="ml-8 text-start">{category?.name}</h1>
-            <div className="border-b-2 mt-6 ml-[30px] flex items-center w-[400px]">
-              <div className="font-bold mr-14">번호</div>
-              <div className="font-bold mr-36">작성자</div>
-              <div className="font-bold">제목</div>
-            </div>
-            {category.id === 1 && notiArticleList?.slice(0, 4).map((article, articleIndex) => (
-              <div key={articleIndex} className="border-b-2 mt-4 ml-[30px] flex items-center w-[400px]">
-                <div className="mr-16">{articleIndex + 1}</div>
-                <div className="mr-20 overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
-                <div>{article.title}</div>
-              </div>
-            ))}
-            {category.id === 2 && freeArticleList?.slice(0, 4).map((article, articleIndex) => (
-              <div key={articleIndex} className="mt-2 ml-[30px] flex items-center w-[400px]">
-                <div className="mr-16">{articleIndex + 1}</div>
-                <div className="mr-20 overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
-                <div>{article.title}</div>
-              </div>
-            ))}
-            {category.id === 3 && saleArticleList?.slice(0, 4).map((article, articleIndex) => (
-              <div key={articleIndex} className="ml-[30px] flex items-center w-[400px]">
-                <div className="mr-16">{articleIndex + 1}</div>
-                <div className="mr-20 overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
-                <div>{article.title}</div>
-              </div>
-            ))}
+          <div className="flex flex-col">
+            <label className="text-start text-secondary font-bold text-xl pb-3 hover:text-primary hover:cursor-pointer">{category?.name}</label>
+            <table key={index}>
+              <thead>
+                <tr className="h-[40px] border-b-2 border-gray-500">
+                  <th className="w-[100px] text-primary">번호</th>
+                  <th className="w-[100px]">작성자</th>
+                  <th className="w-[200px]">제목</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {getCategoryData(category.id)?.slice(0, 4).map((article, articleIndex) => <tr className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer">
+                  <td>{notiTotalElements - articleIndex}</td>
+                  <td>{article.profileResponseDTO.name}</td>
+                  <td><div className="w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary">{article.title}</div></td>
+                </tr>
+                )}
+              </tbody>
+            </table>
           </div>
+          // <div key={index} className="h-[400px] w-[500px] mb-10">
+          //   <h1 className="ml-8 text-start text-secondary font-bold text-2xl">{category?.name}</h1>
+          //   <div className="border-b-2 mt-6 ml-[30px] flex items-center w-[400px]">
+          //     <div className="font-bold mr-14 text-primary">번호</div>
+          //     <div className="font-bold mr-36">작성자</div>
+          //     <div className="font-bold">제목</div>
+          //   </div>
+          // {category.id === 1 && notiArticleList?.slice(0, 4).map((article, articleIndex) => (
+          //   <div key={articleIndex} className="border-b-2 mt-4 ml-[30px] flex items-center w-[400px]">
+          //     <div className="mr-16">{notiTotalElements - articleIndex}</div>
+          //     <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
+          //     <div>{article.title}</div>
+          //   </div>
+          // ))}
+          //   {category.id === 2 && freeArticleList?.slice(0, 4).map((article, articleIndex) => (
+          //     <div key={articleIndex} className="mt-2 ml-[30px] flex items-center w-[400px]">
+          //       <div className="mr-16">{freeTotalElements - articleIndex}</div>
+          //       <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
+          //       <div className="text-end">{article.title}</div>
+          //     </div>
+          //   ))}
+          //   {category.id === 3 && saleArticleList?.slice(0, 4).map((article, articleIndex) => (
+          //     <div key={articleIndex} className="ml-[30px] flex items-center w-[400px]">
+          //       <div className="mr-16">{saleTotalElements - articleIndex}</div>
+          //       <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
+          //       <div>{article.title}</div>
+          //     </div>
+          //   ))}
+          // </div>
         ))}
       </div>
 
