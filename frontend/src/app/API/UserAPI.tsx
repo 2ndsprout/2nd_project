@@ -240,17 +240,15 @@ interface getArticleList {
     Page: number;
 }
 
-export const getArticleList = async ( data: getArticleList ) => {
-    const response = await UserApi.get('/api/article/list', { headers: { ...data } });
+export const getArticleList = async ({ CategoryId, Page }: getArticleList) => {
+    const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': CategoryId, 'Page': Page } });
     return response.data;
 }
-
 
 export const getArticle = async ( data: number ) => {
     const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data }} );
     return response.data
 }
-
 
 interface PostArticleProps {
     title: string;
@@ -404,10 +402,10 @@ export const deleteLesson = async (data: number) => {
 }
 
 // Comment
-interface CommentProps {
+export interface CommentProps {
     articleId: number,
     content: string,
-    parentId: number
+    parentId: number | null
 }
 
 export const postComment = async (data: CommentProps) => {
@@ -415,11 +413,12 @@ export const postComment = async (data: CommentProps) => {
     return response.data;
 }
 
-interface UpdateCommentProps {
+export interface UpdateCommentProps {
     profileId: number,
     commentId: number,
     content: string
 }
+
 export const updateComment = async (data: UpdateCommentProps) => {
     const response = await UserApi.put('/api/comment', data);
     return response.data;
@@ -429,8 +428,13 @@ export const deleteComment = async (data: number) => {
     await UserApi.delete('/api/comment', {headers: {'CommentId': data}});
 }
 
-export const getCommentList = async (data: number) => {
-    const response = await UserApi.get('/api/comment/list', {headers: {'ArticleId': data}});
+export interface GetCommentListProps {
+    articleId: number;
+    page: number;
+}
+
+export const getCommentList = async ({ articleId, page }: GetCommentListProps) => {
+    const response = await UserApi.get('/api/comment/list', { headers: { 'ArticleId': articleId, 'Page': page }});
     return response.data;
 }
 
