@@ -217,6 +217,8 @@ public class MultiService {
     @Transactional
     public void updatePassword(String username, String password, String newPassword1, String newPassword2) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         if (!user.getUsername().equals(username)) throw new IllegalArgumentException("로그인 유저와 불일치");
         if (!this.userService.isMatch(password, user.getPassword()))
             throw new IllegalArgumentException("기존 비밀번호 일치 X");
@@ -226,6 +228,20 @@ public class MultiService {
             userService.updatePassword(user, newPassword1);
         else
             throw new IllegalArgumentException("기존 비밀번호와 새 비밀번호가 일치함");
+    }
+
+    @Transactional
+    public void deleteUser(String username) {
+        SiteUser user = userService.get(username);
+        if (!user.getUsername().equals(username)) throw new IllegalArgumentException("로그인 유저와 불일치");
+        this.deleteUsers(user);
+    }
+
+    private void deleteUsers(SiteUser user) {
+        List<Profile> profileList = profileService.findProfilesByUserList(user);
+        for (Profile profile : profileList)
+            this.deleteProfiles(user, profile);
+        userService.deleteUser(user);
     }
 
     @Transactional
@@ -585,21 +601,24 @@ public class MultiService {
         this.userCheck(user, profile);
 
 
-        this.deleteProfile(user, profile);
+        this.deleteProfiles(user, profile);
 
 
     }
 
-    private void deleteProfile(SiteUser user, Profile profile) {
+    private void deleteProfiles(SiteUser user, Profile profile) {
         List<Article> articleList = articleService.findByArticle(profile.getId());
         for (Article article : articleList)
             this.deleteArticle(user.getUsername(), profile.getId(), article.getId());
+        List<Comment> commentList = commentService.findByProfile(profile.getId());
+        for (Comment comment : commentList)
+            this.deleteComment(user.getUsername(), profile.getId(), comment.getId());
         List<LessonUser> lessonUserList = lessonUserService.getMyList(profile);
         for (LessonUser lessonUser : lessonUserList)
             lessonUserService.delete(lessonUser);
         List<Lesson> lessonList = lessonService.findByProfile(profile.getId());
         for (Lesson lesson : lessonList)
-            lessonService.delete(lesson);
+            this.deleteLessonList(lesson);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
         if (_fileSystem.isPresent()){
             this.deleteFile(_fileSystem.get());
@@ -1323,6 +1342,11 @@ public class MultiService {
             throw new DataNotFoundException("레슨 객체 없음");
         if (!lesson.getProfile().equals(profile))
             throw new IllegalArgumentException("레슨 강사 아님");
+        this.deleteLessonList(lesson);
+
+    }
+
+    private void deleteLessonList(Lesson lesson){
         List<LessonUser> lessonUserList = lessonUserService.findByLessonId(lesson.getId());
         if (lessonUserList != null)
             for (LessonUser lessonUser : lessonUserList) {
@@ -1330,6 +1354,7 @@ public class MultiService {
             }
         this.lessonService.delete(lesson);
     }
+
 
     /**
      * LessonUser
@@ -1343,7 +1368,7 @@ public class MultiService {
         Lesson lesson = lessonService.findById(lessonId);
         if (lesson == null)
             throw new DataNotFoundException("레슨 객체 없음");
-        if (user.getApt().equals(lesson.getCultureCenter().getApt()))
+        if (!user.getApt().equals(lesson.getCultureCenter().getApt()))
             throw new IllegalArgumentException("같은 아파트 아님");
         return lessonUserResponseDTO(lessonUserService.save(lesson, profile, type));
     }

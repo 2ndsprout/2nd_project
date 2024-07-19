@@ -74,4 +74,8 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword1));
         this.userRepository.save(user);
     }
+
+    public void deleteUser(SiteUser user) {
+        userRepository.delete(user);
+    }
 }
