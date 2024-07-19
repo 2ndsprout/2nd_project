@@ -1,9 +1,9 @@
 'use client'
 
-import { getCategoryList } from "@/app/API/UserAPI";
+import React, { useState, useEffect } from 'react';
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { getCategoryList } from "@/app/API/UserAPI";
 
 interface Category {
   id: number;
@@ -11,28 +11,37 @@ interface Category {
 }
 
 interface CategoryListProps {
-  currentCategoryId?: string | number;
+  managementMode?: boolean;
+  categories?: Category[];
 }
 
-const CategoryList: React.FC<CategoryListProps> = () => {
+const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, categories: propCategories }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState('');
   const params = useParams();
   const categoryId = Array.isArray(params.categoryId) ? params.categoryId[0] : params.categoryId;
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategoryList();
-        setCategories(data);
-      } catch (error) {
-        console.error(error);
-        setError('카테고리를 불러오는데 실패했습니다.');
-      }
-    };
+    if (!managementMode) {
+      fetchCategories();
+    }
+  }, [managementMode]);
 
-    fetchCategories();
-  }, []);
+  useEffect(() => {
+    if (managementMode && propCategories) {
+      setCategories(propCategories);
+    }
+  }, [managementMode, propCategories]);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategoryList();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setError('카테고리를 불러오는데 실패했습니다.');
+    }
+  };
 
   const getLinkClass = (id: number) => {
     return categoryId === String(id) ? "text-yellow-400 hover:underline" : "hover:underline";
