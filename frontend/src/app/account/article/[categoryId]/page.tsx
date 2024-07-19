@@ -1,12 +1,12 @@
 'use client'
 
-import { getArticleList, getProfile, getUser } from "@/app/API/UserAPI";
+import { getArticleList, getProfile, getUser, getCommentList } from "@/app/API/UserAPI";
 import { getDate } from "@/app/Global/Method";
 import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import CategoryList from "@/app/Global/CategoryList"; // 적절한 경로로 변경하세요.
+import CategoryList from "@/app/Global/CategoryList";
 
 interface Article {
     categoryId: number;
@@ -21,6 +21,7 @@ interface Article {
         username: string;
         url: string | null;
     };
+    commentCount?: number;
 }
 
 interface ArticlePage {
@@ -42,6 +43,12 @@ export default function ArticleListPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
+    const countTotalComments = (commentList: any[]): number => {
+      return commentList.reduce((total, comment) => {
+          return total + 1 + countTotalComments(comment.commentResponseDTOList || []);
+      }, 0);
+    };
+
     useEffect(() => {
       if (ACCESS_TOKEN) {
         getUser()
@@ -53,9 +60,6 @@ export default function ArticleListPage() {
           getProfile()
             .then(r => {
               setProfile(r);
-              // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
-              // .then(r => setSearch(r))
-              // .catch(e => console.log
             })
             .catch(e => console.log(e));
         else
@@ -70,7 +74,14 @@ export default function ArticleListPage() {
         const fetchArticles = async (page: number) => {
             try {
                 const data: ArticlePage = await getArticleList({ Page: page - 1, CategoryId: Number(categoryId) });
-                setArticleList(data.content);
+
+                const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
+                  const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
+                  const commentCount = countTotalComments(commentResponse.content);
+                  return { ...article, commentCount };
+                }));
+
+                setArticleList(articlesWithCommentCount);
                 setTotalPages(data.totalPages);
             } catch (error) {
                 console.error(error);
@@ -99,9 +110,10 @@ export default function ArticleListPage() {
             <table className="w-full table-auto">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="w-3/4 p-4 text-center">제목</th>
-                  <th className="w-1/4 p-4 text-left">작성자</th>
-                  <th className="w-1/4 p-4 text-right">작성일자</th>
+                  <th className="w-1/2 p-4 text-left">제목</th>
+                  <th className="w-1/6 p-4 text-center"><span className="invisible">댓글,좋아요수</span></th>
+                  <th className="w-1/6 p-4 text-left">작성자</th>
+                  <th className="w-1/6 p-4 text-right">작성일자</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,6 +123,15 @@ export default function ArticleListPage() {
                       <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
                         {article.title}
                       </Link>
+                    </td>
+                    <td className="p-4 text-center">
+                    {(article.commentCount ?? 0) > 0 && (
+                      <span className="text-sm text-gray-400 flex items-center justify-center">
+                        {/* 여기에 댓글 아이콘을 추가할 수 있습니다 */}
+                        <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
+                        [{article.commentCount}]
+                      </span>
+                    )}
                     </td>
                     <td className="p-4 text-left">{article.profileResponseDTO.name}</td>
                     <td className="p-4 text-right text-gray-400">{getDate(article.createDate)}</td>
