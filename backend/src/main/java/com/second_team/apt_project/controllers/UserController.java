@@ -134,4 +134,19 @@ public class UserController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String accessToken) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                multiService.deleteUser(username);
+                return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
+            }
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }
