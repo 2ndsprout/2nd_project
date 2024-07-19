@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
+import { UpdateCommentProps, CommentProps, GetCommentListProps } from '@/app/API/UserAPI';
 import { redirect } from "next/navigation";
 
 interface CommentResponseDTO {
     id: number;
+    articleId: number;
     content: string;
     createDate: number;
+    parentId: number | null;
     profileResponseDTO: {
         id: number;
         name: string;
         username: string;
         url: string | null;
     };
-    children?: CommentResponseDTO[];
+    commentResponseDTOList: CommentResponseDTO[];
 }
 
-interface CommentRequestDTO {
-    articleId: number;
-    parentId: number;
-    content: string;
+interface PaginatedResponse {
+    content: CommentResponseDTO[];
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    number: number;
+    first: boolean;
+    last: boolean;
+    numberOfElements: number;
+    empty: boolean;
 }
 
 const CommentList = ({ articleId }: { articleId: number }) => {
@@ -30,8 +39,18 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const [replyContent, setReplyContent] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
+    const [totalComments, setTotalComments] = useState(0);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+
+    const countTotalComments = (commentList: CommentResponseDTO[]): number => {
+        return commentList.reduce((total, comment) => {
+            return total + 1 + countTotalComments(comment.commentResponseDTOList);
+        }, 0);
+    };
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -59,12 +78,15 @@ const CommentList = ({ articleId }: { articleId: number }) => {
 
     useEffect(() => {
         fetchComments();
-    }, [articleId]);
+    }, [articleId, currentPage]);
 
     const fetchComments = async () => {
         try {
-            const response = await getCommentList(articleId);
-            setComments(response);
+            const response: PaginatedResponse = await getCommentList({ articleId, page: currentPage });
+            setComments(response.content);
+            setTotalPages(response.totalPages);
+            const totalCount = countTotalComments(response.content);
+            setTotalComments(totalCount);
         } catch (error) {
             console.error('댓글을 불러오는데 실패했습니다 :', error);
         }
@@ -74,10 +96,10 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         e.preventDefault();
         if (newComment.trim()) {
             try {
-                const commentRequestDTO: CommentRequestDTO = {
+                const commentRequestDTO: CommentProps = {
                     articleId: articleId,
                     content: newComment,
-                    parentId: 0
+                    parentId: null
                 };
                 await postComment(commentRequestDTO);
                 setNewComment('');
@@ -91,7 +113,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const handleEditComment = async (commentId: number) => {
         if (editContent.trim()) {
             try {
-                const updateCommentDTO = {
+                const updateCommentDTO: UpdateCommentProps = {
                     profileId: Number(localStorage.getItem('PROFILE_ID')),
                     commentId: commentId,
                     content: editContent
@@ -117,7 +139,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const handleReply = async (parentId: number) => {
         if (replyContent.trim()) {
             try {
-                const commentRequestDTO: CommentRequestDTO = {
+                const commentRequestDTO: CommentProps = {
                     articleId: articleId,
                     parentId: parentId,
                     content: replyContent
@@ -133,8 +155,11 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     };
 
     const renderComment = (comment: CommentResponseDTO, depth = 0) => (
-        <li key={comment.id} className={`mb-4 ${depth > 0 ? `ml-${depth * 4}` : ''}`}>
-            <div className="bg-gray-800 text-white p-3 rounded">
+        <li key={comment.id} className={`mb-4 ${depth > 0 ? 'ml-8 relative' : ''}`}>
+            {depth > 0 && (
+                <div className="absolute left-[-2rem] top-0 bottom-0 w-8 boomerang-line"></div>
+            )}
+            <div className={`p-3 rounded bg-gray-800 ${depth > 0 ? 'border-l-4 border-blue-500' : ''}`}>
                 {editingCommentId === comment.id ? (
                     <input
                         type="text"
@@ -160,19 +185,19 @@ const CommentList = ({ articleId }: { articleId: number }) => {
                 </div>
             </div>
             {replyingToId === comment.id && (
-                <div className={`flex mt-2 ml-${(depth + 1) * 4} mt-4`}>
+                <div className="flex mt-2 ml-8">
                     <textarea
                         value={replyContent}
                         onChange={(e) => setReplyContent(e.target.value)}
-                        className="bg-gray-700 text-white w-4/6 h-12 ml-10 mr-2 p-2 border rounded"
+                        className="bg-gray-700 text-white w-4/6 h-12 mr-2 p-2 border rounded"
                         placeholder="답글을 입력하세요..."
                     />
                     <button onClick={() => handleReply(comment.id)} className="bg-yellow-600 hover:bg-yellow-400 text-white px-4 py-2 rounded">작성</button>
                 </div>
             )}
-            {comment.children && comment.children.length > 0 && (
+            {comment.commentResponseDTOList && comment.commentResponseDTOList.length > 0 && (
                 <ul className="mt-2">
-                    {comment.children.map(reply => renderComment(reply, depth + 1))}
+                    {comment.commentResponseDTOList.map(reply => renderComment(reply, depth + 1))}
                 </ul>
             )}
         </li>
@@ -184,7 +209,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
                 {/* 좌측 aside 내용 */}
             </aside>
             <div className="w-full p-10">
-                <h3 className="text-xl font-bold mb-4">댓글</h3>
+                <h3 className="text-xl font-bold mb-4">댓글 ({totalComments})</h3>
                 <form onSubmit={handleSubmitComment} className="mb-4 flex items-start">
                     <textarea
                         value={newComment}
@@ -197,12 +222,47 @@ const CommentList = ({ articleId }: { articleId: number }) => {
                     </button>
                 </form>
                 <ul>
-                    {comments.map(comment => renderComment(comment))}
+                    {comments.map(comment => comment.parentId === null && renderComment(comment))}
                 </ul>
+                <div className="flex justify-center mt-4">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+                        disabled={currentPage === 0}
+                        className="mr-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+                    >
+                        이전
+                    </button>
+                    <span className="mx-4">
+                        페이지 {currentPage + 1} / {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
+                        disabled={currentPage === totalPages - 1}
+                        className="ml-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+                    >
+                        다음
+                    </button>
+                </div>
             </div>
             <aside className="w-1/6 p-6 flex flex-col items-center">
                 {/* 우측 aside 내용 */}
             </aside>
+            <style jsx>{`
+                .boomerang-line {
+                    border-left: 2px solid #4A5568;
+                    border-bottom: 2px solid #4A5568;
+                    border-bottom-left-radius: 10px;
+                }
+                .boomerang-line::before {
+                    content: '';
+                    position: absolute;
+                    top: 20px;
+                    left: -2px;
+                    width: 100%;
+                    height: calc(100% - 20px);
+                    border-left: 2px solid #4A5568;
+                }
+            `}</style>
         </div>
     );
 };
