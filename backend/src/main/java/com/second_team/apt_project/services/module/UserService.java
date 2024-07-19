@@ -60,8 +60,8 @@ public class UserService {
         return this.userRepository.findByUserList(pageable,aptId);
     }
 
-    public SiteUser getUser(String userId) {
-        return this.userRepository.findByUser(userId);
+    public SiteUser getUser(String username) {
+        return this.userRepository.findByUsername(username);
     }
 
     public SiteUser update(SiteUser updateUser, String email) {
