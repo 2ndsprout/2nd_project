@@ -18,7 +18,7 @@ public class ProfileService {
                 .user(user).build());
     }
 
-    public Profile findById(Long profileId) {
+    public Profile findById(Long profileId){
         return profileRepository.findById(profileId).orElse(null);
     }
 

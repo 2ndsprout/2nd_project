@@ -217,6 +217,8 @@ public class MultiService {
     @Transactional
     public void updatePassword(String username, String password, String newPassword1, String newPassword2) {
         SiteUser user = userService.get(username);
+        if (user == null)
+            throw new DataNotFoundException("유저 객체 없음");
         if (!user.getUsername().equals(username)) throw new IllegalArgumentException("로그인 유저와 불일치");
         if (!this.userService.isMatch(password, user.getPassword()))
             throw new IllegalArgumentException("기존 비밀번호 일치 X");

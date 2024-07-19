@@ -69,7 +69,7 @@ public class ArticleController {
                 ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username, page);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

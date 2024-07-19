@@ -96,7 +96,7 @@ public class CategoryController {
                 List<CategoryResponseDTO> categoryResponseDTO = multiService.getCategoryList(username, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(categoryResponseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
