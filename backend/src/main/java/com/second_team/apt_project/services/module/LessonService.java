@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +51,9 @@ public class LessonService {
 
     public void delete(Lesson lesson) {
         lessonRepository.delete(lesson);
+    }
+
+    public List<Lesson> findByProfile(Long profileId) {
+        return lessonRepository.findByProfile(profileId);
     }
 }
