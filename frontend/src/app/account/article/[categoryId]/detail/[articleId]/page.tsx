@@ -133,7 +133,7 @@ export default function ArticleDetail() {
             <div className="w-4/6 p-10">
                 <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 min-h-200 p-6 rounded-lg shadow-lg">
+                <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
                     {article.content}
                 </div>
                 <div>
