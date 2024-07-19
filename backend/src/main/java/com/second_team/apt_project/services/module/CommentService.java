@@ -68,4 +68,8 @@ public class CommentService {
     public List<Comment> findByArticle(Long articleId) {
         return commentRepository.findByArticle(articleId);
     }
+
+    public List<Comment> findByProfile(Long profileId) {
+        return commentRepository.findByProfile(profileId);
+    }
 }
