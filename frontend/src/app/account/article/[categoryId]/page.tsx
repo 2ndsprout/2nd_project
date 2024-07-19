@@ -145,9 +145,11 @@ export default function ArticleListPage() {
                                         <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
                                             {article.title}
                                         </Link>
-                                        <span className="ml-2 text-sm text-gray-400">
-                                            [{article.commentCount ?? 0}]
-                                        </span>
+                                        {article.commentCount && article.commentCount > 0 && (
+                                            <span className="ml-2 text-sm text-gray-400">
+                                                [{article.commentCount}]
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="p-4 text-left">{article.profileResponseDTO.name}</td>
                                     <td className="p-4 text-right text-gray-400">{getDate(article.createDate)}</td>
