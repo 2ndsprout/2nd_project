@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getArticleList, getCategoryList, getProfile, getUser } from "./API/UserAPI";
 
 import Slider from "./Global/Slider";
-import Main from "./Global/layout/MainLayout";
+import Main from "./Global/layout/mainLayout";
 
 interface pageProps {
   categories: any[];
@@ -101,6 +101,20 @@ export default function Page(props: pageProps) {
     }
   }
 
+  function getArticleIndex( id: number) {
+
+    switch (id) {
+      case 1:
+        return notiTotalElements;
+      case 2:
+        return freeTotalElements;
+      case 3:
+        return saleTotalElements;
+      default:
+        return null;
+    }
+  }
+
   const defaultUrls = [
     '/apt1.png',
     '/apt2.png',
@@ -130,8 +144,9 @@ export default function Page(props: pageProps) {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {getCategoryData(category.id)?.slice(0, 4).map((article, articleIndex) => <tr className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer">
-                  <td>{notiTotalElements - articleIndex}</td>
+                {getCategoryData(category.id)?.slice(0, 4).map((article, articleIndex) => 
+                <tr className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer">
+                  <td>{getArticleIndex(category.id) - articleIndex}</td>
                   <td>{article.profileResponseDTO.name}</td>
                   <td><div className="w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary">{article.title}</div></td>
                 </tr>
@@ -139,35 +154,6 @@ export default function Page(props: pageProps) {
               </tbody>
             </table>
           </div>
-          // <div key={index} className="h-[400px] w-[500px] mb-10">
-          //   <h1 className="ml-8 text-start text-secondary font-bold text-2xl">{category?.name}</h1>
-          //   <div className="border-b-2 mt-6 ml-[30px] flex items-center w-[400px]">
-          //     <div className="font-bold mr-14 text-primary">번호</div>
-          //     <div className="font-bold mr-36">작성자</div>
-          //     <div className="font-bold">제목</div>
-          //   </div>
-          // {category.id === 1 && notiArticleList?.slice(0, 4).map((article, articleIndex) => (
-          //   <div key={articleIndex} className="border-b-2 mt-4 ml-[30px] flex items-center w-[400px]">
-          //     <div className="mr-16">{notiTotalElements - articleIndex}</div>
-          //     <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
-          //     <div>{article.title}</div>
-          //   </div>
-          // ))}
-          //   {category.id === 2 && freeArticleList?.slice(0, 4).map((article, articleIndex) => (
-          //     <div key={articleIndex} className="mt-2 ml-[30px] flex items-center w-[400px]">
-          //       <div className="mr-16">{freeTotalElements - articleIndex}</div>
-          //       <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
-          //       <div className="text-end">{article.title}</div>
-          //     </div>
-          //   ))}
-          //   {category.id === 3 && saleArticleList?.slice(0, 4).map((article, articleIndex) => (
-          //     <div key={articleIndex} className="ml-[30px] flex items-center w-[400px]">
-          //       <div className="mr-16">{saleTotalElements - articleIndex}</div>
-          //       <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{article.profileResponseDTO.name}</div>
-          //       <div>{article.title}</div>
-          //     </div>
-          //   ))}
-          // </div>
         ))}
       </div>
 

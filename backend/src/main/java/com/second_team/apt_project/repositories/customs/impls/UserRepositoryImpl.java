@@ -36,7 +36,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public SiteUser findByUser(String userId) {
-        return jpaQueryFactory.selectFrom(qSiteUser).where(qSiteUser.username.eq(userId)).fetchOne();
+    public SiteUser findByUsername(String username) {
+        return jpaQueryFactory.selectFrom(qSiteUser).where(qSiteUser.username.eq(username)).fetchOne();
     }
 }
