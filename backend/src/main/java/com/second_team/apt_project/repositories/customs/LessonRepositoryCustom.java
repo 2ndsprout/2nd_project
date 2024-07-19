@@ -11,4 +11,6 @@ import java.util.List;
 
 public interface LessonRepositoryCustom {
     Page<Lesson> findByApt(Long aptId, Pageable pageable, CultureCenter cultureCenter);
+
+    List<Lesson> findByProfile(Long profileId);
 }

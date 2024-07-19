@@ -437,8 +437,7 @@ public class MultiService {
         String path = AptProjectApplication.getOsType().getLoc();
         Path tempPath = Paths.get(path + fileSystem.getV());
         File file = tempPath.toFile();
-        if (file.getParentFile().list().length == 1) this.deleteFolder(file.getParentFile());
-        else file.delete();
+        this.deleteFolder(file.getParentFile());
     }
 
     @Transactional
@@ -569,7 +568,6 @@ public class MultiService {
             }
         }
         Optional<FileSystem> _newUserFileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-
         return _newUserFileSystem.map(fileSystem -> ProfileResponseDTO.builder().name(profile.getName()).username(user.getUsername()).url(fileSystem.getV()).id(profile.getId()).build()).orElse(null);
     }
 
@@ -585,10 +583,35 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
+
+
+        this.deleteProfile(user, profile);
+
+
+    }
+
+    private void deleteProfile(SiteUser user, Profile profile) {
         List<Article> articleList = articleService.findByArticle(profile.getId());
         for (Article article : articleList)
-            this.deleteArticle(username, profileId, article.getId());
+            this.deleteArticle(user.getUsername(), profile.getId(), article.getId());
+        List<LessonUser> lessonUserList = lessonUserService.getMyList(profile);
+        for (LessonUser lessonUser : lessonUserList)
+            lessonUserService.delete(lessonUser);
+        List<Lesson> lessonList = lessonService.findByProfile(profile.getId());
+        for (Lesson lesson : lessonList)
+            lessonService.delete(lesson);
+        Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
+        if (_fileSystem.isPresent()){
+            this.deleteFile(_fileSystem.get());
+            fileSystemService.delete(_fileSystem.get());
+        }
 
+        Optional<FileSystem> _fileProfileTemp = fileSystemService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
+        if (_fileProfileTemp.isPresent()){
+            this.deleteFile(_fileProfileTemp.get());
+            fileSystemService.delete(_fileProfileTemp.get());
+        }
+        this.deleteImageList(user.getUsername(), profile.getId());
         profileService.deleteProfile(profile);
     }
 
@@ -715,6 +738,7 @@ public class MultiService {
         int loveCount = loveList.size();
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
+
         return this.getArticleResponseDTO(article, tagResponseDTOList, loveCount);
     }
 

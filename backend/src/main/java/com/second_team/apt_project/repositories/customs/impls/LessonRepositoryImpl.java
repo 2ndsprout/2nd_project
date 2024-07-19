@@ -29,4 +29,9 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
                 .where(qApt.id.eq(aptId),qLesson.cultureCenter.eq(cultureCenter) ,qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
+
+    @Override
+    public List<Lesson> findByProfile(Long profileId) {
+        return jpaQueryFactory.selectFrom(qLesson).where(qLesson.profile.id.eq(profileId)).fetch();
+    }
 }
