@@ -199,7 +199,7 @@ export const getApt = async (data: number) => {
 }
 
 // Category
-interface CategoryProps {
+export interface CategoryProps {
     id: number,
     name: string
 }
