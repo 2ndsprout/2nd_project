@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, redirect } from 'next/navigation';
-import Link from 'next/link';
 import { getProfile, getUser, saveImage, saveImageList, updateArticle, getArticle } from '@/app/API/UserAPI';
 import { KeyDownCheck, Move } from '@/app/Global/Method';
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
@@ -18,37 +17,26 @@ export default function EditPage() {
     const [preKey, setPreKey] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
-    const [showEditConfirm, setShowEditConfirm] = useState(false); // 수정 확인 창 상태 추가
+    const [showEditConfirm, setShowEditConfirm] = useState(false);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const quillInstance = useRef<ReactQuill>(null);
-    const [url, setUrl] = useState('');
     const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
     const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
 
+    const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 배포 시 변경 필요
+
     useEffect(() => {
         if (ACCESS_TOKEN) {
-          getUser()
-            .then(r => {
-              setUser(r);
-            })
-            .catch(e => console.log(e));
-          if (PROFILE_ID)
-            getProfile()
-              .then(r => {
-                setProfile(r);
-                // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
-                // .then(r => setSearch(r))
-                // .catch(e => console.log
-              })
-              .catch(e => console.log(e));
-          else
-            redirect('/account/profile');
+            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+            else
+                redirect('/account/profile');
         }
         else
-          redirect('/account/login');
-    
-      }, [ACCESS_TOKEN, PROFILE_ID]);
+            redirect('/account/login');
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         if (articleId) {
@@ -59,45 +47,7 @@ export default function EditPage() {
                 })
                 .catch(e => console.log(e));
         }
-    }, [articleId, categoryId]);
-
-    function stripHtmlTags(html: string) {
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        return doc.body.textContent || '';
-    }
-
-    function handleSubmit() {
-        if (!title.trim()) {
-            setError('제목을 입력해 주세요.');
-            return;
-        }
-        if (!content.trim()) {
-            setError('내용을 입력해 주세요.');
-            return;
-        }
-
-        const plainContent = stripHtmlTags(content);  // HTML태그 제거
-
-        // PUT 요청 데이터 준비
-        const requestData = {
-            articleId: Number(articleId),
-            title,
-            categoryId: Number(categoryId),
-            content: plainContent,
-            tagId: tagIdArray, // 빈 배열 또는 실제 tagId 배열
-            topActive: false
-        };
-
-        updateArticle(requestData)
-            .then(() => {
-                console.log("게시물 수정 완료");
-                window.location.href = `/account/article/${categoryId}/detail/${articleId}`;
-            })
-            .catch((error) => {
-                console.log(error);
-                setError('게시물 수정 중 오류가 발생했습니다.');
-            });
-    }
+    }, [articleId]);
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -107,17 +57,28 @@ export default function EditPage() {
 
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
+            if (!file) return;
 
             try {
-                const formData = new FormData();
-                formData.append('file', file as any);
-                const imgUrl = (await saveImageList(formData)).url;
-                const editor = (quillInstance?.current as any).getEditor();
-                const range = editor.getSelection();
-                editor.insertEmbed(range.index, 'image', imgUrl);
-                editor.setSelection(range.index + 1);
+                let result;
+                try {
+                    result = await saveImageList(file);
+                } catch (error) {
+                    console.error('Error in saveImageList, trying saveImage:', error);
+                    result = await saveImage(file);
+                }
+
+                if (result && result.url) {
+                    const editor = (quillInstance?.current as any).getEditor();
+                    const range = editor.getSelection();
+                    editor.insertEmbed(range.index, 'image', result.url);
+                    editor.setSelection(range.index + 1);
+                } else {
+                    throw new Error('Invalid image URL received');
+                }
             } catch (error) {
-                console.log(error);
+                console.error('Image upload error:', error);
+                setError('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
             }
         });
     };
@@ -141,17 +102,42 @@ export default function EditPage() {
         [],
     );
 
-    function Change(file: any) {
-        const formData = new FormData();
-        formData.append('file', file);
-        saveImage(formData)
-            .then(r => setUrl(r?.url))
-            .catch(e => console.log(e))
-    }
+    const formats = [
+        'header',
+        'bold', 'italic', 'underline', 'strike', 'blockquote',
+        'list', 'bullet', 'indent',
+        'link', 'image'
+    ];
 
-    const getLinkClass = (id: number) => {
-        return categoryId === String(id) ? "text-yellow-400 hover:underline" : "hover:underline";
-    };
+    function handleSubmit() {
+        if (!title.trim()) {
+            setError('제목을 입력해 주세요.');
+            return;
+        }
+        if (!content.trim()) {
+            setError('내용을 입력해 주세요.');
+            return;
+        }
+
+        const requestData = {
+            articleId: Number(articleId),
+            title,
+            categoryId: Number(categoryId),
+            content,
+            tagId: tagIdArray,
+            topActive: false
+        };
+
+        updateArticle(requestData)
+            .then(() => {
+                console.log("게시물 수정 완료");
+                window.location.href = `/account/article/${categoryId}/detail/${articleId}`;
+            })
+            .catch((error) => {
+                console.error('게시물 수정 중 오류:', error);
+                setError('게시물 수정 중 오류가 발생했습니다.');
+            });
+    }
 
     const confirmEdit = () => {
         setShowEditConfirm(true);
@@ -178,13 +164,14 @@ export default function EditPage() {
                         value={title}
                     />
                     <QuillNoSSRWrapper
-                        id={content}
                         forwardedRef={quillInstance}
                         value={content}
-                        onChange={(e: any) => setContent(e)}
+                        onChange={setContent}
                         modules={modules}
+                        formats={formats}
                         theme="snow"
-                        className='w-full'
+                        className='w-full text-black'
+                        style={{ minHeight: '500px', background: 'white' }}
                         placeholder="내용을 입력해주세요."
                     />
                 </div>
@@ -204,10 +191,8 @@ export default function EditPage() {
                     </button>
                 </div>
             </div>
-            <aside className="w-1/6 p-6 flex flex-col items-start">
-                
+            <aside className="w-1/6 p-6 bg-gray-800">
             </aside>
-            {/* 수정 확인창 */}
             {showEditConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-gray-800 p-5 rounded shadow-lg">
