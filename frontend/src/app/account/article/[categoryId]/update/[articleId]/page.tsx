@@ -8,6 +8,7 @@ import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import CategoryList from '@/app/Global/CategoryList';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import DOMPurify from 'dompurify';
 
 export default function EditPage() {
     const { categoryId, articleId } = useParams();
@@ -21,9 +22,10 @@ export default function EditPage() {
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const quillInstance = useRef<ReactQuill>(null);
-    const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
-    const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
-
+    // const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
+    // const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
+    const tagIdArray: number[] = [];
+    
     const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 배포 시 변경 필요
 
     useEffect(() => {
@@ -43,11 +45,15 @@ export default function EditPage() {
             getArticle(Number(articleId))
                 .then(article => {
                     setTitle(article.title);
-                    setContent(article.content);
+                    setContent(processContent(article.content));
                 })
                 .catch(e => console.log(e));
         }
     }, [articleId]);
+
+    const processContent = (content: string) => {
+        return content.replace(/src="\/api/g, `src="${BACKEND_URL}/api`);
+    };
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -71,7 +77,7 @@ export default function EditPage() {
                 if (result && result.url) {
                     const editor = (quillInstance?.current as any).getEditor();
                     const range = editor.getSelection();
-                    editor.insertEmbed(range.index, 'image', result.url);
+                    editor.insertEmbed(range.index, 'image', `${BACKEND_URL}${result.url}`);
                     editor.setSelection(range.index + 1);
                 } else {
                     throw new Error('Invalid image URL received');
@@ -119,11 +125,13 @@ export default function EditPage() {
             return;
         }
 
+        const sanitizedContent = DOMPurify.sanitize(content);
+
         const requestData = {
             articleId: Number(articleId),
             title,
             categoryId: Number(categoryId),
-            content,
+            content: sanitizedContent,
             tagId: tagIdArray,
             topActive: false
         };

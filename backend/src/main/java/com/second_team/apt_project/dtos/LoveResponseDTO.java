@@ -10,9 +10,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LoveResponseDTO {
     private int count;
+    private boolean isLoved;
 
     @Builder
-    public LoveResponseDTO(int count) {
+    public LoveResponseDTO(int count, boolean isLoved) {
         this.count = count;
+        this.isLoved = isLoved;
     }
 }

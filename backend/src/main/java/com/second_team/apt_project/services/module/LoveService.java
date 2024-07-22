@@ -20,9 +20,9 @@ public class LoveService {
                 .profile(profile).build());
     }
 
-    public Love findByArticleAndProfile(Article article, Profile profile) {
-        return loveRepository.findByArticleAndProfile(article, profile).orElse(null);
-    }
+//    public Love findByArticleAndProfile(Article article, Profile profile) {
+//        return loveRepository.findByArticleAndProfile(article, profile).orElse(null);
+//    }
 
     public void delete(Love love) {
         loveRepository.delete(love);
@@ -30,5 +30,25 @@ public class LoveService {
 
     public List<Love> findByArticle(Long id) {
         return this.loveRepository.findByArticle(id);
+    }
+
+    public boolean existsByArticleAndProfile(Article article, Profile profile) {
+        return loveRepository.existsByArticleAndProfile(article, profile);
+    }
+    public boolean toggleLove(Article article, Profile profile) {
+        Love love = loveRepository.findByArticleAndProfile(article, profile).orElse(null);
+        if (love == null) {
+            loveRepository.save(Love.builder()
+                    .article(article)
+                    .profile(profile).build());
+            return true;
+        } else {
+            loveRepository.delete(love);
+            return false;
+        }
+    }
+
+    public int countLoveByArticle(Long articleId) {
+        return loveRepository.countByArticleId(articleId);
     }
 }
