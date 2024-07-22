@@ -126,4 +126,23 @@ public class ArticleController {
         }
         return tokenRecord.getResponseEntity();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchArticle(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader("Page") int page,
+                                           @RequestHeader(value = "Keyword", defaultValue = "") String keyword,
+                                           @RequestHeader("Sort") int sort) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort);
+                return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
 }
