@@ -16,4 +16,6 @@ public interface ArticleRepositoryCustom {
     List<Article> findByArticle(Long profileId);
 
     Page<Article> searchByKeyword(Long id,Pageable pageable, String keyword, Sorts sorts);
+
+    Page<Article> searchByCategoryKeyword(Long id, Pageable pageable, String keyword, Sorts sorts, Long categoryId);
 }

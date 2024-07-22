@@ -86,4 +86,40 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
         QueryResults<Article> results = query.fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
+
+    @Override
+    public Page<Article> searchByCategoryKeyword(Long id, Pageable pageable, String keyword, Sorts sorts, Long categoryId) {
+        JPAQuery<Article> query = jpaQueryFactory
+                .selectFrom(qArticle).distinct()
+                .leftJoin(qArticleTag).on(qArticleTag.article.id.eq(qArticle.id))
+                .where(qProfile.user.apt.id.eq(id).and(qArticle.category.id.eq(categoryId)))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+        switch (sorts) {
+            case TITLE:
+                query.where(qArticle.title.contains(keyword))
+                        .orderBy(qArticle.title.asc(), qArticle.createDate.desc());
+                break;
+            case TITLE_CONTENT:
+                query.where(qArticle.title.contains(keyword).or(qArticle.content.contains(keyword)))
+                        .orderBy(qArticle.title.asc(), qArticle.content.asc(), qArticle.createDate.desc());
+                break;
+            case PROFILE:
+                query.where(qArticle.profile.name.contains(keyword))
+                        .orderBy(qArticle.profile.name.asc(), qArticle.createDate.desc());
+                break;
+            case TAG:
+                query.leftJoin(qArticleTag)
+                        .on(qArticleTag.article.id.eq(qArticle.id))
+                        .where(qArticleTag.tag.name.contains(keyword))
+                        .groupBy(qArticle.id)
+                        .orderBy(qArticleTag.tag.name.asc(), qArticle.createDate.desc());
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sort option: " + sorts);
+        }
+
+        QueryResults<Article> results = query.fetchResults();
+        return new PageImpl<>(results.getResults(), pageable, results.getTotal());
+    }
 }

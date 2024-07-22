@@ -586,7 +586,9 @@ public class MultiService {
             }
         }
         Optional<FileSystem> _newUserFileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-        return _newUserFileSystem.map(fileSystem -> ProfileResponseDTO.builder().name(profile.getName()).username(user.getUsername()).url(fileSystem.getV()).id(profile.getId()).build()).orElse(null);
+        if (_newUserFileSystem.isPresent())
+            url = _newUserFileSystem.get().getV();
+        return ProfileResponseDTO.builder().name(profile.getName()).username(user.getUsername()).url(url).id(profile.getId()).build();
     }
 
     private String profileUrl(String username, Long id) {
@@ -877,13 +879,17 @@ public class MultiService {
     }
 
     @Transactional
-    public Page<ArticleResponseDTO> searchArticle(String username, Long profileId, int page, String keyword, int sort) {
+    public Page<ArticleResponseDTO> searchArticle(String username, Long profileId, int page, String keyword, int sort, Long categoryId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Sorts sorts = Sorts.values()[sort];
         Pageable pageable =  PageRequest.of(page, 15);
-        Page<Article> searchArticleList = articleService.searchByKeyword(user.getApt().getId(), pageable, keyword, sorts);
+        Page<Article> searchArticleList = null;
+        if (categoryId == null)
+            searchArticleList = articleService.searchByKeyword(user.getApt().getId(), pageable, keyword, sorts);
+         else
+             searchArticleList = articleService.searchByCategoryKeyword(user.getApt().getId(), pageable, keyword, sorts, categoryId);
         if (searchArticleList.isEmpty())
             throw new DataNotFoundException("검색 결과가 없습니다");
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
@@ -904,7 +910,7 @@ public class MultiService {
     private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList) {
         String profileUrl = this.profileUrl(article.getProfile().getUser().getUsername(), article.getProfile().getId());
 
-        return ArticleResponseDTO.builder().articleId(article.getId()).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getName()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).build();
+        return ArticleResponseDTO.builder().articleId(article.getId()).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getUser().getUsername()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).build();
     }
 
     private void updateArticleContent(Article article, MultiKey multiKey) {
