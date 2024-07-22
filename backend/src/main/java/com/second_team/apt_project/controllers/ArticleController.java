@@ -132,7 +132,7 @@ public class ArticleController {
                                            @RequestHeader("Page") int page,
                                            @RequestHeader(value = "Keyword", defaultValue = "") String keyword,
                                            @RequestHeader("Sort") int sort,
-                                           @RequestHeader("CategoryId") Long categoryId) {
+                                           @RequestHeader(value = "CategoryId", defaultValue = "") Long categoryId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
