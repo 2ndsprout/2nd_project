@@ -25,9 +25,6 @@ public class TagService {
         return tagRepository.findById(tagId).orElse(null);
     }
 
-    public List<Tag> findByIdList(Long tagId) {
-        return tagRepository.findByIdList(tagId);
-    }
 
     public void delete(Tag tag) {
         tagRepository.delete(tag);

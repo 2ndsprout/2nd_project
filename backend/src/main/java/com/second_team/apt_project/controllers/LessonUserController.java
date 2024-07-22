@@ -60,7 +60,10 @@ public class LessonUserController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 List<LessonUserResponseDTO> responseDTO = multiService.getLessonUserMyList(username, profileId);
+                System.out.println(responseDTO.getFirst().getLessonResponseDTO().getName());
+                System.out.println(responseDTO.getFirst().getLessonResponseDTO().getId());
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

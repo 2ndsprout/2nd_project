@@ -33,7 +33,7 @@ const Slider = ({ urlList }: SliderProps) => {
                 navigation={true}
                 modules={[Zoom, Autoplay, Pagination, Navigation]}
                 className="mySwiper"
-                style={{ height: "80%" }}
+                style={{ height: "100%", width: "50%", margin: "0px" }}
             >
                 {urlList.map((url, index) => (
                     <SwiperSlide key={index}>

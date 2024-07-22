@@ -10,4 +10,6 @@ public interface ArticleTagRepositoryCustom {
     List<ArticleTag> findByArticle(Long id);
 
     List<ArticleTag> findByTagList(Long id);
+
+    ArticleTag findByTagId(Long id);
 }

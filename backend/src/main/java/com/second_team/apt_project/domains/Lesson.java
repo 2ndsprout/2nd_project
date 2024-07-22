@@ -35,16 +35,13 @@ public class Lesson {
     private LocalDateTime createDate;
     private LocalDateTime modifyDate;
 
-    private LocalDateTime startTime;
-
-    private LocalDateTime endTime;
 
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
 
     @Builder
-    public Lesson(Profile profile, CultureCenter cultureCenter, String name, String content, LocalDateTime startDate, LocalDateTime endDate, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime modifyDate) {
+    public Lesson(Profile profile, CultureCenter cultureCenter, String name, String content, LocalDateTime startDate, LocalDateTime endDate,  LocalDateTime modifyDate) {
         this.profile = profile;
         this.cultureCenter = cultureCenter;
         this.name = name;
@@ -53,7 +50,5 @@ public class Lesson {
         this.startDate = startDate;
         this.createDate = LocalDateTime.now();
         this.endDate = endDate;
-        this.startTime =startTime;
-        this.endTime =endTime;
     }
 }
