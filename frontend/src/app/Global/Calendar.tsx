@@ -31,14 +31,16 @@ const Calendar: React.FC<CalendarProps> = ({ lessons }) => {
     const router = useRouter();
 
     // FullCalendar expects event objects to have certain properties
-    const formattedLessons = lessons.map(lesson => ({
+    const formattedLessons = lessons.map((lesson, index) => ({
         id: lesson.lessonResponseDTO.id.toString(),
         title: lesson.lessonResponseDTO.name,
         start: getDateTime(lesson.lessonResponseDTO.startDate),
         end: getDateTime(lesson.lessonResponseDTO.endDate),
-        allDay: false // Change this to true if lessons are all-day events
-    })
-);
+        allDay: false, // Change this to true if lessons are all-day events
+        backgroundColor: index % 2 === 0 ? 'orange' : 'yellow', // 배경 색상 설정
+        borderColor: index % 2 === 0 ? 'orange' : 'yellow' // 테두리 색상 설정
+    }));
+
     console.log('Formatted Lessons:', formattedLessons);
 
     const handleEventClick = (info: EventClickArg) => {
@@ -61,6 +63,7 @@ const Calendar: React.FC<CalendarProps> = ({ lessons }) => {
         return date.toISOString(); // FullCalendar expects ISO 8601 format
     }
 
+    
     return (
         <div className='calendar-container'>
             <FullCalendar
@@ -73,10 +76,9 @@ const Calendar: React.FC<CalendarProps> = ({ lessons }) => {
                 selectable={false}
                 selectMirror={true}
                 nowIndicator={true}
-                eventBackgroundColor="orange"
-                eventBorderColor="#000000"
                 timeZone="UTC"
                 locale={"ko"}
+                eventTextColor='black'
                 headerToolbar={{
                     left: "prev,next today prevYear nextYear",
                     center: "title",

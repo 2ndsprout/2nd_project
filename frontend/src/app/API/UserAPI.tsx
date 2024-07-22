@@ -143,6 +143,10 @@ export const upateProfile = async (data: UpdateProfileProps) => {
     return response.data;
 }
 
+export const deleteProfile = async () => {
+    await UserApi.delete('/api/profile');
+}
+
 // Image
 export const deleteImage = async () => {
     const response = await UserApi.delete('/api/image');
@@ -200,6 +204,15 @@ export const saveImageList = async (data: any) => {
 }
 export const deleteImageList = async () => {
     const response = await UserApi.delete('/api/image/list');
+    return response.data;
+}
+
+export const saveProfileImage = async (data: any) => {
+    const response = await UserApi.post('/api/image/profile', data, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
     return response.data;
 }
 
