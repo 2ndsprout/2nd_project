@@ -1044,6 +1044,48 @@ public class MultiService {
                 .build();
     }
 
+//    @Transactional
+//    public void saveLove(String username, Long articleId, Long profileId) {
+//        SiteUser user = userService.get(username);
+//        Profile profile = profileService.findById(profileId);
+//        this.userCheck(user, profile);
+//        Article article = articleService.findById(articleId);
+//        if (article == null) throw new DataNotFoundException("게시물 객체 없음");
+//        Love love = loveService.findByArticleAndProfile(article, profile);
+//        if (love == null)
+//            loveService.save(article, profile);
+//
+//    }
+//
+//    @Transactional
+//    public void deleteLove(String username, Long articleId, Long profileId) {
+//        SiteUser user = userService.get(username);
+//        Profile profile = profileService.findById(profileId);
+//        this.userCheck(user, profile);
+//        Article article = articleService.findById(articleId);
+//        if (article == null) throw new DataNotFoundException("게시물 객체 없음");
+//        Love love = loveService.findByArticleAndProfile(article, profile);
+//        if (love == null)
+//            throw new DataNotFoundException("게시물 좋아요 객체 없음");
+//        if (love.getProfile() != profile)
+//            throw new IllegalArgumentException("권한 없음");
+//        loveService.delete(love);
+//    }
+//
+//    @Transactional
+//    public LoveResponseDTO countLove(Long articleId, Long profileId, String username) {
+//        SiteUser user = userService.get(username);
+//        Profile profile = profileService.findById(profileId);
+//        this.userCheck(user, profile);
+//        Article article = articleService.findById(articleId);
+//        if (article == null)
+//            throw new DataNotFoundException("게시물 객체 없음");
+//        List<Love> countLove = loveService.findByArticle(article.getId());
+//        int count = countLove.size();
+//        return LoveResponseDTO.builder()
+//                .count(count).build();
+//    }
+
 
 
     /**

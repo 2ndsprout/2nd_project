@@ -1,6 +1,6 @@
 'use client'
 
-import { getArticleList, getProfile, getUser, getCommentList } from "@/app/API/UserAPI";
+import { getArticleList, getProfile, getUser, getCommentList, getLoveInfo } from "@/app/API/UserAPI";
 import { getDate } from "@/app/Global/Method";
 import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
@@ -22,6 +22,7 @@ interface Article {
         url: string | null;
     };
     commentCount?: number;
+    loveCount?: number;
 }
 
 interface ArticlePage {
@@ -78,7 +79,8 @@ export default function ArticleListPage() {
                 const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
                   const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
                   const commentCount = countTotalComments(commentResponse.content);
-                  return { ...article, commentCount };
+                  const loveResponse = await getLoveInfo(article.articleId);
+                  return { ...article, commentCount, loveCount:loveResponse.count };
                 }));
 
                 setArticleList(articlesWithCommentCount);
@@ -124,14 +126,19 @@ export default function ArticleListPage() {
                         {article.title}
                       </Link>
                     </td>
-                    <td className="p-4 text-center">
-                    {(article.commentCount ?? 0) > 0 && (
-                      <span className="text-sm text-gray-400 flex items-center justify-center">
-                        {/* 여기에 댓글 아이콘을 추가할 수 있습니다 */}
-                        <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
-                        [{article.commentCount}]
-                      </span>
-                    )}
+                    <td className="flex p-4 text-center">
+                      {(article.loveCount ?? 0) > 0 && (
+                        <div className="text-sm text-gray-400 flex items-center mr-4">
+                            <img src="/full-like.png" alt="좋아요 아이콘"className="w-4 mr-1" />
+                            [{article.loveCount}]
+                        </div>
+                      )}
+                      {(article.commentCount ?? 0) > 0 && (
+                        <div className="text-sm text-gray-400 flex items-center justify-center">
+                          <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
+                          [{article.commentCount}]
+                        </div>
+                      )}
                     </td>
                     <td className="p-4 text-left">{article.profileResponseDTO.name}</td>
                     <td className="p-4 text-right text-gray-400">{getDate(article.createDate)}</td>
