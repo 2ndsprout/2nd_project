@@ -23,11 +23,10 @@ public class ArticleResponseDTO {
     private List<String> urlList;
     private Boolean topActive;
     private List<TagResponseDTO> tagResponseDTOList;
-    private int loveCount;
     private Page<CommentResponseDTO> commentResponseDTOList;
 
     @Builder
-    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList, Boolean topActive, int loveCount, Page<CommentResponseDTO> commentResponseDTOList) {
+    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList, Boolean topActive,Page<CommentResponseDTO> commentResponseDTOList) {
         this.articleId = articleId;
         this.title = title;
         this.content = content;
@@ -38,7 +37,6 @@ public class ArticleResponseDTO {
         this.profileResponseDTO = profileResponseDTO;
         this.urlList = urlList;
         this.tagResponseDTOList = tagResponseDTOList;
-        this.loveCount = loveCount;
         this.commentResponseDTOList = commentResponseDTOList;
     }
 }

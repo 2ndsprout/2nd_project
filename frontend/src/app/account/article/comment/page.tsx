@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
 import { UpdateCommentProps, CommentProps, GetCommentListProps } from '@/app/API/UserAPI';
 import { redirect } from "next/navigation";
+import LoveButton from '../love/page';
 
 interface CommentResponseDTO {
     id: number;
@@ -45,12 +46,15 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const [totalComments, setTotalComments] = useState(0);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const [isLoved, setIsLoved] = useState(false);
+    const [loveCount, setLoveCount] = useState(0);
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
             return total + 1 + countTotalComments(comment.commentResponseDTOList);
         }, 0);
     };
+
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -153,6 +157,11 @@ const CommentList = ({ articleId }: { articleId: number }) => {
             }
         }
     };
+    
+    const handleLoveChange = (newLoveState: boolean, newCount: number) => {
+        setIsLoved(newLoveState);
+        setLoveCount(newCount);
+    };
 
     const renderComment = (comment: CommentResponseDTO, depth = 0) => (
         <li key={comment.id} className={`mb-4 ${depth > 0 ? 'ml-8 relative' : ''}`}>
@@ -205,11 +214,26 @@ const CommentList = ({ articleId }: { articleId: number }) => {
 
     return (
         <div className="bg-black w-full min-h-screen text-white flex">
-            <aside className="w-1/6 p-6 flex flex-col items-center">
-                {/* 좌측 aside 내용 */}
+            <aside className="w-1/6 p-2 flex flex-col items-center">
+                <div className="flex items-center space-x-4 mt-5">
+                    <div className="flex flex-col items-center">
+                        <LoveButton 
+                            articleId={articleId} 
+                            onLoveChange={(isLoved, count) => {
+                                console.log(`좋아요 상태: ${isLoved}, 개수: ${count}`);
+                                // 필요한 경우 부모 컴포넌트의 상태를 업데이트
+                            }}
+                        />
+                        {/* <p className="mt-2">{예정}</p> */}
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <img src="/icon-comment.png" alt="댓글 아이콘" className="w-9 h-9 mb-1" />
+                        <p className="mt-2">{totalComments}</p>
+                    </div>
+                </div>
             </aside>
             <div className="w-full p-10">
-                <h3 className="text-xl font-bold mb-4">댓글 ({totalComments})</h3>
+                {/* <h3 className="text-xl font-bold mb-4">댓글 ({totalComments})</h3> */}
                 <form onSubmit={handleSubmitComment} className="mb-4 flex items-start">
                     <textarea
                         value={newComment}

@@ -6,6 +6,7 @@ import { getDateTimeFormat } from '@/app/Global/Method';
 import Link from 'next/link';
 import { redirect, useParams } from "next/navigation";
 import CommentList from '../../../comment/page'
+import DOMPurify from 'dompurify';
 
 interface Article {
     categoryId: number;
@@ -35,6 +36,17 @@ export default function ArticleDetail() {
     const [profile, setProfile] = useState(null as any);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+
+    const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 서버 배포시 수정예정
+
+    const renderSafeHTML = (content: string) => {
+        // 이미지 URL을 절대 경로로 변환
+        const processedContent = content.replace(/src="\/api/g, `src="${BACKEND_URL}/api`);
+        
+        const sanitizedContent = DOMPurify.sanitize(processedContent);
+        
+        return { __html: sanitizedContent };
+    };
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -133,8 +145,8 @@ export default function ArticleDetail() {
             <div className="w-4/6 p-10">
                 <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 min-h-200 p-6 rounded-lg shadow-lg">
-                    {article.content}
+                <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
+                    <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
                 </div>
                 <div>
                     {/* 좋아요 댓글수 표시, 댓글 입력창*/}
