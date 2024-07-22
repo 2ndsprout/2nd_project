@@ -89,7 +89,7 @@ export default function Page() {
     }
 
     function Regist() {
-        if (profileList.length <= 6) {
+        if (profileList.length < 6) {
             postProfile({ name: name, url: url })
                 .then(() => window.location.href = '/account/profile')
                 .catch(e => console.log(e));

@@ -18,8 +18,6 @@ interface LessonType {
         name: string;
         startDate: number;
         endDate: number;
-        startTime: number;
-        endTime: number;
     };
 }
 
