@@ -131,12 +131,13 @@ public class ArticleController {
                                            @RequestHeader("PROFILE_ID") Long profileId,
                                            @RequestHeader("Page") int page,
                                            @RequestHeader(value = "Keyword", defaultValue = "") String keyword,
-                                           @RequestHeader("Sort") int sort) {
+                                           @RequestHeader("Sort") int sort,
+                                           @RequestHeader("CategoryId") Long categoryId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort);
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
