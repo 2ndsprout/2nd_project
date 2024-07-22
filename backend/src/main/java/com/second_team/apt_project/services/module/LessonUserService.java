@@ -43,4 +43,9 @@ public class LessonUserService {
     public List<LessonUser> findByLessonId(Long id) {
         return lessonUserRepository.findByLessonId(id);
     }
+
+    public List<LessonUser> findByProfile(Long id) {
+        return lessonUserRepository.findByProfileId(id);
+    }
+
 }
