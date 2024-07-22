@@ -620,13 +620,13 @@ public class MultiService {
         for (Lesson lesson : lessonList)
             this.deleteLessonList(lesson);
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(user.getUsername() + "." + profile.getId()));
-        if (_fileSystem.isPresent()){
+        if (_fileSystem.isPresent()) {
             this.deleteFile(_fileSystem.get());
             fileSystemService.delete(_fileSystem.get());
         }
 
         Optional<FileSystem> _fileProfileTemp = fileSystemService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
-        if (_fileProfileTemp.isPresent()){
+        if (_fileProfileTemp.isPresent()) {
             this.deleteFile(_fileProfileTemp.get());
             fileSystemService.delete(_fileProfileTemp.get());
         }
@@ -724,12 +724,9 @@ public class MultiService {
                 tagResponseDTOList.add(tagResponseDTO(tag));
             }
         }
-        List<Love> loveList = loveService.findByArticle(article.getId());
-        if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
-        int loveCount = loveList.size();
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
-        return this.getArticleResponseDTO(article, tagResponseDTOList, loveCount);
+        return this.getArticleResponseDTO(article, tagResponseDTOList);
     }
 
 
@@ -752,13 +749,11 @@ public class MultiService {
             articleTagService.save(article, tag);
             tagResponseDTOList.add(tagResponseDTO(tag));
         }
-        List<Love> loveList = loveService.findByArticle(article.getId());
-        if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
-        int loveCount = loveList.size();
+
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
 
-        return this.getArticleResponseDTO(article, tagResponseDTOList, loveCount);
+        return this.getArticleResponseDTO(article, tagResponseDTOList);
     }
 
     @Transactional
@@ -775,10 +770,7 @@ public class MultiService {
             Tag tag = tagService.findById(articleTag.getTag().getId());
             responseDTOList.add(tagResponseDTO(tag));
         }
-        List<Love> loveList = loveService.findByArticle(article.getId());
-        if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
-        int loveCount = loveList.size();
-        return this.getArticleResponseDTO(article, responseDTOList, loveCount);
+        return this.getArticleResponseDTO(article, responseDTOList);
     }
 
 
@@ -814,10 +806,7 @@ public class MultiService {
                 Tag tag = tagService.findById(articleTag.getTag().getId());
                 responseDTOList.add(tagResponseDTO(tag));
             }
-            List<Love> loveList = loveService.findByArticle(article.getId());
-            if (loveList == null) throw new DataNotFoundException("게시물 좋아요 객체 없음");
-            int loveCount = loveList.size();
-            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, responseDTOList, loveCount);
+            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, responseDTOList);
             articleResponseDTOList.add(articleResponseDTO);
         }
         return new PageImpl<>(articleResponseDTOList, pageable, articleList.getTotalElements());
@@ -870,10 +859,10 @@ public class MultiService {
 
     }
 
-    private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList, int loveCount) {
+    private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList) {
         String profileUrl = this.profileUrl(article.getProfile().getUser().getUsername(), article.getProfile().getId());
 
-        return ArticleResponseDTO.builder().articleId(article.getId()).title(article.getTitle()).content(article.getContent()).loveCount(loveCount).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getName()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).build();
+        return ArticleResponseDTO.builder().articleId(article.getId()).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getName()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).build();
     }
 
     private void updateArticleContent(Article article, MultiKey multiKey) {
@@ -1029,7 +1018,9 @@ public class MultiService {
         this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null) throw new DataNotFoundException("게시물 객체 없음");
-        loveService.save(article, profile);
+        Love love = loveService.findByArticleAndProfile(article, profile);
+        if (love == null)
+            loveService.save(article, profile);
 
     }
 
@@ -1048,6 +1039,19 @@ public class MultiService {
         loveService.delete(love);
     }
 
+    @Transactional
+    public LoveResponseDTO countLove(Long articleId, Long profileId, String username) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Article article = articleService.findById(articleId);
+        if (article == null)
+            throw new DataNotFoundException("게시물 객체 없음");
+        List<Love> countLove = loveService.findByArticle(article.getId());
+        int count = countLove.size();
+        return LoveResponseDTO.builder()
+                .count(count).build();
+    }
 
     /**
      * Tag
@@ -1346,7 +1350,7 @@ public class MultiService {
 
     }
 
-    private void deleteLessonList(Lesson lesson){
+    private void deleteLessonList(Lesson lesson) {
         List<LessonUser> lessonUserList = lessonUserService.findByLessonId(lesson.getId());
         if (lessonUserList != null)
             for (LessonUser lessonUser : lessonUserList) {
@@ -1444,4 +1448,5 @@ public class MultiService {
         if (!lessonUser.getProfile().equals(profile)) throw new IllegalArgumentException("신청유저가 아님");
         lessonUserService.delete(lessonUser);
     }
+
 }

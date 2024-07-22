@@ -1,6 +1,7 @@
 package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.dtos.LoveRequestDTO;
+import com.second_team.apt_project.dtos.LoveResponseDTO;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
@@ -48,6 +49,22 @@ public class LoveController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();
+    }
 
+    @GetMapping("/count")
+    public ResponseEntity<?> loveCount(@RequestHeader("ArticleId") Long articleId,
+                                        @RequestHeader("Authorization") String accessToken,
+                                        @RequestHeader("PROFILE_ID") Long profileId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                LoveResponseDTO responseDTO = multiService.countLove(articleId, profileId, username);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
     }
 }
