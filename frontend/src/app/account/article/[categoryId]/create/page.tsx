@@ -7,6 +7,7 @@ import { useParams, redirect } from "next/navigation";
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import CategoryList from '@/app/Global/CategoryList';
 import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill';
 
 export default function Page() {
     const { categoryId } = useParams();

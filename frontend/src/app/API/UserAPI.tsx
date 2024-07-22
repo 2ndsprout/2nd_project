@@ -83,25 +83,19 @@ export const getUserList = async (data: number) => {
 }
 interface UpdateProps {
     name: string,
-    aptId: number,
-    aptNumber: number,
     email: string,
     password: string,
-    role: number
-}
-interface UpdateEmailProps {
-    email: string
+    newPassword1: string,
+    newPassword2: string,
+
+
 }
 
-export const updateEmail = async (data: UpdateEmailProps) => {
+// // 유저정보 수정
+export const updateUser = async (data: UpdateProps) => {
     const response = await UserApi.put('/api/user', data);
     return response.data;
 }
-// // 유저정보 수정
-// export const updateUser = async (data: UpdateProps) => {
-//     const response = await UserApi.put('/api/user', data);
-//     return response.data;
-// }
 // 비밀번호 수정
 export const updateUserPassword = async (data: UpdateProps) => {
     const response = await UserApi.put('/api/user/password', data);
@@ -138,7 +132,7 @@ export const getProfile = async () => {
     return response.data;
 }
 
-export const upateProfile = async (data: UpdateProfileProps) => {
+export const updateProfile = async (data: UpdateProfileProps) => {
     const response = await UserApi.put('/api/profile', data);
     return response.data;
 }

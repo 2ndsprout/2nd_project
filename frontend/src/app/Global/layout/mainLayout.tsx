@@ -1,29 +1,26 @@
 'use client'
 
-import React, { useState } from "react"
-import DropDown, { Direcion } from "../DropDown"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowRightToBracket, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons"
+import React, { useState } from "react";
+import DropDown, { Direcion } from "../DropDown";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRightToBracket, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 
-interface pageInterface {
-  children: React.ReactNode,
-  className?: string
-  user: any
-  profile: any
-  categories: any[]
+interface PageInterface {
+  children: React.ReactNode;
+  className?: string;
+  user: any;
+  profile: any;
+  categories: any[];
   keyword?: string;
 }
 
-export default function Main(props: Readonly<pageInterface>) {
-  const className = props.className;
-  const user = props.user;
-  const profile = props.profile;
-  const categories = props.categories;
-
+export default function Main(props: Readonly<PageInterface>) {
+  const { className, user, profile, categories } = props;
+  
   const [centerHover, setCenterHover] = useState(false);
   const [boardHover, setBoardHover] = useState(false);
   const [manageHover, setManageHover] = useState(false);
-  const [userHoverInterval, setUserHoverInterval] = useState(null as any);
+  const [userHoverInterval, setUserHoverInterval] = useState<any>(null);
   const [userHover, setUserHover] = useState(false);
 
   function openHover(setHover: React.Dispatch<React.SetStateAction<boolean>>) {
@@ -94,7 +91,7 @@ export default function Main(props: Readonly<pageInterface>) {
           </DropDown>
           <div className="navbar-end">
             <div className='flex items-center border-2 border-gray-300 rounded-full'>
-              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key == 'Enter') document.getElementById('search')?.click() }}></input>
+              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key === 'Enter') document.getElementById('search')?.click() }}></input>
             </div>
             <button id='search' onClick={() => { const value = (document.getElementById('keyword') as HTMLInputElement)?.value; location.href = '/search?keyword=' + (value ? value : '') }}>
               <FontAwesomeIcon icon={faMagnifyingGlass} className='rounded-full mr-3 p-2' size="xl" />
@@ -102,7 +99,7 @@ export default function Main(props: Readonly<pageInterface>) {
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
-              <img src={profile?.url ? profile.url : '/user.png'} className='w-[48px] h-[48px]' alt="default" />
+              <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px] rounded-full' alt="default" />
             </button>
             <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
               <div
@@ -138,5 +135,5 @@ export default function Main(props: Readonly<pageInterface>) {
         <label className='text-xs text-secondary'>사업자등록번호 : <span className="text-white">889-86-02332</span></label>
       </footer>
     </main>
-  )
+  );
 }
