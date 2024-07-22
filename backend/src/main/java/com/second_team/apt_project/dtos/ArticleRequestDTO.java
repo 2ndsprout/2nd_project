@@ -11,5 +11,6 @@ public class ArticleRequestDTO {
     private String title;
     private String content;
     private Boolean topActive;
-    private List<Long> tagId;
+    private List<String> tagName;
+    private List<Long> articleTagId;
 }

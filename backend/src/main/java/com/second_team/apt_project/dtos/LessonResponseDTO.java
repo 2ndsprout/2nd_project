@@ -18,11 +18,9 @@ public class LessonResponseDTO {
     private Long modifyDate;
     private Long startDate;
     private Long endDate;
-    private Long startTime;
-    private Long endTime;
 
     @Builder
-    public LessonResponseDTO(Long id, CenterResponseDTO centerResponseDTO, ProfileResponseDTO profileResponseDTO, String name, String content, Long createDate, Long modifyDate, Long startDate, Long endDate, Long startTime, Long endTime) {
+    public LessonResponseDTO(Long id, CenterResponseDTO centerResponseDTO, ProfileResponseDTO profileResponseDTO, String name, String content, Long createDate, Long modifyDate, Long startDate, Long endDate) {
         this.id = id;
         this.centerResponseDTO = centerResponseDTO;
         this.profileResponseDTO = profileResponseDTO;
@@ -32,7 +30,5 @@ public class LessonResponseDTO {
         this.modifyDate = modifyDate;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.startTime = startTime;
-        this.endTime = endTime;
     }
 }

@@ -13,8 +13,6 @@ public class LessonRequestDTO {
     private String content;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
 
 
 }

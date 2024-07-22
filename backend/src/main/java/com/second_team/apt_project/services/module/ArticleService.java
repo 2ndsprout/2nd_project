@@ -56,4 +56,5 @@ public class ArticleService {
     public List<Article> findByArticle(Long profileId) {
         return articleRepository.findByArticle(profileId);
     }
+
 }

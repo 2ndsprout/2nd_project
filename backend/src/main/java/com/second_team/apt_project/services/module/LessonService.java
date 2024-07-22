@@ -17,7 +17,7 @@ import java.util.List;
 public class LessonService {
     private final LessonRepository lessonRepository;
 
-    public Lesson save(CultureCenter cultureCenter, Profile profile, String name, String content, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime startDate, LocalDateTime endDate) {
+    public Lesson save(CultureCenter cultureCenter, Profile profile, String name, String content, LocalDateTime startDate, LocalDateTime endDate) {
         return lessonRepository.save(Lesson.builder()
                 .profile(profile)
                 .cultureCenter(cultureCenter)
@@ -25,8 +25,6 @@ public class LessonService {
                 .content(content)
                 .startDate(startDate)
                 .endDate(endDate)
-                .startTime(startTime)
-                .endTime(endTime)
                 .build());
     }
 
@@ -38,13 +36,11 @@ public class LessonService {
         return lessonRepository.findByApt(aptId, pageable, cultureCenter);
     }
 
-    public Lesson update(Lesson lesson, String name, String content, LocalDateTime startDate, LocalDateTime startTime, LocalDateTime endDate, LocalDateTime endTime) {
+    public Lesson update(Lesson lesson, String name, String content, LocalDateTime startDate, LocalDateTime endDate) {
         lesson.setName(name);
         lesson.setContent(content);
         lesson.setStartDate(startDate);
-        lesson.setStartTime(startTime);
         lesson.setEndDate(endDate);
-        lesson.setEndTime(endTime);
         lesson.setModifyDate(LocalDateTime.now());
         return lessonRepository.save(lesson);
     }
@@ -56,4 +52,5 @@ public class LessonService {
     public List<Lesson> findByProfile(Long profileId) {
         return lessonRepository.findByProfile(profileId);
     }
+
 }

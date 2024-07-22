@@ -30,8 +30,6 @@ public class QLesson extends EntityPathBase<Lesson> {
 
     public final DateTimePath<java.time.LocalDateTime> endDate = createDateTime("endDate", java.time.LocalDateTime.class);
 
-    public final DateTimePath<java.time.LocalDateTime> endTime = createDateTime("endTime", java.time.LocalDateTime.class);
-
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final DateTimePath<java.time.LocalDateTime> modifyDate = createDateTime("modifyDate", java.time.LocalDateTime.class);
@@ -41,8 +39,6 @@ public class QLesson extends EntityPathBase<Lesson> {
     public final QProfile profile;
 
     public final DateTimePath<java.time.LocalDateTime> startDate = createDateTime("startDate", java.time.LocalDateTime.class);
-
-    public final DateTimePath<java.time.LocalDateTime> startTime = createDateTime("startTime", java.time.LocalDateTime.class);
 
     public QLesson(String variable) {
         this(Lesson.class, forVariable(variable), INITS);

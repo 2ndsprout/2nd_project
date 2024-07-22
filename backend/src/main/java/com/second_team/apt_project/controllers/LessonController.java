@@ -26,7 +26,7 @@ public class LessonController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 LessonResponseDTO responseDTO = multiService.saveLesson(username, profileId, requestDTO.getCenterId(), requestDTO.getName(),
-                        requestDTO.getContent(), requestDTO.getStartDate(), requestDTO.getEndDate(), requestDTO.getStartTime(), requestDTO.getEndTime());
+                        requestDTO.getContent(), requestDTO.getStartDate(), requestDTO.getEndDate());
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
@@ -79,7 +79,7 @@ public class LessonController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 LessonResponseDTO responseDTO = multiService.updateLesson(username, profileId, requestDTO.getId(), requestDTO.getCenterId(), requestDTO.getName(),
-                        requestDTO.getContent(), requestDTO.getStartDate(), requestDTO.getEndDate(), requestDTO.getStartTime(), requestDTO.getEndTime());
+                        requestDTO.getContent(), requestDTO.getStartDate(), requestDTO.getEndDate());
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
