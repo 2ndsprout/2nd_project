@@ -11,4 +11,8 @@ public interface LoveRepositoryCustom {
     Optional<Love> findByArticleAndProfile(Article article, Profile profile);
 
     List<Love> findByArticle(Long id);
+
+    boolean existsByArticleAndProfile(Article article, Profile profile);
+
+    int countByArticleId(Long articleId);
 }

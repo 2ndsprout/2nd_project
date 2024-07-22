@@ -1009,49 +1009,42 @@ public class MultiService {
     /**
      * Love
      */
-
-
     @Transactional
-    public void saveLove(String username, Long articleId, Long profileId) {
+    public LoveResponseDTO toggleLove(String username, Long articleId, Long profileId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null) throw new DataNotFoundException("게시물 객체 없음");
-        Love love = loveService.findByArticleAndProfile(article, profile);
-        if (love == null)
-            loveService.save(article, profile);
 
+        boolean isLoved = loveService.toggleLove(article, profile);
+        int count = loveService.countLoveByArticle(article.getId());
+
+        return LoveResponseDTO.builder()
+                .count(count)
+                .isLoved(isLoved)
+                .build();
     }
 
     @Transactional
-    public void deleteLove(String username, Long articleId, Long profileId) {
-        SiteUser user = userService.get(username);
-        Profile profile = profileService.findById(profileId);
-        this.userCheck(user, profile);
-        Article article = articleService.findById(articleId);
-        if (article == null) throw new DataNotFoundException("게시물 객체 없음");
-        Love love = loveService.findByArticleAndProfile(article, profile);
-        if (love == null)
-            throw new DataNotFoundException("게시물 좋아요 객체 없음");
-        if (love.getProfile() != profile)
-            throw new IllegalArgumentException("권한 없음");
-        loveService.delete(love);
-    }
-
-    @Transactional
-    public LoveResponseDTO countLove(Long articleId, Long profileId, String username) {
+    public LoveResponseDTO getLoveInfo(Long articleId, Long profileId, String username) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
-        List<Love> countLove = loveService.findByArticle(article.getId());
-        int count = countLove.size();
+
+        boolean isLoved = loveService.existsByArticleAndProfile(article, profile);
+        int count = loveService.countLoveByArticle(article.getId());
+
         return LoveResponseDTO.builder()
-                .count(count).build();
+                .count(count)
+                .isLoved(isLoved)
+                .build();
     }
+
+
 
     /**
      * Tag

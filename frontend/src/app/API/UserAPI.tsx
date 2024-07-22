@@ -336,19 +336,34 @@ export const deleteTag = async (data: number) => {
     await UserApi.delete('/api/tag', {headers: {'tagId': data}});
 }
 // Love
-
-interface LoveProps {
-    articleId: number
-}
-
-export const postLove = async (data: LoveProps) => {
-    const response = await UserApi.post('/api/love', data);
+interface LoveResponseDTO {
+    isLoved: boolean;
+    count: number;
+  }
+  
+export const toggleLove = async (articleId: number): Promise<LoveResponseDTO> => {
+try {
+    const response = await UserApi.post('/api/love/toggle', null, {
+    headers: { 'ArticleId': articleId }
+    });
     return response.data;
+} catch (error) {
+    console.error('Error toggling love:', error);
+    throw error;
 }
+};
 
-export const deleteLove = async (data: number) => {
-    await UserApi.delete('/api/love', {headers: {'ArticleId': data}});
+export const getLoveInfo = async (articleId: number): Promise<LoveResponseDTO> => {
+try {
+    const response = await UserApi.get('/api/love/info', {
+    headers: { 'ArticleId': articleId }
+    });
+    return response.data;
+} catch (error) {
+    console.error('Error getting love info:', error);
+    throw error;
 }
+};
 
 // Center
 interface CenterProps {

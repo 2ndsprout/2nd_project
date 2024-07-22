@@ -25,4 +25,22 @@ public class LoveRepositoryImpl implements LoveRepositoryCustom {
     public List<Love> findByArticle(Long id) {
         return jpaQueryFactory.selectFrom(qLove).where(qLove.article.id.eq(id)).fetch();
     }
+
+    @Override
+    public boolean existsByArticleAndProfile(Article article, Profile profile) {
+        Integer fetchOne = jpaQueryFactory
+                .selectOne()
+                .from(qLove)
+                .where(qLove.article.eq(article).and(qLove.profile.eq(profile)))
+                .fetchFirst();
+        return fetchOne != null;
+    }
+
+    @Override
+    public int countByArticleId(Long articleId) {
+        return Math.toIntExact(jpaQueryFactory
+                .selectFrom(qLove)
+                .where(qLove.article.id.eq(articleId))
+                .fetchCount());
+    }
 }

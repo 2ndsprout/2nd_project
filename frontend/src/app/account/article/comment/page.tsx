@@ -47,6 +47,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [isLoved, setIsLoved] = useState(false);
+    const [loveCount, setLoveCount] = useState(0);
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
@@ -54,15 +55,6 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         }, 0);
     };
 
-    // const checkLoveStatus = async () => {
-    //     try {
-            // 여기에 좋아요 상태를 확인하는 API 호출을 추가예정
-            // const response = await getLoveStatus(articleId);
-            // setIsLoved(response.isLoved);
-    //     } catch (error) {
-    //         console.error('좋아요 상태 확인 중 오류 발생:', error);
-    //     }
-    // };
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -166,8 +158,9 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         }
     };
     
-    const handleLoveChange = (newLoveState: boolean) => {
+    const handleLoveChange = (newLoveState: boolean, newCount: number) => {
         setIsLoved(newLoveState);
+        setLoveCount(newCount);
     };
 
     const renderComment = (comment: CommentResponseDTO, depth = 0) => (
@@ -223,13 +216,15 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-2 flex flex-col items-center">
                 <div className="flex items-center space-x-4 mt-5">
-                    <div className="flex flex-col items-center ml-4 mr-2">
+                    <div className="flex flex-col items-center">
                         <LoveButton 
                             articleId={articleId} 
-                            initialLoved={isLoved} 
-                            onLoveChange={handleLoveChange}
+                            onLoveChange={(isLoved, count) => {
+                                console.log(`좋아요 상태: ${isLoved}, 개수: ${count}`);
+                                // 필요한 경우 부모 컴포넌트의 상태를 업데이트
+                            }}
                         />
-                        <p className="mt-2">예정</p>
+                        {/* <p className="mt-2">{예정}</p> */}
                     </div>
                     <div className="flex flex-col items-center">
                         <img src="/icon-comment.png" alt="댓글 아이콘" className="w-9 h-9 mb-1" />
