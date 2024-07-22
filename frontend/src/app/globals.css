@@ -62,3 +62,39 @@ body {
     color-scheme: light !important;
   }
 }
+
+.calendar-container {
+  width: 900px; /* 너비를 원하는 크기로 설정 */
+  height: 480px; /* 높이를 원하는 크기로 설정 */
+  padding: 10px; /* 가운데 정렬 */
+  background-color: #fff;
+  color: black;
+}
+
+/* globals.css */
+
+.fc-col-header-cell-cushion {
+  padding: 0;
+  font-size: 14px;
+}
+.fc-daygrid-day-number {
+  font-size: 15px;
+  display: inline-block;
+  width: 100%; /* 날짜 숫자 수직 가운데 정렬 */
+}
+.fc-toolbar-title {
+  margin: 0 auto;
+}
+.text-red {
+  color: red;
+}
+.fc-toolbar-title {
+  font-weight: bold;
+}
+.text-blue {
+  color: blue;
+}
+.fc .fc-header-toolbar {
+  height: 35px;
+  font-size: 15px /* 원하는 높이로 조정 */
+}

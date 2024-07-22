@@ -148,6 +148,40 @@ export const deleteImage = async () => {
     const response = await UserApi.delete('/api/image');
     return response.data;
 }
+// export const saveImage = async (file: File) => {
+//     const formData = new FormData();
+//     formData.append('file', file);
+
+//     try {
+//         const response = await UserApi.post('/api/image', formData, {
+//             headers: {
+//                 'Content-Type': 'multipart/form-data'
+//             }
+//         });
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error in saveImage:', error);
+//         throw error;
+//     }
+// }
+
+// export const saveImageList = async (file: File) => {
+//     const formData = new FormData();
+//     formData.append('file', file);
+
+//     try {
+//         const response = await UserApi.post('/api/image/list', formData, {
+//             headers: {
+//                 'Content-Type': 'multipart/form-data'
+//             }
+//         });
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error in saveImageList:', error);
+//         throw error;
+//     }
+// }
+
 export const saveImage = async (data: any) => {
     const response = await UserApi.post('/api/image', data, {
         headers: {
@@ -302,19 +336,34 @@ export const deleteTag = async (data: number) => {
     await UserApi.delete('/api/tag', {headers: {'tagId': data}});
 }
 // Love
-
-interface LoveProps {
-    articleId: number
-}
-
-export const postLove = async (data: LoveProps) => {
-    const response = await UserApi.post('/api/love', data);
+interface LoveResponseDTO {
+    isLoved: boolean;
+    count: number;
+  }
+  
+export const toggleLove = async (articleId: number): Promise<LoveResponseDTO> => {
+try {
+    const response = await UserApi.post('/api/love/toggle', null, {
+    headers: { 'ArticleId': articleId }
+    });
     return response.data;
+} catch (error) {
+    console.error('Error toggling love:', error);
+    throw error;
 }
+};
 
-export const deleteLove = async (data: number) => {
-    await UserApi.delete('/api/love', {headers: {'ArticleId': data}});
+export const getLoveInfo = async (articleId: number): Promise<LoveResponseDTO> => {
+try {
+    const response = await UserApi.get('/api/love/info', {
+    headers: { 'ArticleId': articleId }
+    });
+    return response.data;
+} catch (error) {
+    console.error('Error getting love info:', error);
+    throw error;
 }
+};
 
 // Center
 interface CenterProps {
@@ -378,6 +427,11 @@ export const getLesson = async (data: number) => {
 
 export const getLessonList = async (data: number) => {
     const response = await UserApi.get('/api/lesson/list', {headers: {'Page': data}});
+    return response.data;
+}
+
+export const getMyLessonList = async () => {
+    const response = await UserApi.get('/api/lesson/user/my/list');
     return response.data;
 }
 
