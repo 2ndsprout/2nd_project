@@ -223,7 +223,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-2 flex flex-col items-center">
                 <div className="flex items-center space-x-4 mt-5">
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center ml-4 mr-2">
                         <LoveButton 
                             articleId={articleId} 
                             initialLoved={isLoved} 

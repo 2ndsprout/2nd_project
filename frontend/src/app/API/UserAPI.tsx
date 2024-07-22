@@ -148,26 +148,60 @@ export const deleteImage = async () => {
     const response = await UserApi.delete('/api/image');
     return response.data;
 }
-export const saveImage = async (data: any) => {
-    const response = await UserApi.post('/api/image', data, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    });
-    return response.data;
+export const saveImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await UserApi.post('/api/image', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error in saveImage:', error);
+        throw error;
+    }
 }
-export const saveImageList = async (data: any) => {
-    const response = await UserApi.post('/api/image/list', data, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    });
-    return response.data;
+
+export const saveImageList = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await UserApi.post('/api/image/list', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error in saveImageList:', error);
+        throw error;
+    }
 }
-export const deleteImageList = async () => {
-    const response = await UserApi.delete('/api/image/list');
-    return response.data;
-}
+
+// export const saveImage = async (data: any) => {
+//     const response = await UserApi.post('/api/image', data, {
+//         headers: {
+//             'Content-Type': 'multipart/form-data'
+//         }
+//     });
+//     return response.data;
+// }
+// export const saveImageList = async (data: any) => {
+//     const response = await UserApi.post('/api/image/list', data, {
+//         headers: {
+//             'Content-Type': 'multipart/form-data'
+//         }
+//     });
+//     return response.data;
+// }
+// export const deleteImageList = async () => {
+//     const response = await UserApi.delete('/api/image/list');
+//     return response.data;
+// }
 
 // Apt
 interface AptProps {
