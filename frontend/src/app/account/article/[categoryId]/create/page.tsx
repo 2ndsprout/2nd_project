@@ -6,7 +6,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, redirect } from "next/navigation";
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import CategoryList from '@/app/Global/CategoryList';
-import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 export default function Page() {
