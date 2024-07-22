@@ -1,6 +1,7 @@
 package com.second_team.apt_project.services.module;
 
 import com.second_team.apt_project.domains.*;
+import com.second_team.apt_project.enums.Sorts;
 import com.second_team.apt_project.repositories.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -55,5 +56,9 @@ public class ArticleService {
 
     public List<Article> findByArticle(Long profileId) {
         return articleRepository.findByArticle(profileId);
+    }
+
+    public Page<Article> searchByKeyword(Long id, Pageable pageable, String keyword, Sorts sorts) {
+        return articleRepository.searchByKeyword(id, pageable, keyword, sorts);
     }
 }

@@ -60,13 +60,12 @@ public class ArticleController {
     @GetMapping
     public ResponseEntity<?> articleDetail(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
-                                           @RequestHeader(value = "Page", defaultValue = "0") int page,
                                            @RequestHeader("ArticleId") Long articleId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username, page);
+                ArticleResponseDTO articleResponseDTO = this.multiService.articleDetail(articleId, profileId, username);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
@@ -120,6 +119,25 @@ public class ArticleController {
                 String username = tokenRecord.username();
                 this.multiService.deleteArticle(username, profileId, articleId);
                 return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
+            }
+        } catch (IllegalArgumentException | DataNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchArticle(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader("Page") int page,
+                                           @RequestHeader(value = "Keyword", defaultValue = "") String keyword,
+                                           @RequestHeader("Sort") int sort) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort);
+                return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());

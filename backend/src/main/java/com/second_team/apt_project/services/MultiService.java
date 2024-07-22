@@ -4,6 +4,7 @@ import com.second_team.apt_project.AptProjectApplication;
 import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.dtos.*;
 import com.second_team.apt_project.enums.ImageKey;
+import com.second_team.apt_project.enums.Sorts;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
@@ -757,7 +758,7 @@ public class MultiService {
     }
 
     @Transactional
-    public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username, int page) {
+    public ArticleResponseDTO articleDetail(Long articleId, Long profileId, String username) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
@@ -857,6 +858,31 @@ public class MultiService {
         }
         articleService.deleteArticle(article);
 
+    }
+
+    @Transactional
+    public Page<ArticleResponseDTO> searchArticle(String username, Long profileId, int page, String keyword, int sort) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        Sorts sorts = Sorts.values()[sort];
+        Pageable pageable =  PageRequest.of(page, 15);
+        Page<Article> searchArticleList = articleService.searchByKeyword(user.getApt().getId(), pageable, keyword, sorts);
+        if (searchArticleList.isEmpty())
+            throw new DataNotFoundException("검색 결과가 없습니다");
+        List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
+        for (Article article : searchArticleList) {
+            List<ArticleTag> articleTagList = articleTagService.getArticle(article.getId());
+            if (articleTagList == null) throw new DataNotFoundException("게시물태그 객체 없음");
+            List<TagResponseDTO> responseDTOList = new ArrayList<>();
+            for (ArticleTag articleTag : articleTagList) {
+                Tag tag = tagService.findById(articleTag.getTag().getId());
+                responseDTOList.add(tagResponseDTO(tag));
+            }
+            ArticleResponseDTO articleResponseDTO = this.getArticleResponseDTO(article, responseDTOList);
+            articleResponseDTOList.add(articleResponseDTO);
+        }
+        return new PageImpl<>(articleResponseDTOList, pageable, searchArticleList.getTotalElements());
     }
 
     private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList) {
