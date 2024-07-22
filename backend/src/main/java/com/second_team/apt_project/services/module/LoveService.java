@@ -20,9 +20,9 @@ public class LoveService {
                 .profile(profile).build());
     }
 
-//    public Love findByArticleAndProfile(Article article, Profile profile) {
-//        return loveRepository.findByArticleAndProfile(article, profile).orElse(null);
-//    }
+    public Love findByArticleAndProfile(Article article, Profile profile) {
+        return loveRepository.findByArticleAndProfile(article, profile).orElse(null);
+    }
 
     public void delete(Love love) {
         loveRepository.delete(love);

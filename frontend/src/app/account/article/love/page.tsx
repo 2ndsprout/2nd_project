@@ -7,15 +7,21 @@ interface LoveButtonProps {
   onLoveChange?: (isLoved: boolean, count: number) => void;
 }
 
+interface LoveResponse {
+  count: number;
+  isLoved: boolean;
+}
+
 const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
-  const [isLoved, setIsLoved] = useState(false);
+  const [isLoved, setIsLoved] = useState<boolean | null>(null);
   const [loveCount, setLoveCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchLoveInfo = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await getLoveInfo(articleId);
+      const response: LoveResponse = await getLoveInfo(articleId);
+      console.log('Fetched love info:', response);
       setIsLoved(response.isLoved);
       setLoveCount(response.count);
       if (onLoveChange) {
@@ -33,24 +39,30 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
   }, [fetchLoveInfo]);
 
   const handleLove = async () => {
-    if (isLoading) return;
+    if (isLoading || isLoved === null) return;
 
     setIsLoading(true);
     try {
-      const response = await toggleLove(articleId);
-      setIsLoved(response.isLoved);
+      const response: LoveResponse = await toggleLove(articleId);
+      console.log('Toggle love response:', response);
+      
+      setIsLoved(response.isLoved); // 또는 response.isLoved
       setLoveCount(response.count);
+
       if (onLoveChange) {
         onLoveChange(response.isLoved, response.count);
       }
     } catch (error) {
       console.error('좋아요 처리 중 오류가 발생했습니다:', error);
-      // 오류 발생 시 서버의 최신 상태를 다시 가져옵니다.
       await fetchLoveInfo();
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoved === null) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex items-center">
@@ -59,7 +71,7 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
           onClick={handleLove}
           disabled={isLoading}
           className={`flex items-center justify-center p-2 rounded-full transition-colors ${
-            isLoved ? 'bg-yellow-400' : 'bg-gray-700 hover:bg-yellow-400'
+            isLoved ? 'bg-gray-700' : 'bg-gray-700'
           } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <Image
