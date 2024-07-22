@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -1364,7 +1363,22 @@ public class MultiService {
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(lesson.getProfile().getUser().getUsername() + "." + lesson.getProfile().getId()));
         String profileUrl = null;
         if (_fileSystem.isPresent()) profileUrl = _fileSystem.get().getV();
-        return LessonResponseDTO.builder().id(lesson.getId()).centerResponseDTO(this.centerResponseDTO(lesson.getCultureCenter(), centerMulti)).profileResponseDTO(ProfileResponseDTO.builder().id(lesson.getProfile().getId()).username(lesson.getProfile().getUser().getUsername()).name(lesson.getProfile().getName()).url(profileUrl).build()).createDate(this.dateTimeTransfer(lesson.getCreateDate())).modifyDate(this.dateTimeTransfer(lesson.getModifyDate())).name(lesson.getName()).content(lesson.getContent()).startDate(this.dateTimeTransfer(lesson.getStartDate())).endDate(this.dateTimeTransfer(lesson.getEndDate())).build();
+        return LessonResponseDTO.builder() //
+                .id(lesson.getId()) //
+                .centerResponseDTO(this.centerResponseDTO(lesson.getCultureCenter(), centerMulti)) //
+                .profileResponseDTO(ProfileResponseDTO.builder() //
+                        .id(lesson.getProfile().getId()) //
+                        .username(lesson.getProfile().getUser().getUsername()) //
+                        .name(lesson.getProfile().getName()) //
+                        .url(profileUrl) //
+                        .build()) //
+                .createDate(this.dateTimeTransfer(lesson.getCreateDate())) //
+                .modifyDate(this.dateTimeTransfer(lesson.getModifyDate())) //
+                .name(lesson.getName()) //
+                .content(lesson.getContent()) //
+                .startDate(this.dateTimeTransfer(lesson.getStartDate())) //
+                .endDate(this.dateTimeTransfer(lesson.getEndDate())) //
+                .build();
     }
 
     @Transactional
@@ -1461,7 +1475,11 @@ public class MultiService {
     }
 
     private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {
-        return LessonUserResponseDTO.builder().id(lessonUser.getId()).lessonResponseDTO(lessonResponseDTO(lessonUser.getLesson())).type(lessonUser.getLessonStatus().toString()).build();
+        return LessonUserResponseDTO.builder() //
+                .id(lessonUser.getId()) //
+                .lessonResponseDTO(lessonResponseDTO(lessonUser.getLesson())) //
+                .type(lessonUser.getLessonStatus().toString()) //
+                .build();
     }
 
     @Transactional
