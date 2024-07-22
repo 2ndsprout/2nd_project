@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
 import { getArticle, getProfile, getUser } from '@/app/API/UserAPI';
 import { getDateTimeFormat } from '@/app/Global/Method';
+import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import { redirect, useParams } from "next/navigation";
-import CommentList from '../../../comment/page'
-import DOMPurify from 'dompurify';
+import { useEffect, useState } from 'react';
+import CommentList from '../../../comment/page';
+import Main from "@/app/Global/layout/MainLayout";
 
 interface Article {
     categoryId: number;
@@ -34,6 +35,7 @@ export default function ArticleDetail() {
     const [user, setUser] = useState(null as any);
     const [error, setError] = useState('');
     const [profile, setProfile] = useState(null as any);
+    const [categories, setCategories] = useState<any[]>([]);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
@@ -135,6 +137,7 @@ export default function ArticleDetail() {
     }
 
     return (
+        <Main user={user} profile={profile} categories={categories}>
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 flex flex-col items-center">
                 <div className="mt-5 flex justify-center">
@@ -143,7 +146,7 @@ export default function ArticleDetail() {
                 </div>
             </aside>
             <div className="w-4/6 p-10">
-                <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
+                <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
                 <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
                     <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
@@ -190,5 +193,6 @@ export default function ArticleDetail() {
                 </div>
             )}
         </div>
+        </Main>
     );
 }

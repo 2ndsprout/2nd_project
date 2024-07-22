@@ -1,13 +1,14 @@
 'use client'
 
 import { getProfile, getUser, postArticle, saveImage, saveImageList } from '@/app/API/UserAPI';
-import { KeyDownCheck, Move } from '@/app/Global/Method';
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, redirect } from "next/navigation";
-import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import CategoryList from '@/app/Global/CategoryList';
+import { KeyDownCheck, Move } from '@/app/Global/Method';
+import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import Main from "@/app/Global/layout/MainLayout";
 
 export default function Page() {
     const { categoryId } = useParams();
@@ -20,20 +21,13 @@ export default function Page() {
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const quillInstance = useRef<ReactQuill>(null);
+    const [categories, setCategories] = useState<any[]>([]);
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser()
-                .then(r => {
-                    setUser(r);
-                })
-                .catch(e => console.log(e));
+            getUser().then(r => setUser(r)).catch(e => console.log(e));
             if (PROFILE_ID)
-                getProfile()
-                    .then(r => {
-                        setProfile(r);
-                    })
-                    .catch(e => console.log(e));
+                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
             else
                 redirect('/account/profile');
         }
@@ -132,6 +126,7 @@ export default function Page() {
     }
 
     return (
+        <Main user={user} profile={profile} categories={categories}>
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 bg-gray-800">
                 <CategoryList />
@@ -180,9 +175,10 @@ export default function Page() {
                     </button>
                 </div>
             </div>
-            <aside className="w-1/6 p-6 bg-gray-800">
+            <aside className="w-1/6 p-6">
 
             </aside>
         </div>
+        </Main>
     );
 }

@@ -55,30 +55,17 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         }, 0);
     };
 
-
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser()
-                .then(r => {
-                    setUser(r);
-                })
-                .catch(e => console.log(e));
-        } else {
+            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+            else
+                redirect('/account/profile');
+        }
+        else
             redirect('/account/login');
-        }
-    }, [ACCESS_TOKEN]);
-
-    useEffect(() => {
-        if (PROFILE_ID) {
-            getProfile()
-                .then(r => {
-                    setProfile(r);
-                })
-                .catch(e => console.log(e));
-        } else {
-            redirect('/account/profile');
-        }
-    }, [PROFILE_ID]);
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         fetchComments();

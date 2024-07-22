@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getArticleList, getCategoryList, getProfile, getUser } from "./API/UserAPI";
 
 import Slider from "./Global/Slider";
-import Main from "./Global/layout/mainLayout";
+import Main from "./Global/layout/MainLayout";
 
 interface pageProps {
   categories: any[];

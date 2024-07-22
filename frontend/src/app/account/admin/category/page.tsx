@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { postCategory, getCategoryList, getArticleList, updateCategory, deleteCategory } from '@/app/API/UserAPI';
+import { getProfile, getUser } from '@/app/API/UserAPI';
+import { redirect } from "next/navigation";
 import Link from 'next/link';
 import CategoryList from "@/app/Global/CategoryList";
+import Main from "@/app/Global/layout/MainLayout";
 
 interface Category {
   id: number;
@@ -20,6 +23,30 @@ const CreateCategory: React.FC = () => {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [sidebarCategories, setSidebarCategories] = useState<Category[]>([]);
+  const [user, setUser] = useState(null as any);
+  const [profile, setProfile] = useState(null as any);
+  const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+  const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+
+  useEffect(() => {
+    if (ACCESS_TOKEN) {
+        getUser()
+            .then(r => {
+                setUser(r);
+            })
+            .catch(e => console.log(e));
+        if (PROFILE_ID)
+            getProfile()
+                .then(r => {
+                    setProfile(r);
+                })
+                .catch(e => console.log(e));
+        else
+            redirect('/account/profile');
+    }
+    else
+        redirect('/account/login');
+}, [ACCESS_TOKEN, PROFILE_ID]);
 
   useEffect(() => {
     fetchCategories();
@@ -106,6 +133,7 @@ const CreateCategory: React.FC = () => {
   };
 
   return (
+    <Main user={user} profile={profile} categories={categories}>
     <div className="bg-black w-full min-h-screen text-white flex">
       <aside className="w-1/6 p-6 bg-gray-800">
       <CategoryList managementMode={true} categories={sidebarCategories} />
@@ -218,6 +246,7 @@ const CreateCategory: React.FC = () => {
         </div>
       )}
     </div>
+    </Main>
   );
 };
 

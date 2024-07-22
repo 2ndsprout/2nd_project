@@ -1,12 +1,13 @@
 'use client'
 
-import { getArticleList, getProfile, getUser, getCommentList, getLoveInfo } from "@/app/API/UserAPI";
+import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser } from "@/app/API/UserAPI";
+import CategoryList from "@/app/Global/CategoryList";
 import { getDate } from "@/app/Global/Method";
 import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import CategoryList from "@/app/Global/CategoryList";
+import Main from "@/app/Global/layout/MainLayout";
 
 interface Article {
     categoryId: number;
@@ -43,6 +44,7 @@ export default function ArticleListPage() {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [categories, setCategories] = useState<any[]>([]);
 
     const countTotalComments = (commentList: any[]): number => {
       return commentList.reduce((total, comment) => {
@@ -52,24 +54,15 @@ export default function ArticleListPage() {
 
     useEffect(() => {
       if (ACCESS_TOKEN) {
-        getUser()
-          .then(r => {
-            setUser(r);
-          })
-          .catch(e => console.log(e));
-        if (PROFILE_ID)
-          getProfile()
-            .then(r => {
-              setProfile(r);
-            })
-            .catch(e => console.log(e));
-        else
-          redirect('/account/profile');
+          getUser().then(r => setUser(r)).catch(e => console.log(e));
+          if (PROFILE_ID)
+              getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+          else
+              redirect('/account/profile');
       }
       else
-        redirect('/account/login');
-  
-    }, [ACCESS_TOKEN, PROFILE_ID]);
+          redirect('/account/login');
+  }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         const fetchArticles = async (page: number) => {
@@ -99,6 +92,7 @@ export default function ArticleListPage() {
     };
 
     return (
+      <Main user={user} profile={profile} categories={categories}>
       <div className="bg-black w-full min-h-screen text-white flex">
         <aside className="w-1/6 p-6 bg-gray-800">
           <CategoryList />
@@ -174,5 +168,6 @@ export default function ArticleListPage() {
           </div>
         </div>
       </div>
+      </Main>
     );
 }

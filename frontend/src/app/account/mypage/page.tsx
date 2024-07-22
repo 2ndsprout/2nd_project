@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import { getProfile, getUser } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import Profile from "@/app/Global/layout/ProfileLayout";
 
 interface pageProps {

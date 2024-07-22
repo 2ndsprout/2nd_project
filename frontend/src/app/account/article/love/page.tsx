@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { toggleLove, getLoveInfo } from '@/app/API/UserAPI';
+import { getLoveInfo, getProfile, getUser, toggleLove } from '@/app/API/UserAPI';
 import Image from 'next/image';
+import { redirect } from "next/navigation";
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface LoveButtonProps {
   articleId: number;
@@ -16,6 +17,22 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
   const [isLoved, setIsLoved] = useState<boolean | null>(null);
   const [loveCount, setLoveCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null as any);
+  const [profile, setProfile] = useState(null as any);
+  const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+  const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+
+  useEffect(() => {
+    if (ACCESS_TOKEN) {
+        getUser().then(r => setUser(r)).catch(e => console.log(e));
+        if (PROFILE_ID)
+            getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+        else
+            redirect('/account/profile');
+    }
+    else
+        redirect('/account/login');
+}, [ACCESS_TOKEN, PROFILE_ID]);
 
   const fetchLoveInfo = useCallback(async () => {
     try {

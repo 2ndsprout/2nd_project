@@ -9,6 +9,7 @@ import CategoryList from '@/app/Global/CategoryList';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
+import Main from "@/app/Global/layout/MainLayout";
 
 export default function EditPage() {
     const { categoryId, articleId } = useParams();
@@ -19,6 +20,7 @@ export default function EditPage() {
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
     const [showEditConfirm, setShowEditConfirm] = useState(false);
+    const [categories, setCategories] = useState<any[]>([]);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const quillInstance = useRef<ReactQuill>(null);
@@ -152,6 +154,7 @@ export default function EditPage() {
     };
 
     return (
+        <Main user={user} profile={profile} categories={categories}>
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 bg-gray-800">
                 <CategoryList />
@@ -199,7 +202,7 @@ export default function EditPage() {
                     </button>
                 </div>
             </div>
-            <aside className="w-1/6 p-6 bg-gray-800">
+            <aside className="w-1/6 p-6">
             </aside>
             {showEditConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -214,5 +217,6 @@ export default function EditPage() {
                 </div>
             )}
         </div>
+        </Main>
     );
 }
