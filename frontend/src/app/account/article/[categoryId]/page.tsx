@@ -1,13 +1,13 @@
 'use client'
 
-import { getArticleList, getProfile, getUser, getCommentList, getLoveInfo } from "@/app/API/UserAPI";
+import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser } from "@/app/API/UserAPI";
+import CategoryList from "@/app/Global/CategoryList";
+import Main from "@/app/Global/layout/MainLayout";
 import { getDate } from "@/app/Global/Method";
 import Pagination from "@/app/Global/Pagination";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import CategoryList from "@/app/Global/CategoryList";
-import Main from "@/app/Global/layout/MainLayout";
 
 interface Article {
   categoryId: number;
@@ -35,15 +35,17 @@ interface ArticlePage {
 }
 
 export default function ArticleListPage() {
-  const [articleList, setArticleList] = useState<Article[]>([]);
-  const { categoryId } = useParams();
-  const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState('');
-  const [profile, setProfile] = useState<any>(null);
-  const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
-  const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+    const [articleList, setArticleList] = useState<Article[]>([]);
+    const { categoryId } = useParams();
+    const [user, setUser] = useState<any>(null);
+    const [error, setError] = useState('');
+    const [profile, setProfile] = useState<any>(null);
+    const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
+    const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalElements, setTotalElements] = useState(0);
+    const [categories, setCategories] = useState<any[]>([]);
 
   const countTotalComments = (commentList: any[]): number => {
     return commentList.reduce((total, comment) => {
@@ -51,57 +53,55 @@ export default function ArticleListPage() {
     }, 0);
   };
 
-  useEffect(() => {
-    if (ACCESS_TOKEN) {
-      getUser()
-        .then(r => {
-          setUser(r);
-        })
-        .catch(e => console.log(e));
-      if (PROFILE_ID)
-        getProfile()
-          .then(r => {
-            setProfile(r);
-          })
-          .catch(e => console.log(e));
+    useEffect(() => {
+      if (ACCESS_TOKEN) {
+          getUser().then(r => setUser(r)).catch(e => console.log(e));
+          if (PROFILE_ID)
+              getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+          else
+              redirect('/account/profile');
+      }
       else
-        redirect('/account/profile');
-    }
-    else
-      redirect('/account/login');
-
+          redirect('/account/login');
   }, [ACCESS_TOKEN, PROFILE_ID]);
 
   useEffect(() => {
-    const fetchArticles = async (page: number) => {
-      try {
-        const data: ArticlePage = await getArticleList({ Page: page - 1, CategoryId: Number(categoryId) });
+    const fetchArticles = async () => {
+        try {
+            const data: ArticlePage = await getArticleList({ 
+                page: currentPage - 1,  // 백엔드에는 0-based 인덱스로 전달
+                categoryId: Number(categoryId) 
+            });
 
-        const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
-          const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
-          const commentCount = countTotalComments(commentResponse.content);
-          const loveResponse = await getLoveInfo(article.articleId);
-          return { ...article, commentCount, loveCount: loveResponse.count };
-        }));
+            const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
+                const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
+                const commentCount = countTotalComments(commentResponse.content);
+                const loveResponse = await getLoveInfo(article.articleId);
+                return { ...article, commentCount, loveCount: loveResponse.count };
+            }));
 
-        setArticleList(articlesWithCommentCount);
-        setTotalPages(data.totalPages);
-      } catch (error) {
-        console.error(error);
-        setError('게시물을 불러오는데 실패했습니다.');
-      }
+            setArticleList(articlesWithCommentCount);
+            setTotalPages(Math.max(1, data.totalPages));  // 최소값을 1로 설정
+            setTotalElements(data.totalElements);
+            setCurrentPage(data.number + 1);  // 백엔드에서 받은 0-based 인덱스를 1-based로 변환
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            setError('게시물을 불러오는데 실패했습니다.');
+        }
     };
 
-    fetchArticles(currentPage);
-  }, [categoryId, currentPage]);
+    fetchArticles();
+}, [categoryId, currentPage]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
 
-  return (
-    <Main user={user} profile={profile}>
-      <div className="bg-black w-full min-h-screen text-white flex">
+const handlePageChange = (newPage: number) => {
+  setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
+};
+
+
+    return (
+      <Main user={user} profile={profile}>
+      <div className="flex w-full">
         <aside className="w-1/6 p-6 bg-gray-800">
           <CategoryList />
         </aside>
@@ -109,7 +109,7 @@ export default function ArticleListPage() {
           {error ? (
             <p className="text-red-500">{error}</p>
           ) : articleList.length === 0 ? (
-            <p className="text-gray-400">게시물이 없습니다.</p>
+            <p className="text-gray-400">게시물을 불러오는중...</p>
           ) : (
             <table className="w-full table-auto">
               <thead>
@@ -150,7 +150,7 @@ export default function ArticleListPage() {
             </table>
           )}
 
-          <div className="mt-6 flex justify-between items-center">
+          <div className="mt-10 flex justify-between items-center">
             <div>
               <input
                 type="text"
@@ -168,14 +168,14 @@ export default function ArticleListPage() {
             </Link>
           </div>
           <div className="flex justify-center mt-6">
-            <Pagination
+          <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-            />
+          />
           </div>
         </div>
       </div>
-    </Main>
-  );
+      </Main>
+    );
 }

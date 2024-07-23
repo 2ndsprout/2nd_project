@@ -1,14 +1,14 @@
 'use client'
 
 import { getProfile, getUser, postArticle, saveImage, saveImageList } from '@/app/API/UserAPI';
-import { KeyDownCheck, Move } from '@/app/Global/Method';
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, redirect } from "next/navigation";
-import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import CategoryList from '@/app/Global/CategoryList';
-import 'react-quill/dist/quill.snow.css';
+import Main from "@/app/Global/layout/MainLayout";
+import { KeyDownCheck, Move } from '@/app/Global/Method';
+import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
-import Main from '@/app/Global/layout/MainLayout';
+import 'react-quill/dist/quill.snow.css';
 
 export default function Page() {
     const { categoryId } = useParams();
@@ -21,20 +21,13 @@ export default function Page() {
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const quillInstance = useRef<ReactQuill>(null);
+    const [categories, setCategories] = useState<any[]>([]);
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser()
-                .then(r => {
-                    setUser(r);
-                })
-                .catch(e => console.log(e));
+            getUser().then(r => setUser(r)).catch(e => console.log(e));
             if (PROFILE_ID)
-                getProfile()
-                    .then(r => {
-                        setProfile(r);
-                    })
-                    .catch(e => console.log(e));
+                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
             else
                 redirect('/account/profile');
         }
@@ -134,23 +127,35 @@ export default function Page() {
 
     return (
         <Main user={user} profile={profile}>
-            <div className="bg-black w-full min-h-screen text-white flex">
-                <aside className="w-1/6 p-6 bg-gray-800">
-                    <CategoryList />
-                </aside>
-                <div className="flex-1 p-10">
-                    <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
-                        <input
-                            id='title'
-                            type='text'
-                            className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
-                            style={{ outline: '0px', color: 'black' }}
-                            placeholder='제목 입력'
-                            onFocus={e => e.target.style.border = '2px solid red'}
-                            onBlur={e => e.target.style.border = ''}
-                            onChange={e => setTitle(e.target.value)}
-                            onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
+        <div className="bg-black w-full min-h-screen text-white flex">
+            <aside className="w-1/6 p-6 bg-gray-800">
+                <CategoryList />
+            </aside>
+            <div className="flex-1 p-10">
+                <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
+                    <input
+                        id='title'
+                        type='text'
+                        className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
+                        style={{ outline: '0px', color: 'black' }}
+                        placeholder='제목 입력'
+                        onFocus={e => e.target.style.border = '2px solid red'}
+                        onBlur={e => e.target.style.border = ''}
+                        onChange={e => setTitle(e.target.value)}
+                        onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
+                    />
+                    <div style={{ overflow: 'auto' }}>
+                        <QuillNoSSRWrapper
+                            forwardedRef={quillInstance}
+                            value={content}
+                            onChange={setContent}
+                            modules={modules}
+                            formats={formats}
+                            theme="snow"
+                            className='w-full text-black'
+                            style={{ minHeight: '700px', background: 'white' }}
+                            placeholder="내용을 입력해주세요."
                         />
                         <div style={{ overflow: 'auto' }}>
                             <QuillNoSSRWrapper
@@ -182,10 +187,26 @@ export default function Page() {
                         </button>
                     </div>
                 </div>
-                <aside className="w-1/6 p-6 bg-gray-800">
-
-                </aside>
+                <div className="flex justify-end gap-4 mt-6">
+                    <button
+                        className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
+                        onClick={() => window.location.href = '/'}
+                    >
+                        취소
+                    </button>
+                    <button
+                        id='submit'
+                        className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
+                        onClick={Submit}
+                    >
+                        작성
+                    </button>
+                </div>
             </div>
+            <aside className="w-1/6 p-6">
+
+            </aside>
+        </div>
         </Main>
     );
 }
