@@ -1,6 +1,8 @@
 @echo off
 
-cd /d "C:\Users\2ndsprout\Desktop\DevTool\work\apt_project\2nd_project/frontend"
+cd /d %~dp0
+
+cd frontend
 
 npm run dev
 
