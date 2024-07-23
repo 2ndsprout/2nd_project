@@ -5,13 +5,13 @@ interface pageInterface {
     children: React.ReactNode,
     user: any
     profile: any
-    categories: any[];
+
 }
 export default function Profile(props: pageInterface) {
     const user = props.user;
     const profile = props.profile;
     return (
-        <Main user={user} profile={profile} categories={props.categories}>
+        <Main user={user} profile={profile}>
             <div className="flex flex-col w-[1500px]">
                 <div className="flex">
                     <SideList user={user} profile={profile} />

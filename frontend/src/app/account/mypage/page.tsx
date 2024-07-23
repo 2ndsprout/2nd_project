@@ -9,7 +9,6 @@ import { checkInput } from "@/app/Global/Method";
 export default function Page() {
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
-  const [categories, setCategories] = useState([] as any[]);
   const [url, setUrl] = useState('');
   const [name, setName] = useState('');
   const [profileId, setProfileId] = useState<number | null>(null);
@@ -81,7 +80,7 @@ export default function Page() {
   }
 
   return (
-    <Profile user={user} profile={profile} categories={categories}>
+    <Profile user={user} profile={profile}>
       <div className='flex flex-col'>
         <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>회원정보</label> 변경</label>
         <div className="mt-9 w-[1300px] border-2 h-[600px] overflow-y-scroll rounded-lg">
