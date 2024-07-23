@@ -8,6 +8,7 @@ import com.second_team.apt_project.enums.Sorts;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
+import com.second_team.apt_project.repositories.ChatMessageRepository;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
@@ -52,6 +53,9 @@ public class MultiService {
     private final CultureCenterService cultureCenterService;
     private final LessonService lessonService;
     private final LessonUserService lessonUserService;
+    private final ChatRoomService chatRoomService;
+    private final ChatRoomUserService chatRoomUserService;
+    private final ChatMessageService chatMessageService;
 
     /**
      * Auth
@@ -159,7 +163,7 @@ public class MultiService {
                     if (j < 10) jKey = "0" + jKey;
                     String name = String.valueOf(aptNum) + String.valueOf(i) + jKey;
                     SiteUser _user = userService.saveGroup(name, aptNum, apt);
-                    userResponseDTOList.add(UserResponseDTO.builder().username(_user.getUsername()).aptNum(_user.getAptNum()) .aptResponseDTO(this.getAptResponseDTO(apt)).build());
+                    userResponseDTOList.add(UserResponseDTO.builder().username(_user.getUsername()).aptNum(_user.getAptNum()).aptResponseDTO(this.getAptResponseDTO(apt)).build());
                 }
             return userResponseDTOList;
         } else throw new IllegalArgumentException("권한 불일치");
@@ -531,6 +535,7 @@ public class MultiService {
         return null;
     }
 
+
     private ProfileResponseDTO profileResponseDTO(Profile profile) {
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(profile.getUser().getUsername() + "." + profile.getId()));
         String url = null;
@@ -883,12 +888,12 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Sorts sorts = Sorts.values()[sort];
-        Pageable pageable =  PageRequest.of(page, 15);
+        Pageable pageable = PageRequest.of(page, 15);
         Page<Article> searchArticleList = null;
         if (categoryId == null)
             searchArticleList = articleService.searchByKeyword(user.getApt().getId(), pageable, keyword, sorts);
-         else
-             searchArticleList = articleService.searchByCategoryKeyword(user.getApt().getId(), pageable, keyword, sorts, categoryId);
+        else
+            searchArticleList = articleService.searchByCategoryKeyword(user.getApt().getId(), pageable, keyword, sorts, categoryId);
         if (searchArticleList.isEmpty())
             throw new DataNotFoundException("검색 결과가 없습니다");
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
@@ -1132,7 +1137,6 @@ public class MultiService {
 //        return LoveResponseDTO.builder()
 //                .count(count).build();
 //    }
-
 
 
     /**
@@ -1550,4 +1554,146 @@ public class MultiService {
         lessonUserService.delete(lessonUser);
     }
 
+
+    /**
+     * Chat
+     */
+
+    @Transactional
+    public ChatRoomResponseDTO saveChatRoom(String username, List<Long> targetProfileList, Long profileId, String title) {
+        SiteUser sendUser = userService.get(username);
+        Profile sendProfile = profileService.findById(profileId);
+        this.userCheck(sendUser, sendProfile);
+        ChatRoom chatRoom = chatRoomService.save(title);
+        chatRoomUserService.save(sendProfile, chatRoom);
+        for (Long id : targetProfileList) {
+            if (!sendProfile.getId().equals(id)) {
+                Profile targetProfile = profileService.findById(id);
+                if (targetProfile == null)
+                    throw new DataNotFoundException("상대 프로필 객체 없음");
+                if (targetProfile.getUser().getRole() == UserRole.ADMIN)
+                    throw new IllegalArgumentException("어드민한테 메세지를 보낼 수 없음");
+                if (!sendProfile.getUser().getApt().equals(targetProfile.getUser().getApt()))
+                    throw new IllegalArgumentException("같은 아파트 주민 아님");
+                ChatRoomUser chatRoomUser = chatRoomUserService.findByProfile(chatRoom, targetProfile);
+                if (chatRoomUser == null)
+                    chatRoomUserService.save(targetProfile, chatRoom);
+            }
+        }
+
+        return this.chatRoomResponseDTO(chatRoom, sendProfile);
+    }
+
+    private ChatRoomResponseDTO chatRoomResponseDTO(ChatRoom chatRoom, Profile profile) {
+        List<ChatRoomUserResponseDTO> chatRoomUserResponseDTOS = new ArrayList<>();
+        List<ChatRoomUser> chatRoomUsers = chatRoomUserService.findByChatRoomList(chatRoom);
+        for (ChatRoomUser chatRoomUser : chatRoomUsers) {
+            if (!profile.getUser().getApt().equals(chatRoomUser.getProfile().getUser().getApt()))
+                throw new IllegalArgumentException("같은 아파트 주민 아님");
+            chatRoomUserResponseDTOS.add(this.chatRoomUserResponseDTO(chatRoomUser));
+        }
+        List<ChatMessage> chatMessageList = chatMessageService.findByChatRoomList(chatRoom);
+        List<ChatMessageResponseDTO> chatMessageResponseDTOS = new ArrayList<>();
+        for (ChatMessage chatMessage : chatMessageList){
+            chatMessageResponseDTOS.add(this.chatMessageResponseDTO(chatMessage));
+        }
+
+        return ChatRoomResponseDTO.builder().chatRoomId(chatRoom.getId()).chatMessageResponseDTOS(chatMessageResponseDTOS).title(chatRoom.getTitle()).chatRoomUserResponseDTOS(chatRoomUserResponseDTOS).createDate(this.dateTimeTransfer(chatRoom.getCreateDate())).build();
+    }
+
+    private ChatMessageResponseDTO chatMessageResponseDTO(ChatMessage chatMessage){
+        return ChatMessageResponseDTO.builder().id(chatMessage.getId()).profileResponseDTO(this.profileResponseDTO(chatMessage.getProfile())).createDate(this.dateTimeTransfer(chatMessage.getCreateDate())).build();
+    }
+
+    private ChatRoomUserResponseDTO chatRoomUserResponseDTO(ChatRoomUser chatRoomUser) {
+        return ChatRoomUserResponseDTO.builder().id(chatRoomUser.getId()).profileName(chatRoomUser.getProfile().getName()).build();
+    }
+
+    @Transactional
+    public ChatRoomResponseDTO ChatRoomDetail(String username, Long profileId, Long chatRoomId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        ChatRoom chatRoom = chatRoomService.findById(chatRoomId);
+        if (chatRoom == null)
+            throw new DataNotFoundException("채팅방 객체 없음");
+
+        return this.chatRoomResponseDTO(chatRoom, profile);
+    }
+
+    @Transactional
+    public List<ChatRoomResponseDTO> ChatRoomMyList(String username, Long profileId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        List<ChatRoomUser> chatRoomUserList = chatRoomUserService.getList(profile);
+        List<ChatRoomResponseDTO> chatRoomResponseDTOS = new ArrayList<>();
+        for (ChatRoomUser chatRoomUser : chatRoomUserList){
+            chatRoomResponseDTOS.add(this.chatRoomResponseDTO(chatRoomUser.getChatRoom(), profile));
+        }
+        return chatRoomResponseDTOS;
+    }
+
+    @Transactional
+    public ChatRoomResponseDTO ChatRoomUpdate(String username, Long profileId, Long id, String title) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        ChatRoom targetChatRoom = chatRoomService.findById(id);
+        if (targetChatRoom == null)
+            throw new DataNotFoundException("채팅방 객체 없음");
+        ChatRoom chatRoom = chatRoomService.chatRoomUpdate(targetChatRoom, title);
+
+        return this.chatRoomResponseDTO(chatRoom, profile);
+    }
+
+    @Transactional
+    public ChatRoomResponseDTO ChatRoomUserUpdate(String username, Long profileId, Long id, List<Long> targetProfileList) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        ChatRoom chatRoom = chatRoomService.findById(id);
+        if (chatRoom == null)
+            throw new DataNotFoundException("채팅방 객체 없음");
+        ChatRoomUser chatRoomUser = chatRoomUserService.findByProfile(chatRoom, profile);
+        if (chatRoomUser == null)
+            throw new DataNotFoundException("채팅방에 있는 유저가 아님");
+        for (Long targetProfileId : targetProfileList) {
+            if (!profile.getId().equals(targetProfileId)) {
+                Profile targetProfile = profileService.findById(targetProfileId);
+                if (targetProfile == null)
+                    throw new DataNotFoundException("상대 프로필 객체 없음");
+                if (targetProfile.getUser().getRole() == UserRole.ADMIN)
+                    throw new IllegalArgumentException("어드민한테 메세지를 보낼 수 없음");
+                if (!profile.getUser().getApt().equals(targetProfile.getUser().getApt()))
+                    throw new IllegalArgumentException("같은 아파트 주민 아님");
+                ChatRoomUser targetChatRoomUser = chatRoomUserService.findByProfile(chatRoom, targetProfile);
+                if (targetChatRoomUser == null)
+                    chatRoomUserService.save(targetProfile, chatRoom);
+            }
+        }
+        return this.chatRoomResponseDTO(chatRoom, profile);
+    }
+
+    @Transactional
+    public void ChatRoomUserOut(String username, Long profileId, Long chatRoomId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        ChatRoom chatRoom = chatRoomService.findById(chatRoomId);
+        if (chatRoom == null)
+            throw new DataNotFoundException("채팅방 객체 없음");
+        ChatRoomUser chatRoomUser = chatRoomUserService.findByProfile(chatRoom, profile);
+        if (chatRoomUser == null)
+            throw new DataNotFoundException("채팅방에 있는 유저가 아님");
+        chatRoomUserService.delete(chatRoomUser);
+        List<ChatMessage> chatMessageList = chatMessageService.findByChatRoomList(chatRoom);
+        for (ChatMessage chatMessage : chatMessageList){
+            chatMessageService.delete(chatMessage);
+        }
+        List<ChatRoomUser> chatRoomUserList = chatRoomUserService.findByChatRoomList(chatRoom);
+        if (chatRoomUserList.isEmpty())
+            chatRoomService.delete(chatRoom);
+
+    }
 }
