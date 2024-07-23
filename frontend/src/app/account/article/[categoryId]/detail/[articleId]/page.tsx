@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { redirect, useParams } from "next/navigation";
 import CommentList from '../../../comment/page'
 import DOMPurify from 'dompurify';
+import Main from '@/app/Global/layout/MainLayout';
 
 interface Article {
     categoryId: number;
@@ -42,35 +43,35 @@ export default function ArticleDetail() {
     const renderSafeHTML = (content: string) => {
         // 이미지 URL을 절대 경로로 변환
         const processedContent = content.replace(/src="\/api/g, `src="${BACKEND_URL}/api`);
-        
+
         const sanitizedContent = DOMPurify.sanitize(processedContent);
-        
+
         return { __html: sanitizedContent };
     };
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-          getUser()
-            .then(r => {
-              setUser(r);
-            })
-            .catch(e => console.log(e));
-          if (PROFILE_ID)
-            getProfile()
-              .then(r => {
-                setProfile(r);
-                // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
-                // .then(r => setSearch(r))
-                // .catch(e => console.log
-              })
-              .catch(e => console.log(e));
-          else
-            redirect('/account/profile');
+            getUser()
+                .then(r => {
+                    setUser(r);
+                })
+                .catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile()
+                    .then(r => {
+                        setProfile(r);
+                        // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
+                        // .then(r => setSearch(r))
+                        // .catch(e => console.log
+                    })
+                    .catch(e => console.log(e));
+            else
+                redirect('/account/profile');
         }
         else
-          redirect('/account/login');
-    
-      }, [ACCESS_TOKEN, PROFILE_ID]);
+            redirect('/account/login');
+
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         console.log("articleId:", articleId);
@@ -135,60 +136,62 @@ export default function ArticleDetail() {
     }
 
     return (
-        <div className="bg-black w-full min-h-screen text-white flex">
-            <aside className="w-1/6 p-6 flex flex-col items-center">
-                <div className="mt-5 flex justify-center">
-                    <img src='/user.png' className='w-10 h-10 mb-2' alt="로고" />
-                    <div className="mt-2 ml-5 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
-                </div>
-            </aside>
-            <div className="w-4/6 p-10">
-                <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
-                <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
-                    <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
-                </div>
-                <div>
-                    {/* 좋아요 댓글수 표시, 댓글 입력창*/}
-                    <CommentList articleId={article.articleId} />
-                </div>
-                <div className="mt-6">
-                    {/* <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
+        <Main user={user} profile={profile}>
+            <div className="bg-black w-full min-h-screen text-white flex">
+                <aside className="w-1/6 p-6 flex flex-col items-center">
+                    <div className="mt-5 flex justify-center">
+                        <img src='/user.png' className='w-10 h-10 mb-2' alt="로고" />
+                        <div className="mt-2 ml-5 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
+                    </div>
+                </aside>
+                <div className="w-4/6 p-10">
+                    <div className="text-3xl font-bold mb-20 text-center">{article.title}</div>
+                    <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
+                    <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
+                        <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                    </div>
+                    <div>
+                        {/* 좋아요 댓글수 표시, 댓글 입력창*/}
+                        <CommentList articleId={article.articleId} />
+                    </div>
+                    <div className="mt-6">
+                        {/* <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
                         돌아가기
                     </Link> */}
-                </div>
-            </div>
-            <aside className="w-1/6 p-6 flex flex-col items-start">
-                <div className="relative" id="dropdown">
-                    <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
-                        <span className="text-white">⁝</span>
-                    </button>
-                    {dropdownOpen && (
-                        <div className="absolute left-2 mt-2 w-20 bg-yellow-600 shadow-lg">
-                            <div className="flex flex-col items-center">
-                                <Link href={`/account/article/${categoryId}/update/${article.articleId}`} className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-white">
-                                    수정
-                                </Link>
-                                <button onClick={handleDelete} className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-white">
-                                    삭제
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </aside>
-            {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-gray-800 p-5 rounded shadow-lg">
-                        <div className="text-lg font-semibold text-white">삭제 확인</div>
-                        <p className="text-gray-400">이 게시물을 삭제하시겠습니까?</p>
-                        <div className="mt-4 flex justify-end">
-                            <button onClick={() => setShowDeleteConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
-                            <button onClick={confirmDelete} className="p-2 bg-red-600 rounded text-white hover:bg-red-500">삭제</button>
-                        </div>
                     </div>
                 </div>
-            )}
-        </div>
+                <aside className="w-1/6 p-6 flex flex-col items-start h-full">
+                    <div className="relative" id="dropdown">
+                        <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
+                            <span className="text-white">⁝</span>
+                        </button>
+                        {dropdownOpen && (
+                            <div className="absolute left-2 mt-2 w-20 bg-yellow-600 shadow-lg">
+                                <div className="flex flex-col items-center">
+                                    <Link href={`/account/article/${categoryId}/update/${article.articleId}`} className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-white">
+                                        수정
+                                    </Link>
+                                    <button onClick={handleDelete} className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-white">
+                                        삭제
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </aside>
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-gray-800 p-5 rounded shadow-lg">
+                            <div className="text-lg font-semibold text-white">삭제 확인</div>
+                            <p className="text-gray-400">이 게시물을 삭제하시겠습니까?</p>
+                            <div className="mt-4 flex justify-end">
+                                <button onClick={() => setShowDeleteConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
+                                <button onClick={confirmDelete} className="p-2 bg-red-600 rounded text-white hover:bg-red-500">삭제</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </Main>
     );
 }

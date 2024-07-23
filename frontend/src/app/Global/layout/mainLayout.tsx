@@ -3,19 +3,19 @@
 import React, { useState } from "react";
 import DropDown, { Direcion } from "../DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightToBracket, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 
 interface PageInterface {
   children: React.ReactNode;
   className?: string;
   user: any;
   profile: any;
-  categories: any[];
   keyword?: string;
 }
 
 export default function Main(props: Readonly<PageInterface>) {
-  const { className, user, profile, categories } = props;
+  
+  const { className, user, profile} = props;
   
   const [centerHover, setCenterHover] = useState(false);
   const [boardHover, setBoardHover] = useState(false);
@@ -99,7 +99,7 @@ export default function Main(props: Readonly<PageInterface>) {
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
-              <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px] rounded-full' alt="default" />
+              <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px] rounded-full' alt="profile" />
             </button>
             <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
               <div
@@ -110,7 +110,7 @@ export default function Main(props: Readonly<PageInterface>) {
                   내 정보
                 </a>
                 <a className="mt-1 btn btn-active btn-secondary text-lg text-black w-[180px]" href="/account/profile">
-                  <FontAwesomeIcon icon={faArrowRightToBracket} />
+                  <FontAwesomeIcon icon={faArrowsSpin} />
                   프로필 변경
                 </a>
               </div>
@@ -122,7 +122,7 @@ export default function Main(props: Readonly<PageInterface>) {
 
       </nav>
       {props.children}
-      <footer className='flex flex-col w-[1450px] mt-10 mb-8 ml-52 p-10 gap-2'>
+      <footer className='flex flex-col w-[1450px] mt-48 mb-8 ml-52 p-10 gap-2'>
         <div className='flex justify-between'>
           <div className='text-secondary flex font-bold'>상호명 및 호스팅 서비스 제공 :
             <span className='text-white flex flex-col ml-2'> 꿀단지(주)</span>
