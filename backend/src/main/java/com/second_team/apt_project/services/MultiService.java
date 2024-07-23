@@ -1410,6 +1410,7 @@ public class MultiService {
             throw new DataNotFoundException("센터 객체 없음");
         if (!user.getApt().equals(cultureCenter.getApt()))
             throw new IllegalArgumentException("권한 없음");
+
         Page<Lesson> lessonPage = lessonService.getPage(user.getApt().getId(), pageable, cultureCenter);
         if (lessonPage == null)
             throw new DataNotFoundException("레슨 페이지 객체 없음");
@@ -1594,14 +1595,14 @@ public class MultiService {
         }
         List<ChatMessage> chatMessageList = chatMessageService.findByChatRoomList(chatRoom);
         List<ChatMessageResponseDTO> chatMessageResponseDTOS = new ArrayList<>();
-        for (ChatMessage chatMessage : chatMessageList){
+        for (ChatMessage chatMessage : chatMessageList) {
             chatMessageResponseDTOS.add(this.chatMessageResponseDTO(chatMessage));
         }
 
         return ChatRoomResponseDTO.builder().chatRoomId(chatRoom.getId()).chatMessageResponseDTOS(chatMessageResponseDTOS).title(chatRoom.getTitle()).chatRoomUserResponseDTOS(chatRoomUserResponseDTOS).createDate(this.dateTimeTransfer(chatRoom.getCreateDate())).build();
     }
 
-    private ChatMessageResponseDTO chatMessageResponseDTO(ChatMessage chatMessage){
+    private ChatMessageResponseDTO chatMessageResponseDTO(ChatMessage chatMessage) {
         return ChatMessageResponseDTO.builder().id(chatMessage.getId()).profileResponseDTO(this.profileResponseDTO(chatMessage.getProfile())).createDate(this.dateTimeTransfer(chatMessage.getCreateDate())).build();
     }
 
@@ -1628,7 +1629,7 @@ public class MultiService {
         this.userCheck(user, profile);
         List<ChatRoomUser> chatRoomUserList = chatRoomUserService.getList(profile);
         List<ChatRoomResponseDTO> chatRoomResponseDTOS = new ArrayList<>();
-        for (ChatRoomUser chatRoomUser : chatRoomUserList){
+        for (ChatRoomUser chatRoomUser : chatRoomUserList) {
             chatRoomResponseDTOS.add(this.chatRoomResponseDTO(chatRoomUser.getChatRoom(), profile));
         }
         return chatRoomResponseDTOS;
@@ -1688,7 +1689,7 @@ public class MultiService {
             throw new DataNotFoundException("채팅방에 있는 유저가 아님");
         chatRoomUserService.delete(chatRoomUser);
         List<ChatMessage> chatMessageList = chatMessageService.findByChatRoomList(chatRoom);
-        for (ChatMessage chatMessage : chatMessageList){
+        for (ChatMessage chatMessage : chatMessageList) {
             chatMessageService.delete(chatMessage);
         }
         List<ChatRoomUser> chatRoomUserList = chatRoomUserService.findByChatRoomList(chatRoom);
