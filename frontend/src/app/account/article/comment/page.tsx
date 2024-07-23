@@ -76,10 +76,6 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         fetchComments();
     }, [articleId, currentPage]);
 
-    const calculateTotalComments = (response: PaginatedResponse): number => {
-        return response.totalElements;
-    };
-
     const fetchComments = async () => {
         try {
             const response: PaginatedResponse = await getCommentList({ articleId, page: currentPage });
@@ -96,6 +92,10 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         } catch (error) {
             console.error('댓글을 불러오는데 실패했습니다 :', error);
         }
+    };
+
+    const calculateTotalComments = (response: PaginatedResponse): number => {
+        return response.totalElements;
     };
 
     const handleSubmitComment = async (e: React.FormEvent) => {
@@ -235,14 +235,14 @@ const CommentList = ({ articleId }: { articleId: number }) => {
                 </div>
             </div>
             <div className="w-4/6">
-                <form onSubmit={handleSubmitComment} className="mb-4 flex items-start">
+                <form onSubmit={handleSubmitComment} className="mb-4 flex items-stretch">
                     <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         className="w-full h-15 p-2 border rounded mr-2 bg-gray-700 text-white"
                         placeholder="댓글을 입력하세요..."
                     />
-                    <button type="submit" className="bg-yellow-600 text-white p-2 rounded hover:bg-yellow-400 whitespace-nowrap">
+                    <button type="submit" className="w-[80px] bg-yellow-600 text-white p-2 rounded hover:bg-yellow-400 whitespace-nowrap text-base">
                         작성
                     </button>
                 </form>

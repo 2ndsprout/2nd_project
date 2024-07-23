@@ -1,6 +1,6 @@
 'use client'
 
-import { getProfile, getUser, postArticle, saveImage, saveImageList } from '@/app/API/UserAPI';
+import { getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/CategoryList';
 import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/Method';
@@ -40,37 +40,24 @@ export default function Page() {
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
-
+    
+    
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
-            if (!file) return;
-
+    
             try {
-                let result;
-                // First try saveImageList
-                try {
-                    result = await saveImageList(file);
-                } catch (error) {
-                    console.error('Error in saveImageList, trying saveImage:', error);
-                    // If saveImageList fails, try saveImage
-                    result = await saveImage(file);
-                }
-
-                if (result && result.url) {
-                    const editor = (quillInstance?.current as any).getEditor();
-                    const range = editor.getSelection();
-                    editor.insertEmbed(range.index, 'image', result.url);
-                    editor.setSelection(range.index + 1);
-                } else {
-                    throw new Error('Invalid image URL received');
-                }
+                const formData = new FormData();
+                formData.append('file', file as any);
+                const imgUrl = (await saveImageList(formData)).url;
+                const editor = (quillInstance?.current as any).getEditor();
+                const range = editor.getSelection();
+                editor.insertEmbed(range.index, 'image', imgUrl);
+                editor.setSelection(range.index + 1);
             } catch (error) {
-                console.error('Image upload error:', error);
-                setError('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
+                console.log(error);
             }
         });
     };
-
     const modules = useMemo(
         () => ({
             toolbar: {
@@ -89,6 +76,56 @@ export default function Page() {
         }),
         [],
     );
+
+    // const imageHandler = () => {
+    //     const input = document.createElement('input') as HTMLInputElement;
+    //     input.setAttribute('type', 'file');
+    //     input.setAttribute('accept', 'image/*');
+    //     input.click();
+    
+    //     input.addEventListener('change', async () => {
+    //         const file = input.files?.[0];
+    //         if (!file) return;
+    
+    //         try {
+    //             const formData = new FormData();
+    //             formData.append('file', file);
+                
+    //             const result = await saveImageList(formData);
+    
+    //             if (result && result.url) {
+    //                 const editor = (quillInstance?.current as any).getEditor();
+    //                 const range = editor.getSelection();
+    //                 editor.insertEmbed(range.index, 'image', result.url);
+    //                 editor.setSelection(range.index + 1);
+    //             } else {
+    //                 throw new Error('Invalid image URL received');
+    //             }
+    //         } catch (error) {
+    //             console.error('Image upload error:', error);
+    //             setError('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    //         }
+    //     });
+    // };
+
+    // const modules = useMemo(
+    //     () => ({
+    //         toolbar: {
+    //             container: [
+    //                 [{ header: '1' }, { header: '2' }],
+    //                 [{ size: [] }],
+    //                 ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    //                 [{ list: 'ordered' }, { list: 'bullet' }, { align: [] }],
+    //                 ['image'],
+    //             ],
+    //             handlers: { image: imageHandler },
+    //         },
+    //         clipboard: {
+    //             matchVisual: false,
+    //         },
+    //     }),
+    //     [],
+    // );
 
     const formats = [
         'header',
@@ -109,9 +146,9 @@ export default function Page() {
 
         const requestData = {
             title,
-            content,  // 전체 HTML 컨텐츠를 저장
+            content,
             categoryId: Number(categoryId),
-            tagId: [],  // 태그 기능이 필요하다면 여기에 구현
+            tagId: [],
             topActive: false
         };
 
@@ -157,34 +194,6 @@ export default function Page() {
                             style={{ minHeight: '700px', background: 'white' }}
                             placeholder="내용을 입력해주세요."
                         />
-                        <div style={{ overflow: 'auto' }}>
-                            <QuillNoSSRWrapper
-                                forwardedRef={quillInstance}
-                                value={content}
-                                onChange={setContent}
-                                modules={modules}
-                                formats={formats}
-                                theme="snow"
-                                className='w-full text-black'
-                                style={{ minHeight: '700px', background: 'white' }}
-                                placeholder="내용을 입력해주세요."
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-4 mt-6">
-                        <button
-                            className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
-                            onClick={() => window.location.href = '/'}
-                        >
-                            취소
-                        </button>
-                        <button
-                            id='submit'
-                            className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
-                            onClick={Submit}
-                        >
-                            작성
-                        </button>
                     </div>
                 </div>
                 <div className="flex justify-end gap-4 mt-6">
@@ -204,7 +213,6 @@ export default function Page() {
                 </div>
             </div>
             <aside className="w-1/6 p-6">
-
             </aside>
         </div>
         </Main>
