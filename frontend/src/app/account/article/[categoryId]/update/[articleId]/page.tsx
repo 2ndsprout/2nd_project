@@ -27,7 +27,7 @@ export default function EditPage() {
     // const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
     // const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
     const tagIdArray: number[] = [];
-    
+
     const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 배포 시 변경 필요
 
     useEffect(() => {
@@ -154,7 +154,7 @@ export default function EditPage() {
     };
 
     return (
-        <Main user={user} profile={profile} categories={categories}>
+        <Main user={user} profile={profile}>
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 bg-gray-800">
                 <CategoryList />

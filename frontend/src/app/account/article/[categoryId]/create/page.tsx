@@ -43,33 +43,33 @@ export default function Page() {
 
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
-        if (!file) return;
+            if (!file) return;
 
-        try {
-            let result;
-            // First try saveImageList
             try {
-                result = await saveImageList(file);
-            } catch (error) {
-                console.error('Error in saveImageList, trying saveImage:', error);
-                // If saveImageList fails, try saveImage
-                result = await saveImage(file);
-            }
+                let result;
+                // First try saveImageList
+                try {
+                    result = await saveImageList(file);
+                } catch (error) {
+                    console.error('Error in saveImageList, trying saveImage:', error);
+                    // If saveImageList fails, try saveImage
+                    result = await saveImage(file);
+                }
 
-            if (result && result.url) {
-                const editor = (quillInstance?.current as any).getEditor();
-                const range = editor.getSelection();
-                editor.insertEmbed(range.index, 'image', result.url);
-                editor.setSelection(range.index + 1);
-            } else {
-                throw new Error('Invalid image URL received');
+                if (result && result.url) {
+                    const editor = (quillInstance?.current as any).getEditor();
+                    const range = editor.getSelection();
+                    editor.insertEmbed(range.index, 'image', result.url);
+                    editor.setSelection(range.index + 1);
+                } else {
+                    throw new Error('Invalid image URL received');
+                }
+            } catch (error) {
+                console.error('Image upload error:', error);
+                setError('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
             }
-        } catch (error) {
-            console.error('Image upload error:', error);
-            setError('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
-        }
-    });
-};
+        });
+    };
 
     const modules = useMemo(
         () => ({
@@ -126,7 +126,7 @@ export default function Page() {
     }
 
     return (
-        <Main user={user} profile={profile} categories={categories}>
+        <Main user={user} profile={profile}>
         <div className="bg-black w-full min-h-screen text-white flex">
             <aside className="w-1/6 p-6 bg-gray-800">
                 <CategoryList />
@@ -157,6 +157,34 @@ export default function Page() {
                             style={{ minHeight: '700px', background: 'white' }}
                             placeholder="내용을 입력해주세요."
                         />
+                        <div style={{ overflow: 'auto' }}>
+                            <QuillNoSSRWrapper
+                                forwardedRef={quillInstance}
+                                value={content}
+                                onChange={setContent}
+                                modules={modules}
+                                formats={formats}
+                                theme="snow"
+                                className='w-full text-black'
+                                style={{ minHeight: '700px', background: 'white' }}
+                                placeholder="내용을 입력해주세요."
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-4 mt-6">
+                        <button
+                            className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
+                            onClick={() => window.location.href = '/'}
+                        >
+                            취소
+                        </button>
+                        <button
+                            id='submit'
+                            className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
+                            onClick={Submit}
+                        >
+                            작성
+                        </button>
                     </div>
                 </div>
                 <div className="flex justify-end gap-4 mt-6">

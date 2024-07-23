@@ -10,28 +10,28 @@ import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Article {
-    categoryId: number;
-    articleId: number;
-    title: string;
-    content: string;
-    createDate: number;
-    categoryName: string;
-    profileResponseDTO: {
-        id: number;
-        name: string;
-        username: string;
-        url: string | null;
-    };
-    commentCount?: number;
-    loveCount?: number;
+  categoryId: number;
+  articleId: number;
+  title: string;
+  content: string;
+  createDate: number;
+  categoryName: string;
+  profileResponseDTO: {
+    id: number;
+    name: string;
+    username: string;
+    url: string | null;
+  };
+  commentCount?: number;
+  loveCount?: number;
 }
 
 interface ArticlePage {
-    content: Article[];
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
+  content: Article[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 export default function ArticleListPage() {
@@ -47,11 +47,11 @@ export default function ArticleListPage() {
     const [totalElements, setTotalElements] = useState(0);
     const [categories, setCategories] = useState<any[]>([]);
 
-    const countTotalComments = (commentList: any[]): number => {
-      return commentList.reduce((total, comment) => {
-          return total + 1 + countTotalComments(comment.commentResponseDTOList || []);
-      }, 0);
-    };
+  const countTotalComments = (commentList: any[]): number => {
+    return commentList.reduce((total, comment) => {
+      return total + 1 + countTotalComments(comment.commentResponseDTOList || []);
+    }, 0);
+  };
 
     useEffect(() => {
       if (ACCESS_TOKEN) {
@@ -100,7 +100,7 @@ const handlePageChange = (newPage: number) => {
 
 
     return (
-      <Main user={user} profile={profile} categories={categories}>
+      <Main user={user} profile={profile}>
       <div className="flex w-full">
         <aside className="w-1/6 p-6 bg-gray-800">
           <CategoryList />
@@ -131,8 +131,8 @@ const handlePageChange = (newPage: number) => {
                     <td className="flex p-4 text-center">
                       {(article.loveCount ?? 0) > 0 && (
                         <div className="text-sm text-gray-400 flex items-center mr-4">
-                            <img src="/full-like.png" alt="좋아요 아이콘"className="w-4 mr-1" />
-                            [{article.loveCount}]
+                          <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 mr-1" />
+                          [{article.loveCount}]
                         </div>
                       )}
                       {(article.commentCount ?? 0) > 0 && (

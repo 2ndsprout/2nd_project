@@ -46,35 +46,35 @@ export default function ArticleDetail() {
     const renderSafeHTML = (content: string) => {
         // 이미지 URL을 절대 경로로 변환
         const processedContent = content.replace(/src="\/api/g, `src="${BACKEND_URL}/api`);
-        
+
         const sanitizedContent = DOMPurify.sanitize(processedContent);
-        
+
         return { __html: sanitizedContent };
     };
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-          getUser()
-            .then(r => {
-              setUser(r);
-            })
-            .catch(e => console.log(e));
-          if (PROFILE_ID)
-            getProfile()
-              .then(r => {
-                setProfile(r);
-                // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
-                // .then(r => setSearch(r))
-                // .catch(e => console.log
-              })
-              .catch(e => console.log(e));
-          else
-            redirect('/account/profile');
+            getUser()
+                .then(r => {
+                    setUser(r);
+                })
+                .catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile()
+                    .then(r => {
+                        setProfile(r);
+                        // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
+                        // .then(r => setSearch(r))
+                        // .catch(e => console.log
+                    })
+                    .catch(e => console.log(e));
+            else
+                redirect('/account/profile');
         }
         else
-          redirect('/account/login');
-    
-      }, [ACCESS_TOKEN, PROFILE_ID]);
+            redirect('/account/login');
+
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         console.log("articleId:", articleId);
@@ -195,7 +195,7 @@ export default function ArticleDetail() {
     );
 
     return (
-        <Main user={user} profile={profile} categories={categories}>
+        <Main user={user} profile={profile}>
             {content}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

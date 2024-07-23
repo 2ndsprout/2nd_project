@@ -130,7 +130,7 @@ export default function Page() {
   };
 
   return (
-    <Main user={user} profile={profile} categories={categories}>
+    <Main user={user} profile={profile}>
       <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
         <Slider urlList={displayUrls} />
         <Calendar lessons={lessons} />

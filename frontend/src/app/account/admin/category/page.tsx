@@ -132,7 +132,7 @@ const CreateCategory: React.FC = () => {
   };
 
   return (
-    <Main user={user} profile={profile} categories={categories}>
+    <Main user={user} profile={profile}>
     <div className="bg-black w-full min-h-screen text-white flex">
       <aside className="w-1/6 p-6 bg-gray-800">
       <CategoryList managementMode={true} categories={sidebarCategories} />

@@ -88,7 +88,6 @@ interface UpdateProps {
     newPassword1: string,
     newPassword2: string,
 
-
 }
 
 // // 유저정보 수정
