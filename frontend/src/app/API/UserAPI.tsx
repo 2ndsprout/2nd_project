@@ -277,12 +277,12 @@ export const getCategory = async (data: number) => {
 
 // Article
 interface getArticleList {
-    CategoryId: number;
-    Page: number;
+    categoryId: number;
+    page: number;
 }
 
-export const getArticleList = async ({ CategoryId, Page }: getArticleList) => {
-    const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': CategoryId, 'Page': Page } });
+export const getArticleList = async ({ categoryId, page }: getArticleList) => {
+    const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': categoryId, 'Page': page } });
     return response.data;
 }
 
@@ -319,6 +319,10 @@ export const updateArticle = async (data: UpdateArticleProps) => {
 export const getTopArticleList = async (data: number) => {
     const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId' :  data}});
     return response.data;
+}
+
+export const deleteArticle = async (data: number) => {
+    await UserApi.delete('/api/article', {headers: {'ArticleId': data}});
 }
 
 

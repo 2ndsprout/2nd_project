@@ -1,14 +1,14 @@
 'use client'
 
 import { getProfile, getUser, postArticle, saveImage, saveImageList } from '@/app/API/UserAPI';
+import CategoryList from '@/app/Global/CategoryList';
+import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/Method';
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
-import CategoryList from '@/app/Global/CategoryList';
 import 'react-quill/dist/quill.snow.css';
-import Main from "@/app/Global/layout/MainLayout";
 
 export default function Page() {
     const { categoryId } = useParams();

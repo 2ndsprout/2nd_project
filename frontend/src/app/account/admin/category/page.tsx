@@ -1,12 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import { postCategory, getCategoryList, getArticleList, updateCategory, deleteCategory } from '@/app/API/UserAPI';
-import { getProfile, getUser } from '@/app/API/UserAPI';
-import { redirect } from "next/navigation";
-import Link from 'next/link';
+import { deleteCategory, getArticleList, getCategoryList, getProfile, getUser, postCategory, updateCategory } from '@/app/API/UserAPI';
 import CategoryList from "@/app/Global/CategoryList";
 import Main from "@/app/Global/layout/MainLayout";
+import Link from 'next/link';
+import { redirect } from "next/navigation";
+import React, { useEffect, useState } from 'react';
 
 interface Category {
   id: number;
@@ -57,7 +56,7 @@ const CreateCategory: React.FC = () => {
       const categoryData = await getCategoryList();
       const categoriesWithCounts = await Promise.all(
         categoryData.map(async (category: Category) => {
-          const articleData = await getArticleList({ Page: 0, CategoryId: category.id });
+          const articleData = await getArticleList({ page: 0, categoryId: category.id });
           return { ...category, articleCount: articleData.totalElements };
         })
       );

@@ -1,3 +1,5 @@
+'use client'
+
 import { getLoveInfo, getProfile, getUser, toggleLove } from '@/app/API/UserAPI';
 import Image from 'next/image';
 import { redirect } from "next/navigation";
@@ -82,25 +84,22 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
   }
 
   return (
-    <div className="flex items-center">
-      <div className="flex flex-col items-center">
-        <button
-          onClick={handleLove}
-          disabled={isLoading}
-          className={`flex items-center justify-center p-2 rounded-full transition-colors ${
-            isLoved ? 'bg-gray-700' : 'bg-gray-700'
-          } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <Image
-            key={isLoved ? 'loved' : 'not-loved'}
-            src={isLoved ? "/full-like.png" : "/empty-like.png"}
-            alt={isLoved ? "좋아요 취소" : "좋아요"}
-            width={24}
-            height={24}
-          />
-        </button>
-        <span className="mt-2 text-sm font-medium">{loveCount}</span>
-      </div>
+    <div className="flex flex-col items-center">
+      <button
+        onClick={handleLove}
+        disabled={isLoading}
+        className={`flex items-center justify-center p-2 rounded-full bg-gray-600 transition-colors ${
+          isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-opacity-80'
+        }`}
+      >
+        <Image
+          src={isLoved ? "/full-like.png" : "/empty-like.png"}
+          alt={isLoved ? "좋아요 취소" : "좋아요"}
+          width={24}
+          height={24}
+        />
+      </button>
+      <span className="mt-2 text-sm font-medium">{loveCount}</span>
     </div>
   );
 };

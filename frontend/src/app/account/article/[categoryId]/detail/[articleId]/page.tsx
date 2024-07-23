@@ -1,13 +1,13 @@
 'use client'
 
-import { getArticle, getProfile, getUser } from '@/app/API/UserAPI';
+import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
+import Main from "@/app/Global/layout/MainLayout";
 import { getDateTimeFormat } from '@/app/Global/Method';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import CommentList from '../../../comment/page';
-import Main from "@/app/Global/layout/MainLayout";
 
 interface Article {
     categoryId: number;
@@ -36,6 +36,8 @@ export default function ArticleDetail() {
     const [error, setError] = useState('');
     const [profile, setProfile] = useState(null as any);
     const [categories, setCategories] = useState<any[]>([]);
+    const [ isDeleted, setIsDeleted ] = useState(false);
+    const router = useRouter();
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
@@ -122,27 +124,36 @@ export default function ArticleDetail() {
     };
 
     const confirmDelete = async () => {
-        // 삭제 API 호출
-        // deleteArticle()
-        //     .then(() => {
-        //         console.log("article deleted!");
-        //     })
-        //     .catch(e => console.log(e));
-        setShowDeleteConfirm(false);
-        // 페이지 리다이렉트 등 추가 작업 필요
+        try {
+            if (articleId) {
+                await deleteArticle(Number(articleId));
+                console.log("게시물이 성공적으로 삭제되었습니다.");
+                setIsDeleted(true);
+                setShowDeleteConfirm(false);
+                setTimeout(() => {
+                    router.push(`/account/article/${categoryId}`);
+                }, 100);
+            }
+        } catch (error) {
+            console.error('게시물 삭제 중 오류 발생:', error);
+            setError('게시물 삭제 중 오류가 발생했습니다.');
+        }
     };
+
+    if (isDeleted) {
+        return <div className="flex items-center justify-center h-screen text-gray-400">게시물이 삭제되었습니다.</div>;
+    }
 
     if (!article) {
         return <div className="flex items-center justify-center h-screen text-gray-400">게시물을 불러오는 중입니다...</div>;
     }
 
-    return (
-        <Main user={user} profile={profile} categories={categories}>
-        <div className="bg-black w-full min-h-screen text-white flex">
+    const content = (
+        <div className="flex w-full">
             <aside className="w-1/6 p-6 flex flex-col items-center">
-                <div className="mt-5 flex justify-center">
-                    <img src='/user.png' className='w-10 h-10 mb-2' alt="로고" />
-                    <div className="mt-2 ml-5 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
+                <div className="mt-5 flex flex-col items-center">
+                    <img src='/user.png' className='w-16 h-16 mb-2 rounded-full' alt="프로필" />
+                    <div className="mt-2 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
                 </div>
             </aside>
             <div className="w-4/6 p-10">
@@ -151,14 +162,8 @@ export default function ArticleDetail() {
                 <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
                     <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
                 </div>
-                <div>
-                    {/* 좋아요 댓글수 표시, 댓글 입력창*/}
-                    <CommentList articleId={article.articleId} />
-                </div>
                 <div className="mt-6">
-                    {/* <Link href={`/account/article/${article.categoryId}`} className="text-blue-500 hover:underline">
-                        돌아가기
-                    </Link> */}
+                    <CommentList articleId={Number(articleId)} />
                 </div>
             </div>
             <aside className="w-1/6 p-6 flex flex-col items-start">
@@ -167,12 +172,18 @@ export default function ArticleDetail() {
                         <span className="text-white">⁝</span>
                     </button>
                     {dropdownOpen && (
-                        <div className="absolute left-2 mt-2 w-20 bg-yellow-600 shadow-lg">
-                            <div className="flex flex-col items-center">
-                                <Link href={`/account/article/${categoryId}/update/${article.articleId}`} className="block w-full p-2 text-sm text-white text-center border-b border-gray-700 hover:bg-yellow-400 hover:text-white">
+                        <div className="absolute mt-2 bg-gray-800 rounded shadow-lg overflow-hidden">
+                            <div className="flex flex-col w-20">
+                                <Link 
+                                    href={`/account/article/${categoryId}/update/${article.articleId}`} 
+                                    className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
+                                >
                                     수정
                                 </Link>
-                                <button onClick={handleDelete} className="block w-full p-2 text-sm text-white text-center hover:bg-yellow-400 hover:text-white">
+                                <button 
+                                    onClick={handleDelete} 
+                                    className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
+                                >
                                     삭제
                                 </button>
                             </div>
@@ -180,6 +191,12 @@ export default function ArticleDetail() {
                     )}
                 </div>
             </aside>
+        </div>
+    );
+
+    return (
+        <Main user={user} profile={profile} categories={categories}>
+            {content}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-gray-800 p-5 rounded shadow-lg">
@@ -192,7 +209,6 @@ export default function ArticleDetail() {
                     </div>
                 </div>
             )}
-        </div>
         </Main>
     );
 }

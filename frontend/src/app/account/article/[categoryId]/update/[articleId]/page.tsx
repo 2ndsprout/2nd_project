@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, redirect } from 'next/navigation';
-import { getProfile, getUser, saveImage, saveImageList, updateArticle, getArticle } from '@/app/API/UserAPI';
+import { getArticle, getProfile, getUser, saveImage, saveImageList, updateArticle } from '@/app/API/UserAPI';
+import CategoryList from '@/app/Global/CategoryList';
+import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/Method';
 import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
-import CategoryList from '@/app/Global/CategoryList';
+import DOMPurify from 'dompurify';
+import { redirect, useParams } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import DOMPurify from 'dompurify';
-import Main from "@/app/Global/layout/MainLayout";
 
 export default function EditPage() {
     const { categoryId, articleId } = useParams();
