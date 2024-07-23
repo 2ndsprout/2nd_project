@@ -40,7 +40,7 @@ export default function Main(props: Readonly<PageInterface>) {
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
-              <img src="/user.png" alt="logo" className="w-[48px] h-[48px] ml-10" />
+              <img src="/user.png" alt="logo" className="mt-1 w-[48px] h-[48px] ml-10" />
               <label className="text-xl font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
             </a>
           </div>
