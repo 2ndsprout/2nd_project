@@ -1,7 +1,7 @@
 'use client'
 
 import '@fortawesome/fontawesome-svg-core/styles.css'
-import { getProfile, getProfileList, getUser, postProfile, saveImage, updateEmail } from "@/app/API/UserAPI";
+import { getProfile, getProfileList, getUser, postProfile, saveImage, updateUser } from "@/app/API/UserAPI";
 import DropDown, { Direcion } from "@/app/Global/DropDown";
 import Modal from "@/app/Global/Modal";
 import { redirect } from "next/navigation";
@@ -20,6 +20,7 @@ export default function Page() {
     const [openDropDown, setOpenDropDown] = useState(false);
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
+    const [emailError, setEmailError] = useState('');
 
     useEffect(() => {
         if (ACCESS_TOKEN)
@@ -45,14 +46,14 @@ export default function Page() {
             return setError('이메일 형식이 맞지 않습니다.');
         if (!Check('^[가-힣]{1,6}$', name))
             return setError('프로필 이름은 6자 내외 한글만 가능합니다.');
-        updateEmail({ email: email })
+        updateUser({ email: email, password:"", newPassword1: "", newPassword2: "", name: "" })
             .then(r => {
                 setUser(r)
                 setEmail(r.email);
             })
             .catch(error => {
                 switch (error.response.data) {
-                    case 'email': { setError('이메일 중복'); break; }
+                    case 'email': { setEmailError('이메일 중복'); break; }
                     default:
                         console.log(error);
                 }
@@ -88,7 +89,7 @@ export default function Page() {
     }
 
     function Regist() {
-        if (profileList.length <= 6) {
+        if (profileList.length < 6) {
             postProfile({ name: name, url: url })
                 .then(() => window.location.href = '/account/profile')
                 .catch(e => console.log(e));
@@ -128,7 +129,7 @@ export default function Page() {
                         <div key={index} className="text-center mx-auto my-3 w-1/3">
                             <div className="flex justify-center">
                                 <button onClick={() => Select(profile.id)}>
-                                    <img src={'/user.png'} className="w-56 h-56 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
+                                    <img src={profile?.url ? profile.url : '/user.png' } className="w-56 h-56 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
                                     <span className='font-bold text-xl'>{profile?.name}</span>
                                 </button>
                             </div>
@@ -137,22 +138,22 @@ export default function Page() {
                 </div>
             </div>
             <Modal open={isModalOpen === 1} onClose={() => setISModalOpen(-1)} className='modal-box w-[400px] h-[400px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
-                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2" onClick={() => openModal(-2)}>✕</button>
+                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => openModal(-2)}>✕</button>
                 <div className="mt-0 flex flex-col items-center gap-3">
-                    <label className='text-xs font-bold text-red-500'>{error}</label>
+                    <label className='text-xs font-bold text-red-500'>{emailError}</label>
                     <input type="text" className='input input-bordered input-lg text-black' defaultValue={email} minLength={3}
                         onChange={e => setEmail(e.target.value)}
-                        onFocus={e => checkInput(e, '^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setError(''), () => setError('이메일 형식이 맞지 않습니다.'))}
-                        onKeyUp={e => checkInput(e, '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setError(''), () => setError('이메일 형식이 맞지 않습니다.'))} />
+                        onFocus={e => checkInput(e, '^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setEmailError(''), () => setEmailError('이메일 형식이 맞지 않습니다.'))}
+                        onKeyUp={e => checkInput(e, '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setEmailError(''), () => setEmailError('이메일 형식이 맞지 않습니다.'))} />
                     <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!IsDisabled() || !!error} onClick={() => { Submit(); setISModalOpen(-2) }}>정보 수정</button>
 
                 </div>
             </Modal>
             <Modal open={isModalOpen === 2} onClose={() => setISModalOpen(-2)} className='modal-box w-[400px] h-[400px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
-                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2" onClick={() => openModal(-1)}>✕</button>
-                <div className="relative w-full h-auto flex justify-center items-center mb-10">
+                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => openModal(-1)}> ✕ </button>
+                <div className="relative w-[128px] h-auto flex justify-center items-center mb-10">
                     <div className="w-[128px] h-[128px] rounded-full opacity-30 absolute hover:bg-gray-500" onClick={() => document.getElementById('file')?.click()}></div>
-                    <img src={url !== '' ? url : '/user.png'} alt='main Image' className='w-[128px] h-[128px] rounded-full' />
+                    <img src='/user.png'defaultValue={url} alt='main Image' className='w-[128px] h-[128px] rounded-full' />
                     <input id='file' hidden type='file' onChange={e => Change(e.target.files?.[0])} />
                 </div>
                 <div className="mt-0 flex flex-col items-center">
@@ -160,7 +161,7 @@ export default function Page() {
                         <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
                         onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
                         onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
-                    <button className='btn btn-xl btn-accent mt-10 text-black' onClick={() => Regist()}>프로필 등록</button>
+                    <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => Regist()}>프로필 등록</button>
                 </div>
             </Modal>
         </>

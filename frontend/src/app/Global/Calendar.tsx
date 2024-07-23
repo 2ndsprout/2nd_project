@@ -18,8 +18,6 @@ interface LessonType {
         name: string;
         startDate: number;
         endDate: number;
-        startTime: number;
-        endTime: number;
     };
 }
 
@@ -30,15 +28,27 @@ interface CalendarProps {
 const Calendar: React.FC<CalendarProps> = ({ lessons }) => {
     const router = useRouter();
 
+    // Define the color scheme
+    const colors = ['orange', '#FFCC99', '#F0E68C'];
+
     // FullCalendar expects event objects to have certain properties
-    const formattedLessons = lessons.map(lesson => ({
-        id: lesson.lessonResponseDTO.id.toString(),
-        title: lesson.lessonResponseDTO.name,
-        start: getDateTime(lesson.lessonResponseDTO.startDate),
-        end: getDateTime(lesson.lessonResponseDTO.endDate),
-        allDay: false // Change this to true if lessons are all-day events
-    })
-);
+    const formattedLessons = lessons.map((lesson, index) => {
+        // Determine the color based on the index
+        const colorIndex = index % colors.length;
+        const backgroundColor = colors[colorIndex];
+        const borderColor = colors[colorIndex];
+
+        return {
+            id: lesson.lessonResponseDTO.id.toString(),
+            title: lesson.lessonResponseDTO.name,
+            start: getDateTime(lesson.lessonResponseDTO.startDate),
+            end: getDateTime(lesson.lessonResponseDTO.endDate),
+            allDay: true, // Change to true if events are all-day
+            backgroundColor: backgroundColor, // Set background color
+            borderColor: borderColor // Set border color
+        };
+    });
+
     console.log('Formatted Lessons:', formattedLessons);
 
     const handleEventClick = (info: EventClickArg) => {
@@ -73,10 +83,9 @@ const Calendar: React.FC<CalendarProps> = ({ lessons }) => {
                 selectable={false}
                 selectMirror={true}
                 nowIndicator={true}
-                eventBackgroundColor="orange"
-                eventBorderColor="#000000"
-                timeZone="UTC"
+                timeZone="local"
                 locale={"ko"}
+                eventTextColor='black'
                 headerToolbar={{
                     left: "prev,next today prevYear nextYear",
                     center: "title",
@@ -96,6 +105,11 @@ const Calendar: React.FC<CalendarProps> = ({ lessons }) => {
                             {dayNumberText}
                         </div>
                     );
+                }}
+                eventTimeFormat={{
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short', // AM/PM 표시
                 }}
             />
         </div>

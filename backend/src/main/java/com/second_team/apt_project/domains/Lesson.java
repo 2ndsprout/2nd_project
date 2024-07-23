@@ -5,9 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,8 +31,8 @@ public class Lesson {
     private String content;
 
     private LocalDateTime createDate;
-    private LocalDateTime modifyDate;
 
+    private LocalDateTime modifyDate;
 
     private LocalDateTime startDate;
 

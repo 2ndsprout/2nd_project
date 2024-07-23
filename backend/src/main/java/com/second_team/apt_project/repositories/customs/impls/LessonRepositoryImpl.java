@@ -26,7 +26,7 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
                 .leftJoin(qLesson.profile, qProfile)
                 .leftJoin(qProfile.user, qSiteUser)
                 .leftJoin(qSiteUser.apt, qApt)
-                .where(qApt.id.eq(aptId),qLesson.cultureCenter.eq(cultureCenter) ,qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc(), qLesson.startTime.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+                .where(qApt.id.eq(aptId),qLesson.cultureCenter.eq(cultureCenter) ,qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 

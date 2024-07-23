@@ -6,6 +6,8 @@
     "@fullcalendar/timegrid": "^6.1.15",
     "@types/dompurify": "^3.0.5",
     "dompurify": "^3.1.6",
+    "quill": "^2.0.2",
+    "react-quill": "^2.0.0",
     "swiper": "^11.1.5"
   }
 }
