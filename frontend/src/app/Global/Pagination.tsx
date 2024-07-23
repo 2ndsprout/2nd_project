@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 
 interface Props {
   currentPage: number;
@@ -14,22 +14,22 @@ const Pagination: React.FC<Props> = ({ currentPage, totalPages, onPageChange }) 
   };
 
   const onPreviousClickHandler = () => {
-    const prevPage = currentPage - 1;
-    if (prevPage < 1) return;
-    onPageChange(prevPage);
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
   };
 
   const onNextClickHandler = () => {
-    const nextPage = currentPage + 1;
-    if (nextPage > totalPages) return;
-    onPageChange(nextPage);
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
   };
 
   return (
     <div className="flex gap-5 mb-10" id="pagination-wrapper">
       <div className="flex items-center gap-2 cursor-pointer pagination-change-link-box">
         <div
-          className={`pagination-change-link-text ${currentPage === 1 ? "cursor-not-allowed" : "cursor-pointer"}`}
+          className={`pagination-change-link-text ${currentPage <= 1 ? "cursor-not-allowed text-gray-500" : "cursor-pointer text-yellow-600"}`}
           onClick={onPreviousClickHandler}
         >
           이전
@@ -43,7 +43,7 @@ const Pagination: React.FC<Props> = ({ currentPage, totalPages, onPageChange }) 
           </div>
         ) : (
           <div
-            className="pagination-text text-gray-400 font-semibold text-lg mx-2 cursor-pointer"
+            className="pagination-text text-gray-400 font-semibold text-lg mx-2 cursor-pointer hover:text-yellow-600"
             key={page}
             onClick={() => onPageClickHandler(page)}
           >
@@ -54,7 +54,7 @@ const Pagination: React.FC<Props> = ({ currentPage, totalPages, onPageChange }) 
       <div className="pagination-divider text-gray-500 mx-2">|</div>
       <div className="flex items-center gap-2 cursor-pointer pagination-change-link-box">
         <div
-          className={`pagination-change-link-text ${currentPage === totalPages ? "cursor-not-allowed" : "cursor-pointer"}`}
+          className={`pagination-change-link-text ${currentPage >= totalPages ? "cursor-not-allowed text-gray-500" : "cursor-pointer text-yellow-600"}`}
           onClick={onNextClickHandler}
         >
           다음

@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { toggleLove, getLoveInfo } from '@/app/API/UserAPI';
+'use client'
+
+import { getLoveInfo, getProfile, getUser, toggleLove } from '@/app/API/UserAPI';
 import Image from 'next/image';
+import { redirect } from "next/navigation";
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface LoveButtonProps {
   articleId: number;
@@ -16,6 +19,22 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
   const [isLoved, setIsLoved] = useState<boolean | null>(null);
   const [loveCount, setLoveCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null as any);
+  const [profile, setProfile] = useState(null as any);
+  const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+  const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+
+  useEffect(() => {
+    if (ACCESS_TOKEN) {
+        getUser().then(r => setUser(r)).catch(e => console.log(e));
+        if (PROFILE_ID)
+            getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+        else
+            redirect('/account/profile');
+    }
+    else
+        redirect('/account/login');
+}, [ACCESS_TOKEN, PROFILE_ID]);
 
   const fetchLoveInfo = useCallback(async () => {
     try {
@@ -65,25 +84,22 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
   }
 
   return (
-    <div className="flex items-center">
-      <div className="flex flex-col items-center">
-        <button
-          onClick={handleLove}
-          disabled={isLoading}
-          className={`flex items-center justify-center p-2 rounded-full transition-colors ${
-            isLoved ? 'bg-gray-700' : 'bg-gray-700'
-          } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <Image
-            key={isLoved ? 'loved' : 'not-loved'}
-            src={isLoved ? "/full-like.png" : "/empty-like.png"}
-            alt={isLoved ? "좋아요 취소" : "좋아요"}
-            width={24}
-            height={24}
-          />
-        </button>
-        <span className="mt-2 text-sm font-medium">{loveCount}</span>
-      </div>
+    <div className="flex flex-col items-center">
+      <button
+        onClick={handleLove}
+        disabled={isLoading}
+        className={`flex items-center justify-center p-2 rounded-full bg-gray-600 transition-colors ${
+          isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-opacity-80'
+        }`}
+      >
+        <Image
+          src={isLoved ? "/full-like.png" : "/empty-like.png"}
+          alt={isLoved ? "좋아요 취소" : "좋아요"}
+          width={24}
+          height={24}
+        />
+      </button>
+      <span className="mt-2 text-sm font-medium">{loveCount}</span>
     </div>
   );
 };

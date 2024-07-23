@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "dompurify": "^3.1.6",
+    "quill": "^2.0.2",
+    "react-quill": "^2.0.0",
+    "swiper": "^11.1.5"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5"
+  }
+}

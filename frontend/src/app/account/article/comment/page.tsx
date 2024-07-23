@@ -1,8 +1,11 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
 import { UpdateCommentProps, CommentProps, GetCommentListProps } from '@/app/API/UserAPI';
 import { redirect } from "next/navigation";
 import LoveButton from '../love/page';
+import Image from 'next/image';
 
 interface CommentResponseDTO {
     id: number;
@@ -48,6 +51,8 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [isLoved, setIsLoved] = useState(false);
     const [loveCount, setLoveCount] = useState(0);
+    const [totalLoves, setTotalLoves] = useState(0);
+
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
@@ -55,30 +60,17 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         }, 0);
     };
 
-
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser()
-                .then(r => {
-                    setUser(r);
-                })
-                .catch(e => console.log(e));
-        } else {
+            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+            else
+                redirect('/account/profile');
+        }
+        else
             redirect('/account/login');
-        }
-    }, [ACCESS_TOKEN]);
-
-    useEffect(() => {
-        if (PROFILE_ID) {
-            getProfile()
-                .then(r => {
-                    setProfile(r);
-                })
-                .catch(e => console.log(e));
-        } else {
-            redirect('/account/profile');
-        }
-    }, [PROFILE_ID]);
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         fetchComments();
@@ -88,12 +80,22 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         try {
             const response: PaginatedResponse = await getCommentList({ articleId, page: currentPage });
             setComments(response.content);
-            setTotalPages(response.totalPages);
-            const totalCount = countTotalComments(response.content);
-            setTotalComments(totalCount);
+            setTotalPages(Math.max(1, response.totalPages)); // 최소값을 1로 설정
+            setTotalElements(response.totalElements);
+            //setTotalPages(response.totalPages));
+            
+            // 전체 댓글 수 계산 (첫 페이지에서만 수행)
+            if (currentPage === 0) {
+                const totalCount = calculateTotalComments(response);
+                setTotalComments(totalCount);
+            }
         } catch (error) {
             console.error('댓글을 불러오는데 실패했습니다 :', error);
         }
+    };
+
+    const calculateTotalComments = (response: PaginatedResponse): number => {
+        return response.totalElements;
     };
 
     const handleSubmitComment = async (e: React.FormEvent) => {
@@ -158,9 +160,8 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         }
     };
     
-    const handleLoveChange = (newLoveState: boolean, newCount: number) => {
-        setIsLoved(newLoveState);
-        setLoveCount(newCount);
+    const handleLoveChange = (isLoved: boolean, count: number) => {
+        setTotalLoves(count);
     };
 
     const renderComment = (comment: CommentResponseDTO, depth = 0) => (
@@ -213,64 +214,64 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     );
 
     return (
-        <div className="inline-block bg-black w-full min-h-screen text-white flex">
-            <aside className="w-1/6 p-2 flex flex-col items-center">
-                <div className="flex items-center space-x-4 mt-5">
-                    <div className="flex flex-col items-center">
-                        <LoveButton 
-                            articleId={articleId} 
-                            onLoveChange={(isLoved, count) => {
-                                console.log(`좋아요 상태: ${isLoved}, 개수: ${count}`);
-                                // 필요한 경우 부모 컴포넌트의 상태를 업데이트
-                            }}
-                        />
-                        {/* <p className="mt-2">{예정}</p> */}
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <img src="/icon-comment.png" alt="댓글 아이콘" className="w-9 h-9 mb-1" />
-                        <p className="mt-2">{totalComments}</p>
+        <div className="w-full flex justify-between">
+            <div className="w-1/6 flex flex-col items-center justify-start pt-4">
+                <div className="flex items-center justify-center w-full px-4">
+                    <LoveButton 
+                        articleId={articleId} 
+                        onLoveChange={handleLoveChange}
+                    />
+                    <div className="flex flex-col items-center ml-5">
+                        <div className="w-10 h-10 flex items-center justify-center">
+                            <Image
+                                src="/icon-comment.png"
+                                alt="댓글 아이콘"
+                                width={24}
+                                height={24}
+                            />
+                        </div>
+                        <span className="mt-2 text-sm font-medium">{totalComments}</span>
                     </div>
                 </div>
-            </aside>
-            <div className="w-full p-10">
-                {/* <h3 className="text-xl font-bold mb-4">댓글 ({totalComments})</h3> */}
-                <form onSubmit={handleSubmitComment} className="mb-4 flex items-start">
+            </div>
+            <div className="w-4/6">
+                <form onSubmit={handleSubmitComment} className="mb-4 flex items-stretch">
                     <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         className="w-full h-15 p-2 border rounded mr-2 bg-gray-700 text-white"
                         placeholder="댓글을 입력하세요..."
                     />
-                    <button type="submit" className="bg-yellow-600 text-white p-5 rounded hover:bg-yellow-400 whitespace-nowrap">
+                    <button type="submit" className="w-[80px] bg-yellow-600 text-white p-2 rounded hover:bg-yellow-400 whitespace-nowrap text-base">
                         작성
                     </button>
                 </form>
                 <ul>
                     {comments.map(comment => comment.parentId === null && renderComment(comment))}
                 </ul>
-                <div className="flex justify-center mt-4">
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
-                        disabled={currentPage === 0}
-                        className="mr-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
-                    >
-                        이전
-                    </button>
-                    <span className="mx-4">
-                        페이지 {currentPage + 1} / {totalPages}
-                    </span>
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
-                        disabled={currentPage === totalPages - 1}
-                        className="ml-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
-                    >
-                        다음
-                    </button>
-                </div>
+                {totalComments > 0 && (
+                    <div className="flex justify-center mt-4">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+                            disabled={currentPage === 0}
+                            className="mr-2 px-4 py-2 bg-yellow-600 text-white rounded disabled:bg-gray-400"
+                        >
+                            이전
+                        </button>
+                        <span className="mx-4 mt-2">
+                            페이지 {currentPage + 1} / {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
+                            disabled={currentPage >= totalPages - 1}
+                            className="ml-2 px-4 py-2 bg-yellow-600 text-white rounded disabled:bg-gray-400"
+                        >
+                            다음
+                        </button>
+                    </div>
+                )}
             </div>
-            <aside className="w-1/6 p-6 flex flex-col items-center">
-                {/* 우측 aside 내용 */}
-            </aside>
+            <div className="w-1/6"></div>
             <style jsx>{`
                 .boomerang-line {
                     border-left: 2px solid #4A5568;

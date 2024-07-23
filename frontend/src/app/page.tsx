@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
-import { getArticleList, getCategoryList, getLessonList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
+import { useEffect, useState } from "react";
+import { getArticleList, getCategoryList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
 
-import Slider from "./Global/Slider";
-import Main from "./Global/layout/mainLayout";
 import Calendar from "./Global/Calendar";
+import Slider from "./Global/Slider";
+import Main from "./Global/layout/MainLayout";
+
 
 export default function Page() {
   const [user, setUser] = useState(null as any);
@@ -64,7 +65,7 @@ export default function Page() {
   }, [categories]);
 
   const fetchArticleList = (categoryId: number) => {
-    getArticleList({ 'CategoryId': categoryId, 'Page': 0 })
+    getArticleList({ 'categoryId': categoryId, 'page': 0 })
       .then((r) => {
         switch (categoryId) {
           case 1:

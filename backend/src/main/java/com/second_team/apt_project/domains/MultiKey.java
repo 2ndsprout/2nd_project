@@ -22,7 +22,6 @@ public class MultiKey {
     @Column(length = 50)
     private String k;
 
-    @Column(length = 200,columnDefinition = "LONGTEXT")
     private List<String> vs;
 
     @Builder
