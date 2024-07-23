@@ -5,7 +5,7 @@ import { redirect, useRouter } from "next/navigation";
 import { getArticleList, getCategoryList, getLessonList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
 
 import Slider from "./Global/Slider";
-import Main from "./Global/layout/MainLayout";
+import Main from "./Global/layout/mainLayout";
 import Calendar from "./Global/Calendar";
 
 export default function Page() {
