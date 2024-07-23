@@ -28,4 +28,9 @@ public class ArticleTagRepositoryImpl implements ArticleTagRepositoryCustom {
         return jpaQueryFactory.selectFrom(qArticleTag).where(qArticleTag.tag.id.eq(id)).fetch();
     }
 
+    @Override
+    public ArticleTag findByTagId(Long id) {
+        return jpaQueryFactory.selectFrom(qArticleTag).where(qArticleTag.tag.id.eq(id)).fetchOne();
+    }
+
 }

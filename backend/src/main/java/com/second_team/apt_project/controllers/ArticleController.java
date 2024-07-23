@@ -28,7 +28,7 @@ public class ArticleController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ArticleResponseDTO articleResponseDTO = this.multiService.saveArticle(profileId,
-                        articleRequestDTO.getCategoryId(), articleRequestDTO.getTagId(), articleRequestDTO.getTitle(),
+                        articleRequestDTO.getCategoryId(), articleRequestDTO.getTagName(), articleRequestDTO.getTitle(),
                         articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
@@ -47,7 +47,7 @@ public class ArticleController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ArticleResponseDTO articleResponseDTO = this.multiService.updateArticle(profileId, articleRequestDTO.getArticleId(),
-                        articleRequestDTO.getCategoryId(), articleRequestDTO.getTagId(), articleRequestDTO.getTitle(),
+                        articleRequestDTO.getCategoryId(), articleRequestDTO.getTagName(), articleRequestDTO.getTitle(), articleRequestDTO.getArticleTagId(),
                         articleRequestDTO.getContent(), username, articleRequestDTO.getTopActive());
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTO);
             }
@@ -131,12 +131,13 @@ public class ArticleController {
                                            @RequestHeader("PROFILE_ID") Long profileId,
                                            @RequestHeader("Page") int page,
                                            @RequestHeader(value = "Keyword", defaultValue = "") String keyword,
-                                           @RequestHeader("Sort") int sort) {
+                                           @RequestHeader("Sort") int sort,
+                                           @RequestHeader("CategoryId") Long categoryId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort);
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {

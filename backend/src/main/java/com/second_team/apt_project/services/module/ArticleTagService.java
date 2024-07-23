@@ -34,4 +34,12 @@ public class ArticleTagService {
     public List<ArticleTag> findByTagList(Long id) {
         return articleTagRepository.findByTagList(id);
     }
+
+    public ArticleTag findById(Long id) {
+        return articleTagRepository.findById(id).orElse(null);
+    }
+
+    public ArticleTag findByTagId(Long id) {
+        return articleTagRepository.findByTagId(id);
+    }
 }

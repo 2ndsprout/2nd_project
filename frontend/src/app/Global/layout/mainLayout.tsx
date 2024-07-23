@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import DropDown, { Direcion } from "../DropDown"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons"
+import { faArrowRightToBracket, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons"
 
 interface pageInterface {
   children: React.ReactNode,
@@ -38,7 +38,7 @@ export default function Main(props: Readonly<pageInterface>) {
   }
 
   return (
-    <main id='main' className={'bg-black h-[953px] w-[1903px] flex flex-col items-center relative ' + className}>
+    <main id='main' className={'bg-black h-[953px] w-[1920px] flex flex-col items-center relative ' + className}>
       <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[80px]'>
         <div className="navbar items-center">
           <div className="navbar-start">
@@ -78,12 +78,12 @@ export default function Main(props: Readonly<pageInterface>) {
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setBoardHover)}
               onMouseLeave={() => closeHover(setBoardHover)}>
-              <a href='/account/log/' className='hover:text-secondary text-sm'>공지사항</a>
-              <a href='/' className='hover:text-secondary text-sm'>자유게시판</a>
-              {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>중고장터</a> : null}
+              <a href='/account/article/1' className='hover:text-secondary text-sm'>공지사항</a>
+              <a href='/account/article/2' className='hover:text-secondary text-sm'>자유게시판</a>
+              {user?.role !== 'USER' ? <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a> : null}
             </div>
           </DropDown>
-         <DropDown open={manageHover} onClose={() => !setManageHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-20}>
+          <DropDown open={manageHover} onClose={() => !setManageHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-20}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
@@ -94,11 +94,11 @@ export default function Main(props: Readonly<pageInterface>) {
           </DropDown>
           <div className="navbar-end">
             <div className='flex items-center border-2 border-gray-300 rounded-full'>
-              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key == 'Enter') document.getElementById('search')?.click() }}></input>              
+              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key == 'Enter') document.getElementById('search')?.click() }}></input>
             </div>
             <button id='search' onClick={() => { const value = (document.getElementById('keyword') as HTMLInputElement)?.value; location.href = '/search?keyword=' + (value ? value : '') }}>
-                <img src='/user.png' className='rounded-full mr-3 p-2 w-[64px] h-[64px]' />
-              </button>
+              <FontAwesomeIcon icon={faMagnifyingGlass} className='rounded-full mr-3 p-2' size="xl" />
+            </button>
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">

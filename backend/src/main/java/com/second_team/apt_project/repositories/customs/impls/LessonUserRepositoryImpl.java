@@ -27,4 +27,9 @@ public class LessonUserRepositoryImpl implements LessonUserRepositoryCustom {
     public List<LessonUser> findByLessonId(Long id) {
         return jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.lesson.id.eq(id)).fetch();
     }
+
+    @Override
+    public List<LessonUser> findByProfileId(Long id) {
+        return jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.profile.id.eq(id)).fetch();
+    }
 }

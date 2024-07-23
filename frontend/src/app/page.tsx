@@ -1,29 +1,28 @@
 'use client';
 
-import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getArticleList, getCategoryList, getProfile, getUser } from "./API/UserAPI";
+import { redirect, useRouter } from "next/navigation";
+import { getArticleList, getCategoryList, getLessonList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
 
 import Slider from "./Global/Slider";
 import Main from "./Global/layout/MainLayout";
+import Calendar from "./Global/Calendar";
 
-interface pageProps {
-  categories: any[];
-}
-
-export default function Page(props: pageProps) {
+export default function Page() {
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
-  const [categories, setCategories] = useState(props.categories);
+  const [categories, setCategories] = useState([] as any[]);
   const [notiArticleList, setNotiArticleList] = useState([] as any[]);
   const [freeArticleList, setFreeArticleList] = useState([] as any[]);
   const [saleArticleList, setSaleArticleList] = useState([] as any[]);
+  const [lessons, setLessons] = useState([] as any[]);
   const [notiTotalElements, setNotiTotalElements] = useState(null as any);
   const [freeTotalElements, setFreeTotalElements] = useState(null as any);
   const [saleTotalElements, setSaleTotalElements] = useState(null as any);
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
   const [urlList, setUrlList] = useState([] as any[]);
+  const Router = useRouter();
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
@@ -31,10 +30,10 @@ export default function Page(props: pageProps) {
         .then(r => {
           setUser(r);
           console.log(r);
-          if (Array.isArray(r.AptResponseDTO.url)) {
-            setUrlList(r.AptResponseDTO.url);
+          if (Array.isArray(r.aptResponseDto.url)) {
+            setUrlList(r.aptResponseDto.url);
           } else {
-            console.log('urlList is not an array:', r.AptResponseDTO.url);
+            console.log('urlList is not an array:', r.aptResponseDto.url);
           }
         })
         .catch(e => console.log(e));
@@ -44,6 +43,9 @@ export default function Page(props: pageProps) {
             setProfile(r);
             getCategoryList()
               .then(r => setCategories(r))
+              .catch(e => console.log(e))
+            getMyLessonList()
+              .then(r => setLessons(r))
               .catch(e => console.log(e));
           })
           .catch(e => console.log(e));
@@ -87,7 +89,7 @@ export default function Page(props: pageProps) {
       .catch((e) => console.log(e));
   };
 
-  function getCategoryData( id: number ) {
+  function getCategoryData(id: number) {
 
     switch (id) {
       case 1:
@@ -101,7 +103,7 @@ export default function Page(props: pageProps) {
     }
   }
 
-  function getArticleIndex( id: number) {
+  function getArticleIndex(id: number) {
 
     switch (id) {
       case 1:
@@ -123,19 +125,21 @@ export default function Page(props: pageProps) {
 
   const displayUrls = urlList.length === 0 ? defaultUrls : urlList;
 
+  const handleRowClick = (categoryId: number, articleId: number) => {
+    Router.push(`/account/article/${categoryId}/detail/${articleId}`);
+  };
 
   return (
     <Main user={user} profile={profile} categories={categories}>
-      <div className="mt-10 flex w-full mx-auto">
-        <div className="ml-10 w-[900px] h-[450px]">
-          <Slider urlList={displayUrls} />
-        </div>
+      <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
+        <Slider urlList={displayUrls} />
+        <Calendar lessons={lessons} />
       </div>
-      <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full">
-        {categories?.slice(0, 3).map((category, index) => (
-          <div className="flex flex-col">
+      <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full px-16">
+        {categories?.slice(0, 3).map((category) => (
+          <div key={category.id} className="flex flex-col">
             <label className="text-start text-secondary font-bold text-xl pb-3 hover:text-primary hover:cursor-pointer">{category?.name}</label>
-            <table key={index}>
+            <table>
               <thead>
                 <tr className="h-[40px] border-b-2 border-gray-500">
                   <th className="w-[100px] text-primary">번호</th>
@@ -144,12 +148,12 @@ export default function Page(props: pageProps) {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {getCategoryData(category.id)?.slice(0, 4).map((article, articleIndex) => 
-                <tr className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer">
-                  <td>{getArticleIndex(category.id) - articleIndex}</td>
-                  <td>{article.profileResponseDTO.name}</td>
-                  <td><div className="w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary">{article.title}</div></td>
-                </tr>
+                {getCategoryData(category.id)?.slice(0, 5).map((article, articleIndex) =>
+                  <tr key={article.articleId} className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer" onClick={() => handleRowClick(category.id, article.articleId)}>
+                    <td>{getArticleIndex(category.id) - articleIndex}</td>
+                    <td>{article.profileResponseDTO.name}</td>
+                    <td><div className="w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary">{article.title}</div></td>
+                  </tr>
                 )}
               </tbody>
             </table>
