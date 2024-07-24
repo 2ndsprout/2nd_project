@@ -327,6 +327,33 @@ export const deleteArticle = async (data: number) => {
     await UserApi.delete('/api/article', {headers: {'ArticleId': data}});
 }
 
+interface SearchArticleParams {
+    page: number;
+    keyword: string;
+    sort: number;
+    categoryId?: number;
+}
+
+export const searchArticles = async ({ page, keyword, sort, categoryId }: SearchArticleParams) => {
+    try {
+        const headers: { [key: string]: string } = {
+            'Page': page.toString(),
+            'Keyword': encodeURIComponent(keyword),
+            'Sort': sort.toString()
+        };
+
+        if (categoryId !== undefined) {
+            headers['CategoryId'] = categoryId.toString();
+        }
+
+        const response = await UserApi.get('/api/article/search', { headers });
+        return response.data;
+    } catch (error) {
+        console.error('Error in searchArticles:', error);
+        throw error;
+    }
+};
+
 
 // Tag
 
