@@ -9,6 +9,11 @@ import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import CommentList from '../../../comment/page';
 
+interface Tag {
+    id: number;
+    name: string;
+}
+
 interface Article {
     categoryId: number;
     articleId: number;
@@ -24,7 +29,7 @@ interface Article {
     };
     urlList: string[] | null;
     topActive: boolean;
-    tagResponseDTOList: any[];
+    tagResponseDTOList: Tag[];
 }
 
 export default function ArticleDetail() {
@@ -156,11 +161,21 @@ export default function ArticleDetail() {
                     <div className="mt-2 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
                 </div>
             </aside>
-            <div className="w-4/6 p-10">
+            <div className="w-4/6 p-10 flex flex-col">
                 <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
-                    <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                <div className="bg-gray-800 flex flex-col min-h-[600px] p-6 rounded-lg shadow-lg">
+                    <div className="flex-grow" dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                    <div className="mt-4">
+                    {/* <h3 className="text-lg font-semibold">태그:</h3> */}
+                    <ul className="flex flex-wrap">
+                        {article.tagResponseDTOList.map(tag => (
+                            <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 inline-block">
+                                #{tag.name}
+                            </li>
+                        ))}
+                    </ul>
+                    </div>
                 </div>
                 <div className="mt-6">
                     <CommentList articleId={Number(articleId)} />

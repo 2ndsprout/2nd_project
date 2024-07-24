@@ -294,6 +294,9 @@ interface PostArticleProps {
     title: string;
     content: string;
     categoryId: number;
+    tagName: string[];
+    topActive: boolean;
+    images?: string[];
 }
 
 export const postArticle = async (data: PostArticleProps) => {
@@ -307,7 +310,7 @@ interface UpdateArticleProps {
     title: string;
     content: string; 
     topActive?: boolean; 
-    tagId?: number[];
+    articleTagId?: number[];
 }
 
 export const updateArticle = async (data: UpdateArticleProps) => {
@@ -342,9 +345,9 @@ export const getTag = async (data: number) => {
     return response.data;
 }
 
-export const deleteTag = async (data: number) => {
-    await UserApi.delete('/api/tag', {headers: {'tagId': data}});
-}
+// export const deleteTag = async (data: number) => {
+//     await UserApi.delete('/api/tag', {headers: {'tagId': data}});
+// }
 // Love
 interface LoveResponseDTO {
     isLoved: boolean;
