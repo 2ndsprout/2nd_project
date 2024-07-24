@@ -11,8 +11,8 @@ export default function Page() {
   const [profile, setProfile] = useState(null as any);
   const [url, setUrl] = useState('');
   const [name, setName] = useState('');
-  const [profileId, setProfileId] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [profleConfirm, setProfleConfirm] = useState(false);
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
@@ -27,7 +27,6 @@ export default function Page() {
         getProfile()
           .then(r => {
             setProfile(r);
-            setProfileId(parseInt(PROFILE_ID));
             setName(r.name);
             setUrl(r.url);
           })
@@ -50,8 +49,8 @@ export default function Page() {
 
   function update() {
     if (confirm('프로필을 수정하시겠습니까?')) {
-      if (profileId !== null) { // Ensure profileId is not null
-        updateProfile({ id: profileId, name: name, url: url })
+      if (PROFILE_ID !== null) { // Ensure profileId is not null
+        updateProfile({ id: (parseInt(PROFILE_ID)), name: name, url: url })
           .then(() => {
             window.location.href = '/account/mypage';
           })
@@ -65,17 +64,20 @@ export default function Page() {
     }
   }
 
+  function confirmDelete() {
+    setProfleConfirm(true);
+  }
+
   async function deleteProfiles() {
-    if (confirm('정말로 삭제하시겠습니까?')) {
-      try {
-        await deleteProfile(); // 비동기로 API 호출
-        alert('삭제되었습니다.');
-        window.location.href = '/account/profile';
-        // 이후 로그아웃 처리나 페이지 리다이렉션 추가 가능
-      } catch (error) {
-        console.error('탈퇴 처리 중 오류 발생:', error);
-        alert('탈퇴 처리 중 오류가 발생했습니다.');
-      }
+    try {
+      setProfleConfirm(false);
+      await deleteProfile(); // 비동기 함수 호출
+      alert('삭제되었습니다.');
+      window.location.href = '/account/profile';
+    } catch (error) {
+      setProfleConfirm(false);
+      console.error('탈퇴 처리 중 오류 발생:', error);
+      alert('탈퇴 처리 중 오류가 발생했습니다.');
     }
   }
 
@@ -97,7 +99,7 @@ export default function Page() {
                 onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
               <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => update()}>프로필 수정</button>
               <button
-                onClick={deleteProfiles}
+                onClick={() => confirmDelete()}
                 className="text-xs  text-red-500 hover:underline hover:font-bold mt-20"
               >
                 프로필 삭제
@@ -106,6 +108,20 @@ export default function Page() {
           </div>
         </div>
       </div>
+      {
+        profleConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-5 rounded shadow-lg">
+              <div className="text-lg font-semibold text-secondary">{profile.name}</div>
+              <p className="text-gray-400">프로필을 삭제 하시겠습니까?</p>
+              <div className="mt-4 flex justify-end">
+                <button onClick={() => setProfleConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
+                <button onClick={() => deleteProfiles()} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">삭제</button>
+              </div>
+            </div>
+          </div>
+        )
+      }
     </Profile>
   );
 }
