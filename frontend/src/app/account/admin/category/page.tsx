@@ -1,7 +1,7 @@
 'use client'
 
 import { deleteCategory, getArticleList, getCategoryList, getProfile, getUser, postCategory, updateCategory } from '@/app/API/UserAPI';
-import CategoryList from "@/app/Global/CategoryList";
+import CategoryList from "@/app/Global/component/CategoryList";
 import Main from "@/app/Global/layout/MainLayout";
 import Link from 'next/link';
 import { redirect } from "next/navigation";

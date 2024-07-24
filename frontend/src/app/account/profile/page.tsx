@@ -2,25 +2,17 @@
 
 import '@fortawesome/fontawesome-svg-core/styles.css'
 import { getProfile, getProfileList, getUser, postProfile, saveProfileImage, updateUser, updateUserPassword } from "@/app/API/UserAPI";
-import DropDown, { Direcion } from "@/app/Global/DropDown";
-import Modal from "@/app/Global/Modal";
+import DropDown, { Direcion } from "@/app/Global/component/DropDown";
+import Modal from "@/app/Global/component/Modal";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faUserPlus, faBars, faEnvelope, faLock, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
-import { Check, checkInput } from "@/app/Global/Method";
-interface AlertState {
-    error: string;
-    show: boolean;
-    onClose?: () => void;
-}
-interface ConfirmState {
-    title: string;
-    content: string;
-    confirm: string;
-    show: boolean;
-    onConfirm?: () => void;
-}
+import { Check, checkInput } from "@/app/Global/component/Method";
+import AlertModal from '@/app/Global/component/AlertModal';
+import ConfirmModal from '@/app/Global/component/ConfirmModal';
+import useConfirm from '@/app/Global/hook/useConfirm';
+import useAlert from '@/app/Global/hook/useAlert';
 
 export default function Page() {
     const [user, setUser] = useState(null as any);
@@ -32,16 +24,15 @@ export default function Page() {
     const [openDropDown, setOpenDropDown] = useState(false);
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
-    const [profileId, setProfileId] = useState(null as any);
-    const [profileName, setProfileName] = useState('');
     const [canShow, setCanShow] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [oldPasswordError, setOldPasswordError] = useState('');
     const [newPassword1Error, setNewPassword1Error] = useState('');
     const [newPassword2Error, setNewPassword2Error] = useState('');
-    const [allConfirm, setAllConfirm] = useState<ConfirmState>({ title: '', content: '', confirm: '', show: false });
-    const [allAlert, setAllAlert] = useState<AlertState>({ error: '', show: false });
     const [first, setFirst] = useState(true);
+    const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const { alertState, showAlert } = useAlert();
+
 
     useEffect(() => {
         if (ACCESS_TOKEN)
@@ -62,9 +53,6 @@ export default function Page() {
         return email == '' || email !== user?.email;
     }
 
-    function finalConfirm(title: string, content: string, confirm: string, onConfirm: () => void) {
-        setAllConfirm({ title, content, confirm, show: true, onConfirm });
-    }
 
     function EmailSubmit() {
         const updateEmail = (document.getElementById('email') as HTMLInputElement).value;
@@ -72,7 +60,7 @@ export default function Page() {
         // 이메일 형식 검사를 수행합니다.
         if (!Check('^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$', updateEmail)) {
             setEmailError('이메일 형식이 맞지 않습니다.');
-            setAllConfirm({ ...allConfirm, show: false });
+            closeConfirm();
             return;
         }
 
@@ -81,7 +69,7 @@ export default function Page() {
                 // 이메일 변경이 성공하면 사용자 정보를 업데이트합니다.
                 setUser(r);
                 setEmail(r.email);
-                setAllConfirm({ ...allConfirm, show: false });
+                closeConfirm();
                 openModal(-2);
             })
             .catch(error => {
@@ -90,11 +78,11 @@ export default function Page() {
                 switch (error.response.data) {
                     case 'email':
                         setEmailError('이메일 중복');
-                        setAllConfirm({ ...allConfirm, show: false });
+                        closeConfirm();
                         break;
                     default:
                         console.log(error);
-                        setAllConfirm({ ...allConfirm, show: false });
+                        closeConfirm();
                 }
             });
     }
@@ -119,26 +107,26 @@ export default function Page() {
         // 새 비밀번호가 일치하는지 확인합니다.
         if (new1 !== new2) {
             setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.');
-            setAllConfirm({ ...allConfirm, show: false });
+            closeConfirm();
             return;
         }
 
         // 새 비밀번호가 올바른 형식인지 확인합니다.
         if (!Check('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', new1)) {
             setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한 개씩 들어가 있어야 합니다.');
-            setAllConfirm({ ...allConfirm, show: false });
+            closeConfirm();
             return;
         }
         if (!Check('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', new2)) {
             setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.');
-            setAllConfirm({ ...allConfirm, show: false });
+            closeConfirm();
             return;
         }
         updateUserPassword({ name: user?.username, email: email, password: old, newPassword1: new1, newPassword2: new2 })
             .then(r => {
                 // 비밀번호 변경이 성공하면 사용자 정보를 업데이트합니다.
                 setUser(r);
-                setAllConfirm({ ...allConfirm, show: false });
+                closeConfirm();
                 openModal(-2);
             })
             .catch(error => {
@@ -147,12 +135,12 @@ export default function Page() {
                 switch (error.response.data) {
                     case "not match":
                         setNewPassword2Error('현재 비밀번호가 일치하지 않습니다.');
-                        setAllConfirm({ ...allConfirm, show: false });
+                        closeConfirm();
 
                         break;
                     default:
                         console.log(error);
-                        setAllConfirm({ ...allConfirm, show: false });
+                        closeConfirm();
                 }
             });
 
@@ -163,16 +151,12 @@ export default function Page() {
         localStorage.setItem('PROFILE_ID', id.toString());
         getProfile()
             .then(() => {
-                setAllConfirm({ ...allConfirm, show: false });
+                closeConfirm();
                 console.log("profile selected!");
-                // if (user.username === 'admin') {
-                //     window.location.href = '/account/admin';
-                // } else {
                 window.location.href = '/';
-                // }
             })
             .catch(e => console.log(e));
-        setAllConfirm({ ...allConfirm, show: false });
+            closeConfirm();
     }
 
 
@@ -180,11 +164,11 @@ export default function Page() {
         if (profileList.length < 6) {
             postProfile({ name: name, url: url })
                 .then(() => window.location.href = '/account/profile')
-                .catch(e => { console.log(e), setAllConfirm({ ...allConfirm, show: false }), setAllAlert({ error: '이미 있는 프로필 이름입니다.', show: true }) });
+                .catch(e => { console.log(e), closeConfirm(), showAlert('이미 있는 프로필 이름입니다.')});
 
         } else {
-            setAllConfirm({ ...allConfirm, show: false });
-            setAllAlert({ error: '프로필은 최대 6개까지 생성 가능합니다.', show: true });
+            closeConfirm();
+            showAlert('프로필은 최대 6개까지 생성 가능합니다.');
         }
     }
 
@@ -200,11 +184,6 @@ export default function Page() {
             return newPassword1Error;
         if (newPassword2Error !== '' && newPassword1Error === '' && oldPasswordError === '')
             return newPassword2Error;
-    }
-
-    function save(id: number, name: string) {
-        setProfileId(id);
-        setProfileName(name);
     }
 
     return (
@@ -225,7 +204,7 @@ export default function Page() {
                             <button
                                 onClick={() => {
                                     if (user) {
-                                        finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', ()=> handleLogout());
+                                        finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', () => handleLogout());
                                     }
                                 }}
                                 className="mt-[5px] btn btn-active btn-secondary text-lg text-black"
@@ -316,44 +295,8 @@ export default function Page() {
                     <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => finalConfirm(name, '프로필을 생성합니다.', '생성', Regist)}>프로필 등록</button>
                 </div>
             </Modal>
-            {
-                allConfirm.show && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-gray-800 p-5 rounded shadow-lg">
-                            <div className="text-lg font-semibold text-secondary">{allConfirm.title}</div>
-                            <p className="text-gray-400">{allConfirm.content}</p>
-                            <div className="mt-4 flex justify-end">
-                                <button onClick={() => setAllConfirm({ ...allConfirm, show: false })} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
-                                <button onClick={allConfirm.onConfirm} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">{allConfirm.confirm}</button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            {
-                allAlert.show && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-gray-800 p-5 rounded shadow-lg">
-                            <div className="text-lg font-semibold text-secondary">Error!</div>
-                            <p className="text-white">{allAlert.error}</p>
-                            <div className="mt-4 flex justify-end">
-                            <button
-                        onClick={() => {
-                            if (allAlert.onClose) {
-                                allAlert.onClose();
-                            } else {
-                                setAllAlert({ error: '', show: false });
-                            }
-                        }}
-                        className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500"
-                    >
-                        닫기
-                    </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+            <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} />
+            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url}/>
         </>
     );
 }

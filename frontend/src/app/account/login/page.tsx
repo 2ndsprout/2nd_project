@@ -1,7 +1,7 @@
 'use client'
 
 import { Login } from '@/app/API/AuthAPI';
-import { KeyDownCheck, Move } from  '@/app/Global/Method';
+import { KeyDownCheck, Move } from  '@/app/Global/component/Method';
 import { useState } from 'react';
 
 export default function Page() {
