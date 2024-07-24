@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from "react";
-import DropDown, { Direcion } from "../DropDown";
+import DropDown, { Direcion } from "../component/DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 

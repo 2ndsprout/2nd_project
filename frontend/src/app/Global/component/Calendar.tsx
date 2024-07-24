@@ -7,7 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { EventClickArg } from '@fullcalendar/core';
 
-import '../globals.css';
+import '../../globals.css';
 import { useRouter } from 'next/navigation';
 
 interface LessonType {

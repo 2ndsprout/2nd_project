@@ -4,8 +4,8 @@ import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getArticleList, getCategoryList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
 
-import Calendar from "./Global/Calendar";
-import Slider from "./Global/Slider";
+import Calendar from "./Global/component/Calendar";
+import Slider from "./Global/component/Slider";
 import Main from "./Global/layout/MainLayout";
 
 

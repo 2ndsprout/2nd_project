@@ -1,10 +1,10 @@
 'use client'
 
 import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser } from "@/app/API/UserAPI";
-import CategoryList from "@/app/Global/CategoryList";
+import CategoryList from "@/app/Global/component/CategoryList";
 import Main from "@/app/Global/layout/MainLayout";
-import { getDate } from "@/app/Global/Method";
-import Pagination from "@/app/Global/Pagination";
+import { getDate } from "@/app/Global/component/Method";
+import Pagination from "@/app/Global/component/Pagination";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";

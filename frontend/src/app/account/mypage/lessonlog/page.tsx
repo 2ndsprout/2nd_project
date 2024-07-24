@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
-import { deleteProfile, getMyLessonList, getProfile, getUser, saveImage, saveProfileImage, updateProfile } from "@/app/API/UserAPI";
+import { getMyLessonList, getProfile, getUser } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
-import { checkInput, getDate, getDateFormat, getDateTimeFormat, getTimeFormat } from "@/app/Global/Method";
-import Calendar from "@/app/Global/Calendar";
+import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
-import { Bentham } from "next/font/google";
+
 
 export default function Page() {
     const [user, setUser] = useState(null as any);
@@ -17,7 +17,6 @@ export default function Page() {
     const [appliedLessons, setAppliedLessons] = useState([] as any[]);
     const [cancellingLessons, setCancellingLessons] = useState([] as any[]);
     const [cancelledLessons, setCancelledLessons] = useState([] as any[]);
-    const [error, setError] = useState('');
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 

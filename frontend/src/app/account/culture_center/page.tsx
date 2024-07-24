@@ -2,8 +2,7 @@
 
 import { getCenterList, getProfile, getUser } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
-import { gedivateTimeFormat, getDateTimeFormat } from "@/app/Global/Method";
-import Pagination from "@/app/Global/Pagination";
+import { getDateTimeFormat } from "@/app/Global/component/Method";
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
