@@ -6,15 +6,30 @@ import { deleteProfile, getProfile, getUser, saveImage, saveProfileImage, update
 import Profile from "@/app/Global/layout/ProfileLayout";
 import { checkInput } from "@/app/Global/Method";
 
+interface ConfirmState {
+  title: string;
+  content: string;
+  confirm: string;
+  show: boolean;
+  onConfirm?: () => void;
+}
+
+interface AlertState {
+  error: string;
+  show: boolean;
+  onClose?: string;
+}
+
 export default function Page() {
-  const [user, setUser] = useState(null as any);
-  const [profile, setProfile] = useState(null as any);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [url, setUrl] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const [profleConfirm, setProfleConfirm] = useState(false);
-  const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
-  const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+  const [allConfirm, setAllConfirm] = useState<ConfirmState>({ title: '', content: '', confirm: '', show: false });
+  const [allAlert, setAllAlert] = useState<AlertState>({ error: '', show: false});
+  const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
+  const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
@@ -42,42 +57,44 @@ export default function Page() {
   function Change(file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    saveImage(formData)
+    saveProfileImage(formData)
       .then(r => setUrl(r?.url))
       .catch(e => console.log(e));
   }
 
   function update() {
-    if (confirm('프로필을 수정하시겠습니까?')) {
-      if (PROFILE_ID !== null) { // Ensure profileId is not null
-        updateProfile({ id: (parseInt(PROFILE_ID)), name: name, url: url })
-          .then(() => {
-            window.location.href = '/account/mypage';
-          })
-          .catch(e => {
-            setError('프로필 업데이트 중 오류가 발생했습니다.');
-            console.log(e);
-          });
-      } else {
-        setError('프로필 ID가 설정되지 않았습니다.');
-      }
+    if (PROFILE_ID !== null) { // Ensure profileId is not null
+      updateProfile({ id: parseInt(PROFILE_ID), name: name, url: url })
+        .then(() => {
+          setAllConfirm({ ...allConfirm, show: false });
+          setAllAlert({ error: '프로필 수정이 완료되었습니다.', show: true});
+          window.location.href = '/account/mypage';
+        })
+        .catch(e => {
+          setAllConfirm({ ...allConfirm, show: false });
+          setAllAlert({ error: '프로필 수정 중 오류가 발생했습니다.', show: true });
+          console.log(e);
+        });
+    } else {
+      setAllConfirm({ ...allConfirm, show: false });
+      setAllAlert({ error: '프로필 ID가 존재하지 않습니다.', show: true });
     }
   }
 
-  function confirmDelete() {
-    setProfleConfirm(true);
+  function finalConfirm(title: string, content: string, confirm: string, onConfirm: () => void) {
+    setAllConfirm({ title, content, confirm, show: true, onConfirm });
   }
 
   async function deleteProfiles() {
     try {
-      setProfleConfirm(false);
-      await deleteProfile(); // 비동기 함수 호출
-      alert('삭제되었습니다.');
+      await deleteProfile();
+      setAllConfirm({ ...allConfirm, show: false }); // 비동기 함수 호출
+      setAllAlert({ error: '프로필 삭제가 완료되었습니다.', show: true });
       window.location.href = '/account/profile';
     } catch (error) {
-      setProfleConfirm(false);
+      setAllConfirm({ ...allConfirm, show: false });
       console.error('탈퇴 처리 중 오류 발생:', error);
-      alert('탈퇴 처리 중 오류가 발생했습니다.');
+      setAllAlert({ error: '프로필 삭제중 오류가 발생했습니다.', show: true });
     }
   }
 
@@ -97,10 +114,10 @@ export default function Page() {
               <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
                 onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
                 onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
-              <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => update()}>프로필 수정</button>
+              <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => finalConfirm(profile.name, '프로필을 수정하시겠습니까?', '수정', update)}>프로필 수정</button>
               <button
-                onClick={() => confirmDelete()}
-                className="text-xs  text-red-500 hover:underline hover:font-bold mt-20"
+                onClick={() => finalConfirm(profile.name, '프로필을 삭제하시겠습니까?', '삭제', deleteProfiles)}
+                className="text-xs text-red-500 hover:underline hover:font-bold mt-20"
               >
                 프로필 삭제
               </button>
@@ -109,14 +126,38 @@ export default function Page() {
         </div>
       </div>
       {
-        profleConfirm && (
+        allConfirm.show && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-800 p-5 rounded shadow-lg">
-              <div className="text-lg font-semibold text-secondary">{profile.name}</div>
-              <p className="text-gray-400">프로필을 삭제 하시겠습니까?</p>
+              <div className="text-lg font-semibold text-secondary">{allConfirm.title}</div>
+              <p className="text-gray-400">{allConfirm.content}</p>
               <div className="mt-4 flex justify-end">
-                <button onClick={() => setProfleConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
-                <button onClick={() => deleteProfiles()} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">삭제</button>
+                <button onClick={() => setAllConfirm({ ...allConfirm, show: false })} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
+                <button onClick={allConfirm.onConfirm} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">{allConfirm.confirm}</button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+      {
+        allAlert.show && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-5 rounded shadow-lg">
+            <div className="text-lg font-semibold text-secondary">Error!</div>
+              <p className="text-white">{allAlert.error}</p>
+              <div className="mt-4 flex justify-end">
+              <button
+                        onClick={() => {
+                            if (allAlert.onClose) {
+                              window.location.href = allAlert.onClose;
+                            } else {
+                                setAllAlert({ error: '', show: false });
+                            }
+                        }}
+                        className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500"
+                    >
+                        닫기
+                    </button>
               </div>
             </div>
           </div>
