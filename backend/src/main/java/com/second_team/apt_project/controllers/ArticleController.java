@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -130,13 +132,14 @@ public class ArticleController {
     public ResponseEntity<?> searchArticle(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
                                            @RequestHeader("Page") int page,
-                                           @RequestHeader(value = "Keyword", defaultValue = "") String keyword,
+                                           @RequestHeader(value = "Keyword", defaultValue = "") String encodedKeyword,
                                            @RequestHeader("Sort") int sort,
                                            @RequestHeader(value = "CategoryId", defaultValue = "") Long categoryId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
+                String keyword = URLDecoder.decode(encodedKeyword, StandardCharsets.UTF_8);
                 Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.searchArticle(username, profileId, page, keyword, sort, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
