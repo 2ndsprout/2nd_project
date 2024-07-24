@@ -8,7 +8,6 @@ import com.second_team.apt_project.enums.Sorts;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
-import com.second_team.apt_project.repositories.ChatMessageRepository;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
@@ -492,8 +491,10 @@ public class MultiService {
             Optional<FileSystem> _fileSystem = fileSystemService.get(value);
             if (_fileSystem.isPresent()) {
                 File file = new File(path + _fileSystem.get().getV());
-                if (file.getParentFile().list().length == 1) this.deleteFolder(file.getParentFile());
-                else file.delete();
+                if (file.exists()) {
+                    if (file.getParentFile().list().length == 0) this.deleteFolder(file.getParentFile());
+                    else file.delete();
+                }
                 fileSystemService.delete(_fileSystem.get());
             }
             multiKeyService.delete(_multiKey.get());
