@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\main",
+    "\\src\\main\\java",
+    "\\src\\main\\java\\com",
+    "\\src\\main\\java\\com\\second_team",
+    "\\src\\main\\java\\com\\second_team\\apt_project",
+    "\\src\\main\\java\\com\\second_team\\apt_project\\services",
+    "\\src\\main\\java\\com\\second_team\\apt_project\\services\\module"
+  ],
+  "SelectedNode": "\\src\\main\\java\\com\\second_team\\apt_project\\AptProjectApplication.java",
+  "PreviewInSolutionExplorer": false
+}

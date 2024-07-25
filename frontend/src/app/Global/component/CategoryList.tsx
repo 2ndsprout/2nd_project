@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getCategoryList } from "@/app/API/UserAPI";
+import Image from 'next/image';
 
 interface Category {
   id: number;
@@ -13,9 +14,10 @@ interface Category {
 interface CategoryListProps {
   managementMode?: boolean;
   categories?: Category[];
+  userRole?: string;
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, categories: propCategories }) => {
+const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, categories: propCategories, userRole }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState('');
   const params = useParams();
@@ -48,8 +50,23 @@ const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, cat
   };
 
   return (
-    <div className="mt-5 ml-20 min-h-screen">
+
+    <div className="mt-5 ml-20">
+      <div className="flex items-center mb-4">
+
       <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
+      {userRole === 'ADMIN' && (
+          <Link href="/account/admin/category" className="ml-2">
+            <Image 
+              src="/free-icon-setting.png"
+              alt="카테고리 관리"
+              width={24}
+              height={24}
+              className="mb-4"
+            />
+          </Link>
+        )}
+      </div>
       {error ? (
         <p className="text-red-500">{error}</p>
       ) : (

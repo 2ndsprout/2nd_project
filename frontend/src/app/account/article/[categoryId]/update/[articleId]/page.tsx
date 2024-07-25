@@ -198,7 +198,7 @@ export default function EditPage() {
                         modules={modules}
                         formats={formats}
                         theme="snow"
-                        className='w-full text-black'
+                        className='w-full text-black overflow-auto'
                         style={{ minHeight: '500px', background: 'white' }}
                         placeholder="내용을 입력해주세요."
                     />

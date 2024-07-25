@@ -6,7 +6,7 @@ import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import { redirect, useParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../tag/page';
@@ -14,6 +14,11 @@ import TagInput from '../../tag/page';
 interface Tag {
     id: number;
     name :string;
+}
+
+interface UploadedImage {
+    key: string;
+    value: string;
 }
 
 export default function Page() {
@@ -31,6 +36,8 @@ export default function Page() {
     const [uploadedImages, setUploadedImages] = useState<string[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [localImages, setLocalImages] = useState<File[]>([]);
 
 
     useEffect(() => {
@@ -50,50 +57,31 @@ export default function Page() {
         };
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
-    const imageHandler = () => {
+    const imageHandler = useCallback(() => {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
 
-        input.addEventListener('change', async () => {
-            const file = input.files?.[0];
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
             if (!file) return;
 
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                const result = await saveImageList(formData);
-                console.log('Image upload result:', result);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                setLocalImages(prev => [...prev, file]);
 
-                if (result && result.length > 0) {
-                    const editor = quillInstance.current?.getEditor();
-                    if (editor) {
-                        const range = editor.getSelection();
-                        if (range) {
-                            // 모든 기존 이미지를 추출하고, 새로운 이미지를 삽입
-                            const existingImages = editor.root.querySelectorAll('img');
-                            const existingSrcs = Array.from(existingImages).map(img => img.src);
-
-                            result.forEach((img: { key: string, value: string }) => {
-                                // 중복 이미지 방지
-                                if (!existingSrcs.includes(img.value)) {
-                                    editor.insertEmbed(range.index, 'image', img.value);
-                                    editor.setSelection(range.index + 1);
-                                    setUploadedImages(prev => [...prev, img.value]); // 이미지 URL을 상태에 저장
-                                }
-                            });
-                        }
-                    }
-                } else {
-                    throw new Error('Invalid image data received');
+                // Quill 에디터에 이미지 삽입 (임시 URL 사용)
+                const editor = quillInstance.current?.getEditor();
+                if (editor) {
+                    const range = editor.getSelection();
+                    editor.insertEmbed(range?.index || 0, 'image', base64String);
                 }
-            } catch (error) {
-                console.error('Image upload error:', error);
-                setError('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
-            }
-        });
-    };
+            };
+            reader.readAsDataURL(file);
+        };
+    }, [quillInstance]);
 
     const modules = useMemo(
         () => ({
@@ -121,47 +109,69 @@ export default function Page() {
         'link', 'image'
     ];
 
-    const formatHtmlForDatabase = (html: string): string => {
-        return html.replace(/<p>/g, '').replace(/<\/p>/g, '<br>').replace(/<br><br>/g, '<br>');
-    };
+    // const formatHtmlForDatabase = (html: string): string => {
+    //     return html.replace(/<p>/g, '').replace(/<\/p>/g, '<br>').replace(/<br><br>/g, '<br>');
+    // };
 
-    const restoreHtmlFromDatabase = (html: string): string => {
-        return html.replace(/<br>/g, '</p><p>').replace(/<\/p><p>/g, '<p>').replace(/^<p>/, '').replace(/<\/p>$/, '');
-    };
+    // const restoreHtmlFromDatabase = (html: string): string => {
+    //     return html.replace(/<br>/g, '</p><p>').replace(/<\/p><p>/g, '<p>').replace(/^<p>/, '').replace(/<\/p>$/, '');
+    // };
 
-    const Submit = () => {
-        if (!title.trim()) {
-            setError('제목을 입력해 주세요.');
+    const Submit = async () => {
+        if (!title.trim() || !quillInstance.current?.getEditor().getText().trim()) {
+            setError('제목과 내용을 모두 입력해주세요.');
             return;
         }
     
-        const editor = quillInstance.current?.getEditor();
-        if (!editor || !editor.root.innerHTML.trim()) {
-            setError('내용을 입력해 주세요.');
-            return;
-        }
-    
-        const htmlContent = editor.root.innerHTML;
-        const cleanedContent = formatHtmlForDatabase(htmlContent);
-    
-        const requestData = {
-            title,
-            content: cleanedContent,
-            categoryId: Number(categoryId),
-            tagName: tags.map(tag => tag.name), // 태그 이름 배열만 전송
-            articleTagId: deletedTagIds,
-            topActive: false,
-            images: uploadedImages
-        };
-    
-        postArticle(requestData)
-            .then(() => {
-                console.log("게시물 등록 완료");
-                window.location.href = `/account/article/${categoryId}`;
-            }).catch((error) => {
-                console.error('게시물 작성 중 오류:', error);
-                setError('게시물 작성 중 오류가 발생했습니다.');
+        try {
+            // 1. 이미지 업로드
+            const formData = new FormData();
+            localImages.forEach((file, index) => {
+                formData.append(`file`, file);
             });
+            const uploadedImages = await saveImageList(formData);
+    
+            console.log('Uploaded images:', uploadedImages); // 디버깅을 위한 로그
+    
+            if (!Array.isArray(uploadedImages)) {
+                throw new Error('Expected an array of uploaded images');
+            }
+    
+            // 2. content 내의 이미지 URL 업데이트
+            let updatedContent = quillInstance.current?.getEditor().root.innerHTML || '';
+            localImages.forEach((file, index) => {
+                const localUrl = URL.createObjectURL(file);
+                const uploadedImage = uploadedImages[index];
+                if (uploadedImage && uploadedImage.value) {
+                    updatedContent = updatedContent.replace(localUrl, uploadedImage.value);
+                }
+            });
+    
+            // 3. 게시물 데이터 준비
+            const requestData = {
+                title,
+                content: updatedContent,
+                categoryId: Number(categoryId),
+                tagName: tags.map(tag => tag.name),
+                articleTagId: deletedTagIds,
+                topActive: false,
+                images: uploadedImages
+                    .filter(img => img && img.value) // undefined와 value가 없는 항목 필터링
+                    .map(img => img.value)
+            };
+    
+            // 4. 게시물 등록
+            await postArticle(requestData);
+            console.log("게시물 등록 완료");
+            window.location.href = `/account/article/${categoryId}`;
+        } catch (error) {
+            console.error('게시물 작성 중 상세 오류:', error);
+            if (error instanceof Error) {
+                setError(`게시물 작성 중 오류가 발생했습니다: ${error.message}`);
+            } else {
+                setError('게시물 작성 중 알 수 없는 오류가 발생했습니다.');
+            }
+        }
     };
 
     return (
@@ -172,7 +182,7 @@ export default function Page() {
                 </aside>
                 <div className="flex-1 p-10">
                     <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px] overflow-auto">
                         <input
                             id='title'
                             type='text'
@@ -185,17 +195,33 @@ export default function Page() {
                             onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
                         />
                         <div style={{ overflow: 'auto' }}>
-                            <QuillNoSSRWrapper
-                                forwardedRef={quillInstance}
-                                value={content}
-                                onChange={setContent}
-                                modules={modules}
-                                formats={formats}
-                                theme="snow"
-                                className='w-full text-black'
-                                style={{ minHeight: '700px', background: 'white' }}
-                                placeholder="내용을 입력해주세요."
-                            />
+                        <QuillNoSSRWrapper
+                            forwardedRef={quillInstance}
+                            value={content}
+                            onChange={setContent}
+                            modules={{
+                                ...modules,
+                                toolbar: {
+                                    ...modules.toolbar,
+                                    handlers: { image: imageHandler }
+                                }
+                            }}
+                            formats={formats}
+                            theme="snow"
+                            className='w-full text-black'
+                            style={{ minHeight: '700px', background: 'white' }}
+                            placeholder="내용을 입력해주세요."
+                        />
+                        {/* {imagePreviews.length > 0 && (
+                            <div className="mt-4">
+                                <h3 className="text-lg font-semibold">첨부된 이미지:</h3>
+                                <div className="flex flex-wrap mt-2">
+                                    {imagePreviews.map((url, index) => (
+                                        <img key={index} src={url} alt={`Uploaded ${index + 1}`} className="w-24 h-24 object-cover m-1 rounded" />
+                                    ))}
+                                </div>
+                            </div>
+                        )} // 이미지 미리보기 */}
                         </div>
                         <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} /> {/* 태그 입력 컴포넌트 추가 */}
                     </div>

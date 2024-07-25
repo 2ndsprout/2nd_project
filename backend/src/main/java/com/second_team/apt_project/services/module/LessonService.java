@@ -53,4 +53,7 @@ public class LessonService {
         return lessonRepository.findByProfile(profileId);
     }
 
+    public List<Lesson> findByProfileAndCenter(Long profileId, Long cultureCenterId) {
+        return lessonRepository.findByProfileAndCenter(profileId, cultureCenterId);
+    }
 }
