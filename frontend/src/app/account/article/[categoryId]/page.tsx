@@ -49,6 +49,10 @@ export default function ArticleListPage() {
     const [keyword, setKeyword] = useState('');
     const [sort, setSort] = useState<number>(0);
     const [isSearching, setIsSearching] = useState(false);
+    const [ searchKeyword, setSearchKeyword ] = useState('');
+    const [ searchResult, setSearchResult ] = useState<{ keyword: string, count: number } | null>(null);
+    const [ isLoading, setIsLoading ] = useState(false);
+    const [ searchTrigger, setSearchTrigger ] = useState(0);
 
     const countTotalComments = (commentList: any[]): number => {
       return commentList.reduce((total, comment) => {
@@ -68,43 +72,50 @@ export default function ArticleListPage() {
           redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
+    useEffect(() => {
+        fetchArticles(isSearching);
+      }, [categoryId, currentPage, searchTrigger]);
+    
+
     const fetchArticles = async (isSearch: boolean = false) => {
-      try {
-          let data: ArticlePage;
-          if (isSearch && keyword.trim() !== '') {
-              data = await searchArticles({
-                  page: currentPage - 1,
-                  keyword: keyword.trim(),
-                  sort,
-                  categoryId: Number(categoryId)
-              });
-          } else {
-              data = await getArticleList({ 
-                  page: currentPage - 1,
-                  categoryId: Number(categoryId) 
-              });
-          }
+        setIsLoading(true);
+        // setIsSearching(isSearch);
+        try {
+            let data: ArticlePage;
+            if (isSearch && keyword.trim() !== '') {
+                data = await searchArticles({
+                    page: currentPage - 1,
+                    keyword: keyword.trim(),
+                    sort,
+                    categoryId: Number(categoryId)
+                });
+                setSearchResult({ keyword: keyword.trim(), count: data.totalElements });
+            } else {
+                data = await getArticleList({ 
+                    page: currentPage - 1,
+                    categoryId: Number(categoryId) 
+                });
+                setSearchResult(null);
+            }
 
-          const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
-              const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
-              const commentCount = countTotalComments(commentResponse.content);
-              const loveResponse = await getLoveInfo(article.articleId);
-              return { ...article, commentCount, loveCount: loveResponse.count };
-          }));
+            const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
+                const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
+                const commentCount = countTotalComments(commentResponse.content);
+                const loveResponse = await getLoveInfo(article.articleId);
+                return { ...article, commentCount, loveCount: loveResponse.count };
+            }));
 
-          setArticleList(articlesWithCommentCount);
-          setTotalPages(Math.max(1, data.totalPages));
-          setTotalElements(data.totalElements);
-          setCurrentPage(data.number + 1);
-      } catch (error) {
-          console.error('Error fetching articles:', error);
-          setError('게시물을 불러오는데 실패했습니다.');
-      }
+            setArticleList(articlesWithCommentCount);
+            setTotalPages(Math.max(1, data.totalPages));
+            setTotalElements(data.totalElements);
+            setCurrentPage(data.number + 1);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            setError('게시물을 불러오는데 실패했습니다.');
+        } finally {
+            setIsLoading(false);
+        }
   };
-
-  useEffect(() => {
-    fetchArticles(isSearching);
-  }, [categoryId, currentPage, isSearching]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
@@ -112,22 +123,36 @@ export default function ArticleListPage() {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    setIsSearching(keyword.trim() !== '');
+    setKeyword(searchKeyword);
+    setIsSearching(true);
+    setSearchTrigger(prev => prev + 1);
+    // fetchArticles(true);
   };
 
   const handleReset = () => {
-    setKeyword('');
+    setSearchKeyword('');
     setSort(0);
-    setIsSearching(false);
-    setCurrentPage(1);
+    // setKeyword('');
+    // setIsSearching(false);
+    // setCurrentPage(1);
+    // setSearchTrigger(prev => prev + 1);
+    // setSearchResult(null);
+    // fetchArticles(false);
   };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+        handleSearch();
+    }
+  };
+
 
 
     return (
       <Main user={user} profile={profile}>
             <div className="flex w-full">
                 <aside className="w-1/6 p-6 bg-gray-800">
-                    <CategoryList />
+                    <CategoryList userRole={user?.role} />
                 </aside>
                 <div className="flex-1 max-w-7xl p-10">
                     {error ? (
@@ -180,8 +205,9 @@ export default function ArticleListPage() {
                                 type="text"
                                 placeholder="검색..."
                                 className="p-2 bg-gray-700 rounded text-white mr-2"
-                                value={keyword}
-                                onChange={(e) => setKeyword(e.target.value)}
+                                value={searchKeyword}
+                                onChange={(e) => setSearchKeyword(e.target.value)}
+                                onKeyPress={handleKeyPress}
                             />
                             <select
                                 className="p-2 bg-gray-700 rounded text-white mr-2"
@@ -212,9 +238,11 @@ export default function ArticleListPage() {
                             등록
                         </Link>
                     </div>
-                    {isSearching && keyword.trim() !== '' && (
+                    { isLoading ? (
+                        <p className="mt-4 text-gray-400">검색 결과를 불러오는 중...</p>
+                    ) : searchResult && (
                         <p className="mt-4 text-gray-400">
-                            "{keyword}" 검색 결과 ({totalElements}건)
+                            "{searchResult.keyword}" 검색 결과 ({totalElements}건)
                         </p>
                     )}
                     <div className="flex justify-center mt-6">
