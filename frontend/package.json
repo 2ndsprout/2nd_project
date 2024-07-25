@@ -29,6 +29,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-quill": "^2.0.0",
+    "react-router-dom": "^6.25.1",
     "sockjs-client": "^1.6.1",
     "swiper": "^11.1.5"
   },

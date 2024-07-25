@@ -435,8 +435,8 @@ export const getLesson = async (data: number) => {
     return response.data;
 }
 
-export const getLessonList = async (data: number) => {
-    const response = await UserApi.get('/api/lesson/list', {headers: {'Page': data}});
+export const getLessonList = async (data: number, page: number) => {
+    const response = await UserApi.get('/api/lesson/list', {headers: {'CenterId':data, 'Page': page}});
     return response.data;
 }
 

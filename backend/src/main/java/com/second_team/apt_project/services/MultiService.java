@@ -1243,7 +1243,10 @@ public class MultiService {
         if (!cultureCenter.getApt().equals(user.getApt()) && UserRole.ADMIN != user.getRole())
             throw new IllegalArgumentException("권한이 없음");
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
-        return _newMultiKey.map(multiKey -> centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+        MultiKey newMultiKey = null;
+        if(_newMultiKey.isPresent())
+            newMultiKey = _newMultiKey.get();
+        return centerResponseDTO(cultureCenter, newMultiKey);
     }
 
     @Transactional
@@ -1289,7 +1292,10 @@ public class MultiService {
             multiKeyService.delete(_newMultiKey.get());
         }
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
-        return _multiKey.map(multiKey -> this.centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+        MultiKey newMultiKey = null;
+        if(_multiKey.isPresent())
+            newMultiKey = _multiKey.get();
+        return centerResponseDTO(cultureCenter, newMultiKey);
 
     }
 
