@@ -88,7 +88,7 @@ export default function Page() {
     <Profile user={user} profile={profile}>
       <div className='flex flex-col'>
         <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>회원정보</label> 변경</label>
-        <div className="mt-9 w-[1300px] border-2 h-[600px] overflow-y-scroll rounded-lg">
+        <div className="mt-9 w-[1300px] border-2 h-[600px] rounded-lg">
           <div className="py-5 px-5">
             <div className="relative w-full h-auto flex justify-center items-center mb-10">
               <div className="w-[256px] h-[256px] rounded-full opacity-30 absolute hover:bg-gray-500" onClick={() => document.getElementById('file')?.click()}></div>
@@ -111,8 +111,8 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} />
-      <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url}/>
+      <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+      <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert}/>
     </Profile>
   );
 }

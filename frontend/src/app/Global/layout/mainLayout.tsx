@@ -1,9 +1,62 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DropDown, { Direcion } from "../component/DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
+
+const ScrollToTopButton = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  // 페이지 스크롤 이벤트를 추가합니다.
+  useEffect(() => {
+      const handleScroll = () => {
+          if (window.pageYOffset > 300) {
+              setIsVisible(true);
+          } else {
+              setIsVisible(false);
+          }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+          window.removeEventListener('scroll', handleScroll);
+      };
+  }, []);
+
+  // 버튼 클릭 시 화면 최상단으로 이동시킵니다.
+  const scrollToTop = () => {
+      window.scrollTo({
+          top: 0,
+          behavior: 'smooth' // 부드럽게 스크롤
+      });
+  };
+
+  return (
+      <>
+          {isVisible && (
+              <button
+                  onClick={scrollToTop}
+                  style={{
+                      position: 'fixed',
+                      bottom: '100px',
+                      right: '100px',
+                      padding: '10px 20px',
+                      fontSize: 'small',
+                      backgroundColor: 'gray',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '100%',
+                      cursor: 'pointer',
+                  }}
+              >
+                  <FontAwesomeIcon icon={faUpLong} /><br />
+                  Top
+              </button>
+          )}
+      </>
+  );
+};
 
 interface PageInterface {
   children: React.ReactNode;
@@ -50,7 +103,7 @@ export default function Main(props: Readonly<PageInterface>) {
               onMouseLeave={() => closeHover(setCenterHover)}>
               문화센터
             </a>
-            <a id="board" href="/" className="btn btn-ghost text-xl hover:text-secondary"
+            <a id="board" href="/account/article/1" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setBoardHover)}
               onMouseLeave={() => closeHover(setBoardHover)}>
               게시판
@@ -122,7 +175,8 @@ export default function Main(props: Readonly<PageInterface>) {
 
       </nav>
       {props.children}
-      <footer className='flex flex-col w-[1450px] mt-48 mb-8 ml-52 p-10 gap-2'>
+      <ScrollToTopButton />
+      <footer className='flex flex-col w-[1450px] mt-18 mb-8 ml-52 p-10 gap-2'>
         <div className='flex justify-between'>
           <div className='text-secondary flex font-bold'>상호명 및 호스팅 서비스 제공 :
             <span className='text-white flex flex-col ml-2'> 꿀단지(주)</span>
