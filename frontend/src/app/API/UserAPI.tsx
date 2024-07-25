@@ -296,7 +296,6 @@ interface PostArticleProps {
     categoryId: number;
     tagName: string[];
     topActive: boolean;
-    images?: string[];
 }
 
 export const postArticle = async (data: PostArticleProps) => {

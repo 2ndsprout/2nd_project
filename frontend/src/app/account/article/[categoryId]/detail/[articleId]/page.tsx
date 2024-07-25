@@ -46,17 +46,6 @@ export default function ArticleDetail() {
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
-    const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 서버 배포시 수정예정
-
-    const renderSafeHTML = (content: string) => {
-        // 이미지 URL을 절대 경로로 변환
-        const processedContent = content.replace(/src="\/api/g, `src="${BACKEND_URL}/api`);
-
-        const sanitizedContent = DOMPurify.sanitize(processedContent);
-
-        return { __html: sanitizedContent };
-    };
-
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser()
@@ -152,6 +141,13 @@ export default function ArticleDetail() {
     if (!article) {
         return <div className="flex items-center justify-center h-screen text-gray-400">게시물을 불러오는 중입니다...</div>;
     }
+
+    const renderSafeHTML = (content: string) => {
+
+        const sanitizedContent = DOMPurify.sanitize(content);
+
+        return { __html: sanitizedContent };
+    };
 
     const content = (
         <div className="flex w-full">
