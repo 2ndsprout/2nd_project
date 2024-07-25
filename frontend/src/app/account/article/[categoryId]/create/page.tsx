@@ -109,72 +109,6 @@ export default function Page() {
         'link', 'image'
     ];
 
-    // const formatHtmlForDatabase = (html: string): string => {
-    //     return html.replace(/<p>/g, '').replace(/<\/p>/g, '<br>').replace(/<br><br>/g, '<br>');
-    // };
-
-    // const restoreHtmlFromDatabase = (html: string): string => {
-    //     return html.replace(/<br>/g, '</p><p>').replace(/<\/p><p>/g, '<p>').replace(/^<p>/, '').replace(/<\/p>$/, '');
-    // };
-
-    // const Submit = async () => {
-    //     if (!title.trim() || !quillInstance.current?.getEditor().getText().trim()) {
-    //         setError('제목과 내용을 모두 입력해주세요.');
-    //         return;
-    //     }
-    
-    //     try {
-    //         // 1. 이미지 업로드
-    //         const formData = new FormData();
-    //         localImages.forEach((file, index) => {
-    //             formData.append(`file`, file);
-    //         });
-    //         const uploadedImages = localImages.length > 0 ? await saveImageList(formData) : [];
-    
-    //         console.log('Uploaded images:', uploadedImages); // 디버깅을 위한 로그
-    
-    //         if (localImages.length > 0 && !Array.isArray(uploadedImages)) {
-    //             throw new Error('Expected an array of uploaded images');
-    //         }
-
-    
-    //         // 2. content 내의 이미지 URL 업데이트
-    //         let updatedContent = quillInstance.current?.getEditor().root.innerHTML || '';
-    //         localImages.forEach((file, index) => {
-    //             const localUrl = URL.createObjectURL(file);
-    //             const uploadedImage = uploadedImages[index];
-    //             if (uploadedImage && uploadedImage.value) {
-    //                 updatedContent = updatedContent.replace(localUrl, uploadedImage.value);
-    //             }
-    //         });
-    
-    //         // 3. 게시물 데이터 준비
-    //         const requestData = {
-    //             title,
-    //             content: updatedContent,
-    //             categoryId: Number(categoryId),
-    //             tagName: tags.map(tag => tag.name),
-    //             articleTagId: deletedTagIds,
-    //             topActive: false,
-    //             images: uploadedImages
-    //                 .filter(img => img && img.value) // undefined와 value가 없는 항목 필터링
-    //                 .map(img => img.value)
-    //         };
-    
-    //         // 4. 게시물 등록
-    //         await postArticle(requestData);
-    //         console.log("게시물 등록 완료");
-    //         window.location.href = `/account/article/${categoryId}`;
-    //     } catch (error) {
-    //         console.error('게시물 작성 중 상세 오류:', error);
-    //         if (error instanceof Error) {
-    //             setError(`게시물 작성 중 오류가 발생했습니다: ${error.message}`);
-    //         } else {
-    //             setError('게시물 작성 중 알 수 없는 오류가 발생했습니다.');
-    //         }
-    //     }
-    // };
-
     const Submit = async () => {
         if (!title.trim() || !quillInstance.current?.getEditor().getText().trim()) {
             setError('제목과 내용을 모두 입력해주세요.');
@@ -243,7 +177,7 @@ export default function Page() {
                             onChange={e => setTitle(e.target.value)}
                             onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
                         />
-                        <div style={{ overflow: 'auto' }}>
+                        <div style={{ overflow: 'auto', maxHeight: '700px' }}>
                         <QuillNoSSRWrapper
                             forwardedRef={quillInstance}
                             value={content}
