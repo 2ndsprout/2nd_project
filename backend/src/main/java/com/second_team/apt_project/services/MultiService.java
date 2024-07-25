@@ -1462,6 +1462,26 @@ public class MultiService {
         this.lessonService.delete(lesson);
     }
 
+    @Transactional
+    public List<LessonResponseDTO> getLessonStaff(String username, Long profileId, Long centerId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
+        if (!cultureCenter.getApt().equals(user.getApt()) || user.getRole() == UserRole.USER)
+            throw new IllegalArgumentException("권한 없음");
+        List<Lesson> lessonList = lessonService.findByProfileAndCenter(profile.getId(), cultureCenter.getId());
+        List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
+        for (Lesson lesson : lessonList){
+            lessonResponseDTOList.add(this.lessonResponseDTO(lesson));
+        }
+        return lessonResponseDTOList;
+    }
+
+
+
 
     /**
      * LessonUser
@@ -1698,4 +1718,6 @@ public class MultiService {
             chatRoomService.delete(chatRoom);
 
     }
+
+
 }

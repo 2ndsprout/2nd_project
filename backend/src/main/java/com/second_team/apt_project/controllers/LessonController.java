@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/lesson")
@@ -63,6 +65,23 @@ public class LessonController {
                 String username = tokenRecord.username();
                 Page<LessonResponseDTO> responseDTOPage = multiService.getLessonPage(username, profileId, page, centerId);
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTOPage);
+            }
+        } catch (DataNotFoundException | IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+        return tokenRecord.getResponseEntity();
+    }
+
+    @GetMapping("/staff")
+    public ResponseEntity<?> getLessonStaff(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("PROFILE_ID") Long profileId,
+                                           @RequestHeader("CenterId") Long centerId) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
+        try {
+            if (tokenRecord.isOK()) {
+                String username = tokenRecord.username();
+                List<LessonResponseDTO> responseDTOList = multiService.getLessonStaff(username, profileId, centerId);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
