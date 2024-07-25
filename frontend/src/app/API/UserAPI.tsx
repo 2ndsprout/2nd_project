@@ -451,8 +451,6 @@ interface LessonProps {
     content: string,
     startDate: Date,
     endDate: Date,
-    startTime: Date,
-    endTime: Date
 }
 
 export const postLesson = async (data: LessonProps) => {
@@ -535,8 +533,14 @@ export const getCommentList = async ({ articleId, page }: GetCommentListProps) =
 // Lesson Request
 
 interface LessonRequestProps {
+    id: number,
     lessonId: number,
     type: number
+}
+
+export const updateLessonRequest = async (data: LessonRequestProps) => {
+    const response = await UserApi.put('/api/lesson/user', data);
+    return response.data;
 }
 
 export const postLessonRequest = async (data: LessonRequestProps) => {
@@ -558,3 +562,4 @@ export const getLessonRequestListByStaff = async () => {
     const response = await UserApi.get('/api/lesson/staff/list');
     return response.data;
 }
+

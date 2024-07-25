@@ -6,9 +6,10 @@ interface AlertModalProps {
     error: string;
     show: boolean;
     url?: string;
+    onClose: () => void;
 }
 
-const AlertModal: React.FC<AlertModalProps> = ({ error, show, url}) => {
+const AlertModal: React.FC<AlertModalProps> = ({ error, show, url, onClose}) => {
     
     if (!show) return null;
 
@@ -23,7 +24,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ error, show, url}) => {
                             if (url) {
                                 window.location.href = url;
                             } else {
-                                !show;
+                                onClose();
                             }
                         }}
                         className="text-sm mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500"

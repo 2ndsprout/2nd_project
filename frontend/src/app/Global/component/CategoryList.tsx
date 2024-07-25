@@ -48,7 +48,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, cat
   };
 
   return (
-    <div className="mt-5 ml-20">
+    <div className="mt-5 ml-20 min-h-screen">
       <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
       {error ? (
         <p className="text-red-500">{error}</p>

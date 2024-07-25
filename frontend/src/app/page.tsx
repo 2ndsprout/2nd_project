@@ -46,7 +46,10 @@ export default function Page() {
               .then(r => setCategories(r))
               .catch(e => console.log(e))
             getMyLessonList()
-              .then(r => setLessons(r))
+              .then(r =>
+                r.forEach((r: any) => {
+                  r.type === 'APPLIED' && setLessons(prev => [...prev, r]);
+                }))
               .catch(e => console.log(e));
           })
           .catch(e => console.log(e));
@@ -140,7 +143,7 @@ export default function Page() {
         {categories?.slice(0, 3).map((category) => (
           <div key={category.id} className="flex flex-col">
             <label className="text-start text-secondary font-bold text-xl pb-3 hover:text-primary hover:cursor-pointer">{category?.name}</label>
-            <table>
+            <table className="table">
               <thead>
                 <tr className="h-[40px] border-b-2 border-gray-500">
                   <th className="w-[100px] text-primary">번호</th>

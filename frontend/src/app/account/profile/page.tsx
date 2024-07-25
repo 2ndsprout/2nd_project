@@ -31,7 +31,7 @@ export default function Page() {
     const [newPassword2Error, setNewPassword2Error] = useState('');
     const [first, setFirst] = useState(true);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
-    const { alertState, showAlert } = useAlert();
+    const { alertState, showAlert, closeAlert } = useAlert();
 
 
     useEffect(() => {
@@ -295,8 +295,8 @@ export default function Page() {
                     <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => finalConfirm(name, '프로필을 생성합니다.', '생성', Regist)}>프로필 등록</button>
                 </div>
             </Modal>
-            <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} />
-            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url}/>
+            <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert}/>
         </>
     );
 }
