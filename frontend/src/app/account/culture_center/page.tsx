@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 export default function Page() {
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
+    const [isLoading, setIsLoading] = useState(false);
     const [centerList, setCenterList] = useState([] as any[]);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
@@ -30,6 +31,7 @@ export default function Page() {
                         getCenterList()
                             .then(r => {
                                 setCenterList(r);
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                             })
                             .catch(e => console.log(e));
                     })
@@ -45,7 +47,7 @@ export default function Page() {
     console.log('centerlist', centerList);
 
     return (
-        <Main user={user} profile={profile}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6">
                     <div className="mt-5 ml-20">

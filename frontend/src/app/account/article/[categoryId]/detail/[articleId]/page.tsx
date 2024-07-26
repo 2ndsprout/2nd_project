@@ -43,6 +43,7 @@ export default function ArticleDetail() {
     const [categories, setCategories] = useState<any[]>([]);
     const [ isDeleted, setIsDeleted ] = useState(false);
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
@@ -57,6 +58,7 @@ export default function ArticleDetail() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                         // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
                         // .then(r => setSearch(r))
                         // .catch(e => console.log
@@ -206,7 +208,7 @@ export default function ArticleDetail() {
     );
 
     return (
-        <Main user={user} profile={profile}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             {content}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
