@@ -98,7 +98,7 @@ export default function Main(props: Readonly<PageInterface>) {
             </a>
           </div>
           <div className="navbar-center justify-between w-[800px]">
-            <a id="center" href="/" className="btn btn-ghost text-xl hover:text-secondary"
+            <a id="center" href="/account/culture_center/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
               문화센터

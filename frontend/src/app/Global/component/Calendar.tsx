@@ -55,7 +55,7 @@ const Calendar: React.FC<CalendarProps> = ({ lessons, height, width, padding = '
 
     const handleEventClick = (info: EventClickArg) => {
         const eventId = info.event.id;
-        router.push(`/events/${eventId}`);
+        router.push(`/account/lesson/${eventId}`);
     };
 
     const handleDateClick = (info: DateClickArg) => {

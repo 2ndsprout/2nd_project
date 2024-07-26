@@ -140,7 +140,7 @@ export default function Page() {
     <Main user={user} profile={profile}>
       <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
         <Slider urlList={displayUrls} />
-        <Calendar lessons={lessons} />
+        <Calendar lessons={lessons} height={500} width={700} />
       </div>
       <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full px-16">
         {categories?.slice(0, 3).map((category) => (
