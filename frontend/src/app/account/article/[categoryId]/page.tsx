@@ -44,6 +44,7 @@ export default function ArticleListPage() {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
     const [totalElements, setTotalElements] = useState(0);
     const [categories, setCategories] = useState<any[]>([]);
     const [keyword, setKeyword] = useState('');
@@ -60,7 +61,12 @@ export default function ArticleListPage() {
       if (ACCESS_TOKEN) {
           getUser().then(r => setUser(r)).catch(e => console.log(e));
           if (PROFILE_ID)
-              getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+              getProfile()
+            .then(r => {
+                setProfile(r)
+                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+            })
+                .catch(e => console.log(e));
           else
               redirect('/account/profile');
       }
@@ -124,7 +130,7 @@ export default function ArticleListPage() {
 
 
     return (
-      <Main user={user} profile={profile}>
+      <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="flex w-full">
                 <aside className="w-1/6 p-6 bg-gray-800">
                     <CategoryList />

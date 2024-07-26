@@ -6,7 +6,7 @@ import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 const DatePicker = dynamic(() => import('react-tailwindcss-datepicker'), { ssr: false });
 
 interface DatePickerProps {
-    onDateChange: (newValue: DateValueType) => void;
+    onDateChange: (newValue: DateValueType | string) => void;
 }
 
 const DatePickerComponent: React.FC<DatePickerProps> = ({ onDateChange }) => {
@@ -17,7 +17,12 @@ const DatePickerComponent: React.FC<DatePickerProps> = ({ onDateChange }) => {
 
     const handleValueChange = (newValue: DateValueType) => {
         setValue(newValue);
-        onDateChange(newValue); // Call the prop function to notify the parent
+
+        if (!newValue?.startDate || !newValue?.endDate) {
+            onDateChange("날짜를 선택해주세요");
+        } else {
+            onDateChange(newValue); // Call the prop function to notify the parent
+        }
     };
 
     const configs = {

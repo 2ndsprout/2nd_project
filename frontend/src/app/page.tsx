@@ -9,6 +9,7 @@ import Slider from "./Global/component/Slider";
 import Main from "./Global/layout/MainLayout";
 
 
+
 export default function Page() {
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
@@ -17,6 +18,7 @@ export default function Page() {
   const [freeArticleList, setFreeArticleList] = useState([] as any[]);
   const [saleArticleList, setSaleArticleList] = useState([] as any[]);
   const [lessons, setLessons] = useState([] as any[]);
+  const [isLoading, setIsLoading] = useState(false);
   const [notiTotalElements, setNotiTotalElements] = useState(null as any);
   const [freeTotalElements, setFreeTotalElements] = useState(null as any);
   const [saleTotalElements, setSaleTotalElements] = useState(null as any);
@@ -51,6 +53,7 @@ export default function Page() {
                   if(r.type === 'APPLIED') {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
+                  const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                 });
               })
               .catch(e => console.log(e));
@@ -137,7 +140,7 @@ export default function Page() {
   };
 
   return (
-    <Main user={user} profile={profile}>
+    <Main user={user} profile={profile} isLoading={isLoading}>
       <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
         <Slider urlList={displayUrls} />
         <Calendar lessons={lessons} />

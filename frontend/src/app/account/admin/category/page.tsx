@@ -26,6 +26,7 @@ const CreateCategory: React.FC = () => {
   const [profile, setProfile] = useState(null as any);
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
@@ -44,6 +45,7 @@ const CreateCategory: React.FC = () => {
             getProfile()
                 .then(r => {
                     setProfile(r);
+                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                 })
                 .catch(e => console.log(e));
         else
@@ -153,7 +155,7 @@ const CreateCategory: React.FC = () => {
 
   if (error) {
     return (
-      <Main user={user} profile={profile}>
+      <Main user={user} profile={profile} isLoading={isLoading}>
         <div className="flex justify-center items-center h-screen">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
             <strong className="font-bold">접근 불가!</strong>
@@ -166,7 +168,7 @@ const CreateCategory: React.FC = () => {
   }
 
   return (
-    <Main user={user} profile={profile}>
+    <Main user={user} profile={profile} isLoading={isLoading}>
     <div className="bg-black w-full min-h-screen text-white flex">
       <aside className="w-1/6 p-6 bg-gray-800">
       <CategoryList managementMode={true} categories={sidebarCategories} userRole={user?.role} />

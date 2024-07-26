@@ -20,6 +20,7 @@ export default function Page() {
     const [profile, setProfile] = useState(null as any);
     const [pendingLessons, setPendingLessons] = useState([] as any[]);
     const [appliedLessons, setAppliedLessons] = useState([] as any[]);
+    const [isLoading, setIsLoading] = useState(false);
     const [cancellingLessons, setCancellingLessons] = useState([] as any[]);
     const [cancelledLessons, setCancelledLessons] = useState([] as any[]);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
@@ -62,6 +63,7 @@ export default function Page() {
                                         default:
                                             break;
                                     }
+                                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                                 });
                             })
                             .catch(e => console.log(e))
@@ -116,7 +118,7 @@ export default function Page() {
     }
 
     return (
-        <Profile user={user} profile={profile}>
+        <Profile user={user} profile={profile} isLoading={isLoading}>
             <div className='flex flex-col'>
                 <label className='mt-4 text-xl font-bold'><label className='text-xl text-secondary font-bold'>내 레슨</label> 목록</label>
                 <div className="mt-5 p-10 flex flex-col w-[1300px] border-2 h-[1000px] rounded-lg">
@@ -156,6 +158,11 @@ export default function Page() {
                                                 {applied.lessonResponseDTO.name}
                                             </div>
                                             <button onClick={() => finalConfirm(applied.lessonResponseDTO.name, '해당 레슨을 취소하시겠습니까?', '수강중단', () => updateLesson(applied.id, applied.lessonResponseDTO.id, 'CANCELLING'))} className="btn btn-error text-xs mr-[10px] btn-xs"><FontAwesomeIcon icon={faXmark} />수강 중단</button>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 justify-between overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary flex items-center">
+                                        <div>
+                                            {applied.lessonResponseDTO.content}
                                         </div>
                                         <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(applied.lessonResponseDTO.startDate)} ~ {getDateFormat(applied.lessonResponseDTO.endDate)}
                                             <label className="ml-14 text-xs text-gray-400">({getTimeFormat(applied.lessonResponseDTO.startDate)} ~ {getTimeFormat(applied.lessonResponseDTO.endDate)})</label>

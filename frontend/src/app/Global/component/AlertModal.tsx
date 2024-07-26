@@ -1,4 +1,4 @@
-import { faBell } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 
@@ -9,8 +9,8 @@ interface AlertModalProps {
     onClose: () => void;
 }
 
-const AlertModal: React.FC<AlertModalProps> = ({ error, show, url, onClose}) => {
-    
+const AlertModal: React.FC<AlertModalProps> = ({ error, show, url, onClose }) => {
+
     if (!show) return null;
 
     return (
@@ -29,6 +29,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ error, show, url, onClose}) => 
                         }}
                         className="text-sm mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500"
                     >
+                        <FontAwesomeIcon icon={faXmark} className="mr-1" />
                         닫기
                     </button>
                 </div>
