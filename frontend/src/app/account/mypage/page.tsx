@@ -35,7 +35,7 @@ export default function Page() {
             setProfile(r);
             setName(r.name);
             setUrl(r.url);
-            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
           })
           .catch(e => console.log(e));
       } else {

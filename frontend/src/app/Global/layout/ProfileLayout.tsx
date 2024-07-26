@@ -1,4 +1,4 @@
-import Main from "./MainLayout";
+import Main from "./mainLayout";
 import SideList from "./SideList";
 
 interface pageInterface {

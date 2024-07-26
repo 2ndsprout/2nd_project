@@ -54,7 +54,7 @@ export default function Page() {
                                         default:
                                             break;
                                     }
-                                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+                                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                                 });
                             })
                             .catch(e => console.log(e))

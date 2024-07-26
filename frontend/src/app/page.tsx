@@ -6,7 +6,7 @@ import { getArticleList, getCategoryList, getMyLessonList, getProfile, getUser }
 
 import Calendar from "./Global/component/Calendar";
 import Slider from "./Global/component/Slider";
-import Main from "./Global/layout/MainLayout";
+import Main from "./Global/layout/mainLayout";
 
 
 
@@ -143,7 +143,7 @@ export default function Page() {
     <Main user={user} profile={profile} isLoading={isLoading}>
       <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
         <Slider urlList={displayUrls} />
-        <Calendar lessons={lessons} />
+        <Calendar lessons={lessons} height={480} width={900} />
       </div>
       <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full px-16">
         {categories?.slice(0, 3).map((category) => (
