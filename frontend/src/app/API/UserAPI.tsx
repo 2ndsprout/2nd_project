@@ -472,6 +472,10 @@ export const getMyLessonList = async () => {
     return response.data;
 }
 
+export const getStaffLessonList = async (data: number) => {
+    const response = await UserApi.get ('/api/lesson/staff', {headers: {'CenterId':data}});
+    return response.data;
+}
 interface UpdateLessonProps {
     id: number,
     centerId: number,
