@@ -1510,7 +1510,8 @@ public class MultiService {
     private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {
         return LessonUserResponseDTO.builder() //
                 .id(lessonUser.getId()) //
-                .lessonResponseDTO(lessonResponseDTO(lessonUser.getLesson())) //
+                .lessonResponseDTO(this.lessonResponseDTO(lessonUser.getLesson())) //
+                .profileResponseDTO(this.profileResponseDTO(lessonUser.getProfile()))//
                 .type(lessonUser.getLessonStatus().toString()) //
                 .build();
     }
