@@ -7,14 +7,14 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/zoom';
-import 'swiper/css/free-mode';
-import 'swiper/css/thumbs';
 
 interface SliderProps {
     urlList: string[];
 }
 
 const Slider = ({ urlList }: SliderProps) => {
+    const slideCount = urlList.length;
+    const shouldLoop = slideCount >= 3; // 슬라이드 수가 3개 이상일 때만 loop 활성화
 
     return (
         <>
@@ -28,7 +28,7 @@ const Slider = ({ urlList }: SliderProps) => {
                 pagination={{
                     clickable: true,
                 }}
-                loop={true}
+                loop={shouldLoop}
                 zoom={true}
                 navigation={true}
                 modules={[Zoom, Autoplay, Pagination, Navigation]}

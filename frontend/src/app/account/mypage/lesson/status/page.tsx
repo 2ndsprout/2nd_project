@@ -13,6 +13,7 @@ export default function Page() {
     const [pendingLessons, setPendingLessons] = useState([] as any[]);
     const [appliedLessons, setAppliedLessons] = useState([] as any[]);
     const [cancellingLessons, setCancellingLessons] = useState([] as any[]);
+    const [isLoading, setIsLoading] = useState(false);
     const [cancelledLessons, setCancelledLessons] = useState([] as any[]);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
@@ -53,11 +54,13 @@ export default function Page() {
                                         default:
                                             break;
                                     }
+                                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                                 });
                             })
                             .catch(e => console.log(e))
                     })
                     .catch(e => console.log(e));
+                    
             } else {
                 redirect('/account/profile');
             }
@@ -67,7 +70,7 @@ export default function Page() {
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     return (
-        <Profile user={user} profile={profile}>
+        <Profile user={user} profile={profile} isLoading={isLoading}>
             <div className='flex flex-col'>
                 <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>회원정보</label> 변경</label>
                 <div className="mt-9 w-[1300px] border-2 h-[600px] rounded-lg">

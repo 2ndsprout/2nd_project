@@ -1,6 +1,6 @@
 'use client';
 
-import { getProfile, getUser, getLessonList, getCenter, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
+import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ export default function Page(props: PageProps) {
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const lessonId = Number(params?.id);
+    const [isLoading, setIsLoading] = useState(false);
     const [lessonList, setLessonList] = useState<LessonType[]>(props.lessonList || []);
     const [targetLesson, setTargetLesson] = useState<LessonType | null>(null);
     const [error, setError] = useState('');
@@ -59,6 +60,7 @@ export default function Page(props: PageProps) {
                 getLesson(lessonId)
                     .then(r => {
                         setLessonList(prev => [...prev, r]);
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                     })
                     .catch(e => console.log(e));
             } else {
@@ -91,10 +93,10 @@ export default function Page(props: PageProps) {
 
 
     return (
-        <Main user={user} profile={profile}>
-            <div className="flex justify-center mt-[70px] mb-[20px] w-[1350px] items-center bg-gray-700 h-[700px]">
+        <Main user={user} profile={profile} isLoading={isLoading}>
+            <div className="flex justify-center mt-[70px] mb-[20px] w-[1350px] h-[800px] items-center bg-gray-700">
                 {targetLesson ? (
-                    <div className="w-[500px] h-[600px] mr-[15px]">
+                    <div className="w-[500px] h-[750px] mr-[15px]">
                         <div className="flex flex">
                             <div className="ml-[20px] mb-[20px]">
                                 <img src={targetLesson.profileResponseDTO?.url ? targetLesson.profileResponseDTO.url : '/user.png'} className="ml-[15px] my-[15px] w-[100px] flex h-[100px] justify-center rounded-full" alt="profile" />

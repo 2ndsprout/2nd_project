@@ -10,28 +10,28 @@ import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Article {
-  categoryId: number;
-  articleId: number;
-  title: string;
-  content: string;
-  createDate: number;
-  categoryName: string;
-  profileResponseDTO: {
-    id: number;
-    name: string;
-    username: string;
-    url: string | null;
-  };
-  commentCount?: number;
-  loveCount?: number;
+    categoryId: number;
+    articleId: number;
+    title: string;
+    content: string;
+    createDate: number;
+    categoryName: string;
+    profileResponseDTO: {
+        id: number;
+        name: string;
+        username: string;
+        url: string | null;
+    };
+    commentCount?: number;
+    loveCount?: number;
 }
 
 interface ArticlePage {
-  content: Article[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+    content: Article[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
 }
 
 export default function ArticleListPage() {
@@ -44,6 +44,7 @@ export default function ArticleListPage() {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
     const [totalElements, setTotalElements] = useState(0);
     const [categories, setCategories] = useState<any[]>([]);
     const [keyword, setKeyword] = useState('');
@@ -51,80 +52,85 @@ export default function ArticleListPage() {
     const [isSearching, setIsSearching] = useState(false);
 
     const countTotalComments = (commentList: any[]): number => {
-      return commentList.reduce((total, comment) => {
-        return total + 1 + countTotalComments(comment.commentResponseDTOList || []);
-      }, 0);
+        return commentList.reduce((total, comment) => {
+            return total + 1 + countTotalComments(comment.commentResponseDTOList || []);
+        }, 0);
     };
 
     useEffect(() => {
-      if (ACCESS_TOKEN) {
-          getUser().then(r => setUser(r)).catch(e => console.log(e));
-          if (PROFILE_ID)
-              getProfile().then(r => setProfile(r)).catch(e => console.log(e));
-          else
-              redirect('/account/profile');
-      }
-      else
-          redirect('/account/login');
+        if (ACCESS_TOKEN) {
+            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile()
+                    .then(r => {
+                        setProfile(r)
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                    })
+                    .catch(e => console.log(e));
+            else
+                redirect('/account/profile');
+        }
+        else
+            redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     const fetchArticles = async (isSearch: boolean = false) => {
-      try {
-          let data: ArticlePage;
-          if (isSearch && keyword.trim() !== '') {
-              data = await searchArticles({
-                  page: currentPage - 1,
-                  keyword: keyword.trim(),
-                  sort,
-                  categoryId: Number(categoryId)
-              });
-          } else {
-              data = await getArticleList({ 
-                  page: currentPage - 1,
-                  categoryId: Number(categoryId) 
-              });
-          }
+        try {
+            let data: ArticlePage;
+            if (isSearch && keyword.trim() !== '') {
+                data = await searchArticles({
+                    page: currentPage - 1,
+                    keyword: keyword.trim(),
+                    sort,
+                    categoryId: Number(categoryId)
+                });
+            } else {
+                data = await getArticleList({
+                    page: currentPage - 1,
+                    categoryId: Number(categoryId)
+                });
+            }
 
-          const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
-              const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
-              const commentCount = countTotalComments(commentResponse.content);
-              const loveResponse = await getLoveInfo(article.articleId);
-              return { ...article, commentCount, loveCount: loveResponse.count };
-          }));
+            const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
+                const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
+                const commentCount = countTotalComments(commentResponse.content);
+                const loveResponse = await getLoveInfo(article.articleId);
+                return { ...article, commentCount, loveCount: loveResponse.count };
+            }));
 
-          setArticleList(articlesWithCommentCount);
-          setTotalPages(Math.max(1, data.totalPages));
-          setTotalElements(data.totalElements);
-          setCurrentPage(data.number + 1);
-      } catch (error) {
-          console.error('Error fetching articles:', error);
-          setError('게시물을 불러오는데 실패했습니다.');
-      }
-  };
+            setArticleList(articlesWithCommentCount);
+            setTotalPages(Math.max(1, data.totalPages));
+            setTotalElements(data.totalElements);
+            setCurrentPage(data.number + 1);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            setError('게시물을 불러오는데 실패했습니다.');
+        }
+    };
 
-  useEffect(() => {
-    fetchArticles(isSearching);
-  }, [categoryId, currentPage, isSearching]);
+    useEffect(() => {
+        fetchArticles(isSearching);
+    }, [categoryId, currentPage, isSearching]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
-  };
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
+    };
 
-  const handleSearch = () => {
-    setCurrentPage(1);
-    setIsSearching(keyword.trim() !== '');
-  };
+    const handleSearch = () => {
+        setCurrentPage(1);
+        setIsSearching(keyword.trim() !== '');
+    };
 
-  const handleReset = () => {
-    setKeyword('');
-    setSort(0);
-    setIsSearching(false);
-    setCurrentPage(1);
-  };
+    const handleReset = () => {
+        setKeyword('');
+        setSort(0);
+        setIsSearching(false);
+        setCurrentPage(1);
+    };
 
 
     return (
-      <Main user={user} profile={profile}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="flex w-full">
                 <aside className="w-1/6 p-6 bg-gray-800">
                     <CategoryList />

@@ -14,6 +14,7 @@ export default function Page() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [url, setUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const { confirmState, finalConfirm, closeConfirm } = useConfirm();
@@ -34,6 +35,7 @@ export default function Page() {
             setProfile(r);
             setName(r.name);
             setUrl(r.url);
+            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
           })
           .catch(e => console.log(e));
       } else {
@@ -85,7 +87,7 @@ export default function Page() {
   }
 
   return (
-    <Profile user={user} profile={profile}>
+    <Profile user={user} profile={profile} isLoading={isLoading}>
       <div className='flex flex-col'>
         <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>회원정보</label> 변경</label>
         <div className="mt-9 w-[1300px] border-2 h-[600px] rounded-lg">

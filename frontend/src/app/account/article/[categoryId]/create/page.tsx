@@ -2,7 +2,7 @@
 
 import { getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import { redirect, useParams } from "next/navigation";
@@ -13,7 +13,7 @@ import TagInput from '../../tag/page';
 
 interface Tag {
     id: number;
-    name :string;
+    name: string;
 }
 
 interface UploadedImage {
@@ -26,6 +26,7 @@ export default function Page() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [preKey, setPreKey] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
@@ -42,9 +43,17 @@ export default function Page() {
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            getUser()
+                .then(r =>
+                    setUser(r))
+                .catch(e => console.log(e));
             if (PROFILE_ID)
-                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+                getProfile()
+                    .then(r => {
+                        setProfile(r)
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                    })
+                    .catch(e => console.log(e));
             else
                 redirect('/account/profile');
         }
@@ -158,7 +167,7 @@ export default function Page() {
     };
 
     return (
-        <Main user={user} profile={profile}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6 bg-gray-800">
                     <CategoryList />
@@ -178,24 +187,24 @@ export default function Page() {
                             onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
                         />
                         <div style={{ overflow: 'auto', maxHeight: '700px' }}>
-                        <QuillNoSSRWrapper
-                            forwardedRef={quillInstance}
-                            value={content}
-                            onChange={setContent}
-                            modules={{
-                                ...modules,
-                                toolbar: {
-                                    ...modules.toolbar,
-                                    handlers: { image: imageHandler }
-                                }
-                            }}
-                            formats={formats}
-                            theme="snow"
-                            className='w-full text-black'
-                            style={{ minHeight: '700px', background: 'white' }}
-                            placeholder="내용을 입력해주세요."
-                        />
-                        {/* {imagePreviews.length > 0 && (
+                            <QuillNoSSRWrapper
+                                forwardedRef={quillInstance}
+                                value={content}
+                                onChange={setContent}
+                                modules={{
+                                    ...modules,
+                                    toolbar: {
+                                        ...modules.toolbar,
+                                        handlers: { image: imageHandler }
+                                    }
+                                }}
+                                formats={formats}
+                                theme="snow"
+                                className='w-full text-black'
+                                style={{ minHeight: '700px', background: 'white' }}
+                                placeholder="내용을 입력해주세요."
+                            />
+                            {/* {imagePreviews.length > 0 && (
                             <div className="mt-4">
                                 <h3 className="text-lg font-semibold">첨부된 이미지:</h3>
                                 <div className="flex flex-wrap mt-2">
