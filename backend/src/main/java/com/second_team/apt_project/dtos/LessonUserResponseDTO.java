@@ -12,12 +12,14 @@ import org.springframework.stereotype.Service;
 public class LessonUserResponseDTO {
     private Long id;
     private LessonResponseDTO lessonResponseDTO;
+    private ProfileResponseDTO profileResponseDTO;
     private String type;
 
     @Builder
-    public LessonUserResponseDTO(Long id, LessonResponseDTO lessonResponseDTO, String type) {
+    public LessonUserResponseDTO(Long id, LessonResponseDTO lessonResponseDTO, String type, ProfileResponseDTO profileResponseDTO) {
         this.id = id;
         this.lessonResponseDTO = lessonResponseDTO;
+        this.profileResponseDTO =profileResponseDTO;
         this.type = type;
     }
 }
