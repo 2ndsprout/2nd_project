@@ -7,6 +7,7 @@ import com.second_team.apt_project.repositories.customs.LessonUserRepositoryCust
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class LessonUserRepositoryImpl implements LessonUserRepositoryCustom {
@@ -31,5 +32,10 @@ public class LessonUserRepositoryImpl implements LessonUserRepositoryCustom {
     @Override
     public List<LessonUser> findByProfileId(Long id) {
         return jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.profile.id.eq(id)).fetch();
+    }
+
+    @Override
+    public Optional<LessonUser> findByLessonAndProfile(Long lessonId, Long profileId) {
+        return Optional.ofNullable(jpaQueryFactory.selectFrom(qLessonUser).where(qLessonUser.lesson.id.eq(lessonId).and(qLessonUser.profile.id.eq(profileId))).fetchOne());
     }
 }

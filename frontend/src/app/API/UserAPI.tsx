@@ -542,6 +542,10 @@ export const updateLessonRequest = async (data: LessonRequestProps) => {
     return response.data;
 }
 
+export const deleteLessonRequest = async (data: number) => {
+    await UserApi.delete('/api/lesson/user', {headers: {'LessonUserId': data}});
+}
+
 export const postLessonRequest = async (data: LessonRequestProps) => {
     const response = await UserApi.post('/api/lesson/user', data);
     return response.data;
