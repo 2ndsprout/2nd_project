@@ -2,7 +2,7 @@
 
 import { getCenterList, getProfile, getUser } from "@/app/API/UserAPI";
 import CenterSlider from "@/app/Global/CenterSlider";
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -44,7 +44,7 @@ export default function Page() {
                         getCenterList()
                             .then(r => {
                                 setCenterList(r);
-                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                                 setGymUrlList([]);
                                 setSwimUrlList([]);
                                 setLibUrlList([]);

@@ -63,7 +63,7 @@ export default function Page() {
                         getCenterList()
                             .then(r => {
                                 setCenterList(r);
-                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                             })
                             .catch(e => console.log(e));
                     })

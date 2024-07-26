@@ -1,7 +1,7 @@
 'use client'
 
 import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { getDateTimeFormat } from '@/app/Global/component/Method';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ export default function ArticleDetail() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                         // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
                         // .then(r => setSearch(r))
                         // .catch(e => console.log

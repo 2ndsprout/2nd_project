@@ -2,7 +2,7 @@
 
 import { getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import { redirect, useParams } from "next/navigation";
@@ -51,7 +51,7 @@ export default function Page() {
                 getProfile()
                     .then(r => {
                         setProfile(r)
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                     })
                     .catch(e => console.log(e));
             else
