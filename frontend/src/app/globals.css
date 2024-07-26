@@ -113,3 +113,12 @@ body {
   height: 35px;
   font-size: 15px
 }
+
+.fc-event {
+  cursor: pointer;
+
+}
+.fc-event:hover {
+  transition: background-color 0.3s;
+  filter: brightness(85%);
+}

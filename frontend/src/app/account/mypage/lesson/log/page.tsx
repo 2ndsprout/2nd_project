@@ -127,22 +127,22 @@ export default function Page() {
                         <label className='text-xl font-bold border-b'><label className='text-xl text-secondary font-bold'>신청</label> 목록</label>
                         <div className="h-[300px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                             {pendingLessons.map((pending, pendingIndex) =>
-                                <Link href={`/account/lesson/${pending.lessonResponseDTO.id}`}>
-                                    <div key={pending.lessonResponseDTO.id} className="w-[1200px] ml-[20px] flex flex-col border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer my-2">
-                                        <div className="flex font-semibold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
-                                            <div className="flex justify-start  items-center text-lg w-4/5">
+                                <div key={pending.lessonResponseDTO.id} className="w-[1200px] ml-[20px] flex flex-col border-gray-500 border-b-[1px] hover:text-primary my-2">
+                                    <div className="flex font-semibold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
+                                        <Link href={`/account/lesson/${pending.lessonResponseDTO.id}`}>
+                                            <div className="flex justify-start  items-center text-lg w-4/5 hover:cursor-pointer hover:text-secondary">
                                                 {pending.lessonResponseDTO.name}
                                             </div>
-                                            <p className="p-1 rounded-lg text-sm border-secondary mr-[40px] bg-secondary text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 승인 대기중</p>
-                                        </div>
-                                        <div className=" mt-2 overflow-hidden justify-between overflow-ellipsis whitespace-nowrap hover:text-secondary flex items-center mb-2 mr-[40px]">
-                                            <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(pending.lessonResponseDTO.startDate)} ~ {getDateFormat(pending.lessonResponseDTO.endDate)}
-                                                <label className="ml-14 text-xs text-gray-400">({getTimeFormat(pending.lessonResponseDTO.startDate)} ~ {getTimeFormat(pending.lessonResponseDTO.endDate)})</label>
-                                            </div>
-                                            <button onClick={() => finalConfirm(pending.lessonResponseDTO.name, '해당 레슨 신청을 취소하시겠습니까?', '신청취소', () => deleteLessonUser(pending.id))} className="btn btn-error text-xs btn-xs"><FontAwesomeIcon icon={faXmark} />신청 취소</button>
-                                        </div>
+                                        </Link>
+                                        <p className="p-1 rounded-lg text-sm border-secondary mr-[40px] bg-secondary text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 승인 대기중</p>
                                     </div>
-                                </Link>
+                                    <div className=" mt-2 overflow-hidden justify-between overflow-ellipsis whitespace-nowrap flex items-center mb-2 mr-[40px]">
+                                        <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(pending.lessonResponseDTO.startDate)} ~ {getDateFormat(pending.lessonResponseDTO.endDate)}
+                                            <label className="ml-14 text-xs text-gray-400">({getTimeFormat(pending.lessonResponseDTO.startDate)} ~ {getTimeFormat(pending.lessonResponseDTO.endDate)})</label>
+                                        </div>
+                                        <button onClick={() => finalConfirm(pending.lessonResponseDTO.name, '해당 레슨 신청을 취소하시겠습니까?', '신청취소', () => deleteLessonUser(pending.id))} className="btn btn-error text-xs btn-xs"><FontAwesomeIcon icon={faXmark} />신청 취소</button>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -151,19 +151,20 @@ export default function Page() {
                             <div className='text-xl font-bold mb-3 border-b'><label className='text-xl text-secondary font-bold'>진행중인 </label> 목록</div>
                             <div className="h-[400px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                                 {appliedLessons?.slice(0, 5).map((applied, appliedIndex) =>
-                                <Link href={`/account/lesson/${applied.lessonResponseDTO.id}`}>
-                                    <div key={applied.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer my-2 ml-[10px]">
+                                    <div key={applied.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
                                         <div className="flex font-bold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
-                                            <div>
-                                                {applied.lessonResponseDTO.name}
-                                            </div>
+                                            <Link href={`/account/lesson/${applied.lessonResponseDTO.id}`}>
+                                                <div className="hover:cursor-pointer hover:text-secondary">
+                                                    {applied.lessonResponseDTO.name}
+                                                </div>
+                                            </Link>
                                             <button onClick={() => finalConfirm(applied.lessonResponseDTO.name, '해당 레슨을 취소하시겠습니까?', '수강중단', () => updateLesson(applied.id, applied.lessonResponseDTO.id, 'CANCELLING'))} className="btn btn-error text-xs mr-[10px] btn-xs"><FontAwesomeIcon icon={faXmark} />수강 중단</button>
                                         </div>
                                         <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(applied.lessonResponseDTO.startDate)} ~ {getDateFormat(applied.lessonResponseDTO.endDate)}
                                             <label className="ml-14 text-xs text-gray-400">({getTimeFormat(applied.lessonResponseDTO.startDate)} ~ {getTimeFormat(applied.lessonResponseDTO.endDate)})</label>
                                         </div>
                                     </div>
-                                </Link>
+
                                 )}
                             </div>
                         </div>
@@ -171,19 +172,19 @@ export default function Page() {
                             <div className='text-xl font-bold mb-3 border-b'><label className='text-xl text-secondary font-bold'>취소 신청 </label> 목록</div>
                             <div className="h-[400px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                                 {cancellingLessons?.slice(0, 5).map((cancelling, cancellingIndex) =>
-                                <Link href={`/account/lesson/${cancelling.lessonResponseDTO.id}`}>
-                                    <div key={cancelling.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer my-2 ml-[10px]">
+                                    <div key={cancelling.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
                                         <div className="flex font-bold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
-                                            <div>
-                                                {cancelling.lessonResponseDTO.name}
-                                            </div>
+                                            <Link href={`/account/lesson/${cancelling.lessonResponseDTO.id}`}>
+                                                <div className="hover:cursor-pointer hover:text-secondary">
+                                                    {cancelling.lessonResponseDTO.name}
+                                                </div>
+                                            </Link>
                                             <span className="p-1 rounded-lg mr-[10px] text-sm border-gray-400 bg-gray-400 text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 취소 대기중</span>
                                         </div>
                                         <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(cancelling.lessonResponseDTO.startDate)} ~ {getDateFormat(cancelling.lessonResponseDTO.endDate)}
                                             <label className="ml-14 text-xs text-gray-400">({getTimeFormat(cancelling.lessonResponseDTO.startDate)} ~ {getTimeFormat(cancelling.lessonResponseDTO.endDate)})</label>
                                         </div>
                                     </div>
-                                </Link>
                                 )}
                             </div>
                         </div>
@@ -191,22 +192,24 @@ export default function Page() {
                             <div className='text-xl font-bold mb-3 border-b'><label className='text-xl text-secondary font-bold'>취소 완료</label> 목록</div>
                             <div className="h-[400px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                                 {cancelledLessons?.slice(0, 5).map((cancelled, cancelledIndex) =>
-                                <Link href={`/account/lesson/${cancelled.lessonResponseDTO.id}`}>
-                                    <div key={cancelled.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer my-2 ml-[10px]">
+                                    <div key={cancelled.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
                                         <div className="flex font-bold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
-                                            <div>
-                                                {cancelled.lessonResponseDTO.name}
-                                            </div>
+                                            <Link href={`/account/lesson/${cancelled.lessonResponseDTO.id}`}>
+                                                <div className=" hover:cursor-pointer hover:text-secondary">
+                                                    {cancelled.lessonResponseDTO.name}
+                                                </div>
+                                            </Link>
+
                                             <span className="p-1 rounded-lg text-sm border-gray-400 bg-gray-400 text-gray-700 text-center cursor-default mr-[10px]"><FontAwesomeIcon icon={faCheckCircle} size="xs" /> 취소 완료</span>
                                         </div>
                                         <div className="mt-1 text-sm text-gray-400"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(cancelled.lessonResponseDTO.startDate)} ~ {getDateFormat(cancelled.lessonResponseDTO.endDate)}
                                             <label className="ml-14 text-xs text-gray-400">({getTimeFormat(cancelled.lessonResponseDTO.startDate)} ~ {getTimeFormat(cancelled.lessonResponseDTO.endDate)})</label>
                                         </div>
                                     </div>
-                                </Link>
                                 )}
                             </div>
                         </div>
+                        <a href="/account/mypage/lesson/create">레슨 생성</a>
                     </div>
                 </div>
             </div>
