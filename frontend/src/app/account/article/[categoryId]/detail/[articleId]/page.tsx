@@ -2,12 +2,17 @@
 
 import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
 import Main from "@/app/Global/layout/MainLayout";
-import { getDateTimeFormat } from '@/app/Global/Method';
+import { getDateTimeFormat } from '@/app/Global/component/Method';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import CommentList from '../../../comment/page';
+
+interface Tag {
+    id: number;
+    name: string;
+}
 
 interface Article {
     categoryId: number;
@@ -24,7 +29,7 @@ interface Article {
     };
     urlList: string[] | null;
     topActive: boolean;
-    tagResponseDTOList: any[];
+    tagResponseDTOList: Tag[];
 }
 
 export default function ArticleDetail() {
@@ -40,17 +45,6 @@ export default function ArticleDetail() {
     const router = useRouter();
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
-
-    const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 서버 배포시 수정예정
-
-    const renderSafeHTML = (content: string) => {
-        // 이미지 URL을 절대 경로로 변환
-        const processedContent = content.replace(/src="\/api/g, `src="${BACKEND_URL}/api`);
-
-        const sanitizedContent = DOMPurify.sanitize(processedContent);
-
-        return { __html: sanitizedContent };
-    };
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -148,6 +142,13 @@ export default function ArticleDetail() {
         return <div className="flex items-center justify-center h-screen text-gray-400">게시물을 불러오는 중입니다...</div>;
     }
 
+    const renderSafeHTML = (content: string) => {
+
+        const sanitizedContent = DOMPurify.sanitize(content);
+
+        return { __html: sanitizedContent };
+    };
+
     const content = (
         <div className="flex w-full">
             <aside className="w-1/6 p-6 flex flex-col items-center">
@@ -156,11 +157,21 @@ export default function ArticleDetail() {
                     <div className="mt-2 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
                 </div>
             </aside>
-            <div className="w-4/6 p-10">
+            <div className="w-4/6 p-10 flex flex-col">
                 <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 min-h-[600px] p-6 rounded-lg shadow-lg">
-                    <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                <div className="bg-gray-800 flex flex-col min-h-[600px] p-6 rounded-lg shadow-lg">
+                    <div className="flex-grow" dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                    <div className="mt-4">
+                    {/* <h3 className="text-lg font-semibold">태그:</h3> */}
+                    <ul className="flex flex-wrap">
+                        {article.tagResponseDTOList.map(tag => (
+                            <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 inline-block">
+                                #{tag.name}
+                            </li>
+                        ))}
+                    </ul>
+                    </div>
                 </div>
                 <div className="mt-6">
                     <CommentList articleId={Number(articleId)} />

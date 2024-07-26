@@ -1,10 +1,10 @@
 'use client'
 
 import { deleteCategory, getArticleList, getCategoryList, getProfile, getUser, postCategory, updateCategory } from '@/app/API/UserAPI';
-import CategoryList from "@/app/Global/CategoryList";
+import CategoryList from "@/app/Global/component/CategoryList";
 import Main from "@/app/Global/layout/MainLayout";
 import Link from 'next/link';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import React, { useEffect, useState } from 'react';
 
 interface Category {
@@ -24,6 +24,8 @@ const CreateCategory: React.FC = () => {
   const [sidebarCategories, setSidebarCategories] = useState<Category[]>([]);
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+  const router = useRouter();
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
@@ -32,6 +34,10 @@ const CreateCategory: React.FC = () => {
         getUser()
             .then(r => {
                 setUser(r);
+                if (r.role !== 'ADMIN') {
+                  setError('관리자 권한이 필요합니다.');
+                  setRedirectCountdown(3);
+                }
             })
             .catch(e => console.log(e));
         if (PROFILE_ID)
@@ -45,11 +51,25 @@ const CreateCategory: React.FC = () => {
     }
     else
         redirect('/account/login');
-}, [ACCESS_TOKEN, PROFILE_ID]);
+  }, [ACCESS_TOKEN, PROFILE_ID]);
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (redirectCountdown !== null && redirectCountdown > 0) {
+      timer = setTimeout(() => {
+        setRedirectCountdown(redirectCountdown - 1);
+      }, 1000);
+    } else if (redirectCountdown === 0) {
+      router.push('/');
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [redirectCountdown, router]);
 
   const fetchCategories = async () => {
     try {
@@ -131,11 +151,25 @@ const CreateCategory: React.FC = () => {
     setCategoryToDelete(null);
   };
 
+  if (error) {
+    return (
+      <Main user={user} profile={profile}>
+        <div className="flex justify-center items-center h-screen">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">접근 불가!</strong>
+            <span className="block sm:inline"> {error}</span>
+            <p>{redirectCountdown}초 후 메인 페이지로 이동합니다.</p>
+          </div>
+        </div>
+      </Main>
+    );
+  }
+
   return (
     <Main user={user} profile={profile}>
     <div className="bg-black w-full min-h-screen text-white flex">
       <aside className="w-1/6 p-6 bg-gray-800">
-      <CategoryList managementMode={true} categories={sidebarCategories} />
+      <CategoryList managementMode={true} categories={sidebarCategories} userRole={user?.role} />
       </aside>
       <div className="flex-1 max-w-7xl p-10">
         <h1 className="text-2xl font-bold mb-4">카테고리 관리</h1>

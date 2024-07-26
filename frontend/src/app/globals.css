@@ -111,5 +111,10 @@ body {
 
 .fc .fc-header-toolbar {
   height: 35px;
+<<<<<<< HEAD
   font-size: 15px
 }
+=======
+  font-size: 15px /* 원하는 높이로 조정 */
+}
+>>>>>>> 0ababf7a640df6ec1f307b4cf5ab66831f5a8137

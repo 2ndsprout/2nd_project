@@ -8,7 +8,12 @@ import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { EventClickArg } from '@fullcalendar/core';
 import { useRouter } from 'next/navigation';
 
+<<<<<<< HEAD:frontend/src/app/Global/Calendar.tsx
 import '../globals.css';
+=======
+import '../../globals.css';
+import { useRouter } from 'next/navigation';
+>>>>>>> 0ababf7a640df6ec1f307b4cf5ab66831f5a8137:frontend/src/app/Global/component/Calendar.tsx
 
 interface LessonType {
     id: number;

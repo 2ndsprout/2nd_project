@@ -1,14 +1,18 @@
 'use client'
 
 import '@fortawesome/fontawesome-svg-core/styles.css'
-import { getProfile, getProfileList, getUser, postProfile, saveImage, updateUser, updateUserPassword } from "@/app/API/UserAPI";
-import DropDown, { Direcion } from "@/app/Global/DropDown";
-import Modal from "@/app/Global/Modal";
+import { getProfile, getProfileList, getUser, postProfile, saveProfileImage, updateUser, updateUserPassword } from "@/app/API/UserAPI";
+import DropDown, { Direcion } from "@/app/Global/component/DropDown";
+import Modal from "@/app/Global/component/Modal";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faUserPlus, faBars, faEnvelope, faLock, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
-import { Check, checkInput } from "@/app/Global/Method";
+import { Check, checkInput } from "@/app/Global/component/Method";
+import AlertModal from '@/app/Global/component/AlertModal';
+import ConfirmModal from '@/app/Global/component/ConfirmModal';
+import useConfirm from '@/app/Global/hook/useConfirm';
+import useAlert from '@/app/Global/hook/useAlert';
 
 export default function Page() {
     const [user, setUser] = useState(null as any);
@@ -22,9 +26,12 @@ export default function Page() {
     const [error, setError] = useState('');
     const [canShow, setCanShow] = useState(false);
     const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [emailConfirm, setEmailConfirm] = useState(false);
-    const [passwordConfirm, setPasswordConfirm] = useState(false);
+    const [oldPasswordError, setOldPasswordError] = useState('');
+    const [newPassword1Error, setNewPassword1Error] = useState('');
+    const [newPassword2Error, setNewPassword2Error] = useState('');
+    const [first, setFirst] = useState(true);
+    const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const { alertState, showAlert, closeAlert } = useAlert();
 
 
     useEffect(() => {
@@ -46,13 +53,14 @@ export default function Page() {
         return email == '' || email !== user?.email;
     }
 
+
     function EmailSubmit() {
         const updateEmail = (document.getElementById('email') as HTMLInputElement).value;
 
         // 이메일 형식 검사를 수행합니다.
         if (!Check('^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$', updateEmail)) {
             setEmailError('이메일 형식이 맞지 않습니다.');
-            setEmailConfirm(false);
+            closeConfirm();
             return;
         }
 
@@ -61,7 +69,7 @@ export default function Page() {
                 // 이메일 변경이 성공하면 사용자 정보를 업데이트합니다.
                 setUser(r);
                 setEmail(r.email);
-                setEmailConfirm(false);
+                closeConfirm();
                 openModal(-2);
             })
             .catch(error => {
@@ -70,11 +78,11 @@ export default function Page() {
                 switch (error.response.data) {
                     case 'email':
                         setEmailError('이메일 중복');
-                        setEmailConfirm(false);
+                        closeConfirm();
                         break;
                     default:
                         console.log(error);
-                        setEmailConfirm(false);
+                        closeConfirm();
                 }
             });
     }
@@ -83,10 +91,10 @@ export default function Page() {
         setISModalOpen(type);
     }
 
-    function Change(file: any) {
+    function Change(file: File) {
         const formData = new FormData();
         formData.append('file', file);
-        saveImage(formData)
+        saveProfileImage(formData)
             .then(r => setUrl(r?.url))
             .catch(e => console.log(e));
     }
@@ -98,27 +106,27 @@ export default function Page() {
 
         // 새 비밀번호가 일치하는지 확인합니다.
         if (new1 !== new2) {
-            setPasswordError('변경할 비밀번호가 일치하지 않습니다.');
-            setPasswordConfirm(false);
+            setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.');
+            closeConfirm();
             return;
         }
 
         // 새 비밀번호가 올바른 형식인지 확인합니다.
         if (!Check('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', new1)) {
-            setPasswordError('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한 개씩 들어가 있어야 합니다.');
-            setPasswordConfirm(false);
+            setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한 개씩 들어가 있어야 합니다.');
+            closeConfirm();
             return;
         }
         if (!Check('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', new2)) {
-            setPasswordError('변경할 비밀번호가 일치하지 않습니다.');
-            setPasswordConfirm(false);
+            setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.');
+            closeConfirm();
             return;
         }
         updateUserPassword({ name: user?.username, email: email, password: old, newPassword1: new1, newPassword2: new2 })
             .then(r => {
                 // 비밀번호 변경이 성공하면 사용자 정보를 업데이트합니다.
                 setUser(r);
-                setPasswordConfirm(false);
+                closeConfirm();
                 openModal(-2);
             })
             .catch(error => {
@@ -126,13 +134,13 @@ export default function Page() {
                 console.log(error.response.data);
                 switch (error.response.data) {
                     case "not match":
-                        setPasswordError('현재 비밀번호가 일치하지 않습니다.');
-                        setPasswordConfirm(false);
+                        setNewPassword2Error('현재 비밀번호가 일치하지 않습니다.');
+                        closeConfirm();
 
                         break;
                     default:
                         console.log(error);
-                        setPasswordConfirm(false);
+                        closeConfirm();
                 }
             });
 
@@ -143,14 +151,12 @@ export default function Page() {
         localStorage.setItem('PROFILE_ID', id.toString());
         getProfile()
             .then(() => {
+                closeConfirm();
                 console.log("profile selected!");
-                // if (user.username === 'admin') {
-                //     window.location.href = '/account/admin';
-                // } else {
                 window.location.href = '/';
-                // }
             })
             .catch(e => console.log(e));
+            closeConfirm();
     }
 
 
@@ -158,26 +164,27 @@ export default function Page() {
         if (profileList.length < 6) {
             postProfile({ name: name, url: url })
                 .then(() => window.location.href = '/account/profile')
-                .catch(e => console.log(e));
+                .catch(e => { console.log(e), closeConfirm(), showAlert('이미 있는 프로필 이름입니다.')});
+
         } else {
-            alert('프로필은 최대 6개까지 등록 가능합니다.');
-            window.location.href = '/account/profile';
+            closeConfirm();
+            showAlert('프로필은 최대 6개까지 생성 가능합니다.');
         }
     }
 
-    function handleLogout(e: React.MouseEvent<HTMLButtonElement>) {
-        e.preventDefault();
+    function handleLogout() {
         localStorage.clear();
         window.location.reload();
     }
 
-    const confirmEmail = () => {
-        setEmailConfirm(true);
-    };
-
-    const confirmPassword = () => {
-        setEmailConfirm(true);
-    };
+    const passwordErrors = () => {
+        if (oldPasswordError !== '')
+            return oldPasswordError;
+        if (newPassword1Error !== '' && oldPasswordError === '')
+            return newPassword1Error;
+        if (newPassword2Error !== '' && newPassword1Error === '' && oldPasswordError === '')
+            return newPassword2Error;
+    }
 
     return (
         <>
@@ -194,7 +201,14 @@ export default function Page() {
                             <button className="mt-[5px] btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(2)}>
                                 <FontAwesomeIcon icon={faUserPlus} size="xs" />프로필 추가
                             </button>
-                            <button onClick={user ? handleLogout : undefined} className="mt-[5px] btn btn-active btn-secondary text-lg text-black">
+                            <button
+                                onClick={() => {
+                                    if (user) {
+                                        finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', () => handleLogout());
+                                    }
+                                }}
+                                className="mt-[5px] btn btn-active btn-secondary text-lg text-black"
+                            >
                                 <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" />
                                 {user ? '로그아웃' : ''}
                             </button>
@@ -211,7 +225,7 @@ export default function Page() {
                     {profileList?.map((profile, index) => (
                         <div key={index} className="text-center mx-auto my-3 w-1/3">
                             <div className="flex justify-center">
-                                <button onClick={() => Select(profile.id)}>
+                                <button onClick={() => finalConfirm(profile.name, '해당 프로필로 로그인 하시겠습니까?', '로그인', () => Select(profile.id))}>
                                     <img src={profile?.url ? profile.url : '/user.png'} className="w-56 h-56 mb-2 mt-2 rounded-full" alt="프로필 이미지" />
                                     <span className='font-bold text-xl'>{profile?.name}</span>
                                 </button>
@@ -231,81 +245,58 @@ export default function Page() {
                         onChange={e => setEmail(e.target.value)}
                         onFocus={e => checkInput(e, '^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setEmailError(''), () => setEmailError('이메일 형식이 맞지 않습니다.'))}
                         onKeyUp={e => checkInput(e, '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', () => setEmailError(''), () => setEmailError('이메일 형식이 맞지 않습니다.'))} />
-                    <button id='submit' className='w-[300px] btn btn-xl btn-accent mt-6 text-black' disabled={!IsDisabledEamil() || !!emailError} onClick={confirmEmail}>이메일 변경</button>
-                    <p className='text-center w-[400px] mt-3 text-xs font-bold text-red-500'>{passwordError}</p>
+                    <button id='submit' className='w-[300px] btn btn-xl btn-accent mt-6 text-black' disabled={!IsDisabledEamil() || !!emailError} onClick={() => finalConfirm(name, '이메일을 변경 하시겠습니까?', '변경', EmailSubmit)}>이메일 변경</button>
+                    <p className='text-center w-[400px] mt-3 text-xs font-bold text-red-500'>{passwordErrors()}</p>
                     <FontAwesomeIcon icon={faLock} className="text-gray-500 mr-2" />
 
                     <input id="old_password" type={canShow ? 'text' : 'password'} className='w-[300px] mt-1 input input-bordered input-md text-black' placeholder='현재 비밀번호'
                         onKeyDown={e => { if (e.key == 'Enter') document.getElementById('new_password1')?.focus() }}
-                        onFocus={() => setPasswordError('')} />
+                        onFocus={e => { if ((e.target as HTMLInputElement).value == '') setOldPasswordError('현재 비밀번호를 입력해주세요.'); else setOldPasswordError('') }}
+                        onKeyUp={e => { if ((e.target as HTMLInputElement).value == '') setOldPasswordError('현재 비밀번호를 입력해주세요.'); else setOldPasswordError('') }}
+                        onChange={e => { if (first) setFirst(false); if ((e.target as HTMLInputElement).value == '') setOldPasswordError('현재 비밀번호를 입력해주세요.'); else setOldPasswordError('') }}
+                    />
 
                     <input id="new_password1" type={canShow ? 'text' : 'password'} className='w-[300px] mt-1 input input-bordered input-md text-black' placeholder='변경 할 비밀번호'
                         onKeyDown={e => { if (e.key == 'Enter') document.getElementById('new_password2')?.focus() }}
-                        onFocus={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setPasswordError(''), () => setPasswordError('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))}
-                        onKeyUp={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setPasswordError(''), () => setPasswordError('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))}
-                        onChange={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setPasswordError(''), () => setPasswordError('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))} />
+                        onFocus={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))}
+                        onKeyUp={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))}
+                        onChange={e => { if (first) setFirst(false); checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.')) }} />
 
                     <input id="new_password2" type={canShow ? 'text' : 'password'} className='w-[300px] mt-1 input input-bordered input-md text-black' placeholder='비밀번호 확인'
                         onKeyDown={e => { if (e.key == 'Enter') document.getElementById('password_submit')?.click() }}
                         onFocus={e => {
                             if ((e.target as HTMLInputElement).value !== (document.getElementById('new_password1') as HTMLInputElement).value)
-                                setPasswordError('변경할 비밀번호가 일치하지 않습니다.'); else setPasswordError('')
+                                setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.'); else setNewPassword2Error('')
                         }}
                         onChange={e => {
+                            if (first) setFirst(false);
                             if ((e.target as HTMLInputElement).value !== (document.getElementById('new_password1') as HTMLInputElement).value)
-                                setPasswordError('변경할 비밀번호가 일치하지 않습니다.'); else setPasswordError('')
+                                setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.'); else setNewPassword2Error('')
                         }} />
                     <div className="flex mt-2">
                         <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
                         <input className="ml-5" type='checkbox' onClick={() => setCanShow(!canShow)} />
                     </div>
-                    <button className='w-[300px] btn btn-xl btn-accent mt-6 text-black' disabled={!!passwordError} onClick={confirmPassword}>비밀번호 변경</button>
+                    <button className='w-[300px] btn btn-xl btn-accent mt-6 text-black' disabled={first || !!passwordErrors()} onClick={() => finalConfirm(user.username, '비밀번호를 변경 하시겠습니까?', '변경', ChangePassword)}>비밀번호 변경</button>
                 </div>
             </Modal>
             <Modal open={isModalOpen === 2} onClose={() => setISModalOpen(-2)} className='modal-box w-[400px] h-[400px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
                 <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => openModal(-1)}> ✕ </button>
                 <div className="relative w-[128px] h-auto flex justify-center items-center mb-10">
                     <div className="w-[128px] h-[128px] rounded-full opacity-30 absolute hover:bg-gray-500" onClick={() => document.getElementById('file')?.click()}></div>
-                    <img src='/user.png' defaultValue={url} alt='main Image' className='w-[128px] h-[128px] rounded-full' />
-                    <input id='file' hidden type='file' onChange={e => Change(e.target.files?.[0])} />
+                    <img src={url ? url : '/user.png'} alt='Profile Image' className='w-[128px] h-[128px] rounded-full' />
+                    <input id='file' hidden type='file' onChange={e => e.target.files && Change(e.target.files?.[0])} />
                 </div>
                 <div className="mt-0 flex flex-col items-center">
                     <label className='text-xs font-bold text-red-500 pb-5'>{error}</label>
                     <input id='name' type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
                         onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
                         onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
-                    <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => Regist()}>프로필 등록</button>
+                    <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => finalConfirm(name, '프로필을 생성합니다.', '생성', Regist)}>프로필 등록</button>
                 </div>
             </Modal>
-            {
-                emailConfirm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-gray-800 p-5 rounded shadow-lg">
-                            <div className="text-lg font-semibold text-white">이메일 변경</div>
-                            <p className="text-gray-400">이메일을 변경 하시겠습니까?</p>
-                            <div className="mt-4 flex justify-end">
-                                <button onClick={() => setEmailConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
-                                <button onClick={EmailSubmit} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">변경</button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            {
-                passwordConfirm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-gray-800 p-5 rounded shadow-lg">
-                            <div className="text-lg font-semibold text-white">비밀번호 변경</div>
-                            <p className="text-gray-400">비밀번호를 변경 하시겠습니까?</p>
-                            <div className="mt-4 flex justify-end">
-                                <button onClick={() => setPasswordConfirm(false)} className="mr-2 p-2 bg-gray-600 rounded text-white hover:bg-gray-500">취소</button>
-                                <button onClick={ChangePassword} className="p-2 bg-yellow-600 rounded text-white hover:bg-yellow-500">변경</button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-
+            <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert}/>
         </>
     );
 }

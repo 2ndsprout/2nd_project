@@ -34,4 +34,9 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
     public List<Lesson> findByProfile(Long profileId) {
         return jpaQueryFactory.selectFrom(qLesson).where(qLesson.profile.id.eq(profileId)).fetch();
     }
+
+    @Override
+    public List<Lesson> findByProfileAndCenter(Long profileId, Long cultureCenterId) {
+        return jpaQueryFactory.selectFrom(qLesson).where(qLesson.cultureCenter.id.eq(cultureCenterId).and(qLesson.profile.id.eq(profileId)), qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc()).fetch();
+    }
 }

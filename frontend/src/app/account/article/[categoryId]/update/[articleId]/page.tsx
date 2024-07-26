@@ -1,15 +1,21 @@
 'use client';
 
 import { getArticle, getProfile, getUser, saveImage, saveImageList, updateArticle } from '@/app/API/UserAPI';
-import CategoryList from '@/app/Global/CategoryList';
+import CategoryList from '@/app/Global/component/CategoryList';
 import Main from "@/app/Global/layout/MainLayout";
-import { KeyDownCheck, Move } from '@/app/Global/Method';
-import QuillNoSSRWrapper from '@/app/Global/QuillNoSSRWrapper';
+import { KeyDownCheck, Move } from '@/app/Global/component/Method';
+import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
+import TagInput from '../../../tag/page';
 import DOMPurify from 'dompurify';
-import { redirect, useParams } from 'next/navigation';
+import { redirect, useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+
+interface Tag {
+    id: number;
+    name: string;
+}
 
 export default function EditPage() {
     const { categoryId, articleId } = useParams();
@@ -20,13 +26,13 @@ export default function EditPage() {
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
     const [showEditConfirm, setShowEditConfirm] = useState(false);
-    const [categories, setCategories] = useState<any[]>([]);
-    const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
-    const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const [tags, setTags] = useState<Tag[]>([]);
+    const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+    const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
+    const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
-    // const tagId = null; // 예시로 null을 사용, 실제로는 관련 state에서 가져와야 함
-    // const tagIdArray = tagId ? [tagId] : []; // null이나 undefined이면 빈 배열로 설정
-    const tagIdArray: number[] = [];
+    const router = useRouter();
 
     const BACKEND_URL = 'http://localhost:8080'; // 로컬 백엔드 서버 URL, 배포 시 변경 필요
 
@@ -48,6 +54,11 @@ export default function EditPage() {
                 .then(article => {
                     setTitle(article.title);
                     setContent(processContent(article.content));
+                    setTags(article.tagResponseDTOList.map((tag: any) => ({
+                        id: tag.id,
+                        name: tag.name
+                    })));
+                    setUploadedImages(article.urlList || []);
                 })
                 .catch(e => console.log(e));
         }
@@ -79,8 +90,10 @@ export default function EditPage() {
                 if (result && result.url) {
                     const editor = (quillInstance?.current as any).getEditor();
                     const range = editor.getSelection();
-                    editor.insertEmbed(range.index, 'image', `${BACKEND_URL}${result.url}`);
+                    const imageUrl = `${BACKEND_URL}${result.url}`;
+                    editor.insertEmbed(range.index, 'image', imageUrl);
                     editor.setSelection(range.index + 1);
+                    setUploadedImages(prev => [...prev, imageUrl]);
                 } else {
                     throw new Error('Invalid image URL received');
                 }
@@ -134,14 +147,18 @@ export default function EditPage() {
             title,
             categoryId: Number(categoryId),
             content: sanitizedContent,
-            tagId: tagIdArray,
-            topActive: false
+            tagName: tags.map(tag => tag.name),
+            articleTagId: deletedTagIds,
+            topActive: false,
+            images: uploadedImages
         };
+
+        console.log('Updating article with data:', requestData);
 
         updateArticle(requestData)
             .then(() => {
                 console.log("게시물 수정 완료");
-                window.location.href = `/account/article/${categoryId}/detail/${articleId}`;
+                router.push(`/account/article/${categoryId}/detail/${articleId}`);
             })
             .catch((error) => {
                 console.error('게시물 수정 중 오류:', error);
@@ -181,15 +198,16 @@ export default function EditPage() {
                         modules={modules}
                         formats={formats}
                         theme="snow"
-                        className='w-full text-black'
+                        className='w-full text-black overflow-auto'
                         style={{ minHeight: '500px', background: 'white' }}
                         placeholder="내용을 입력해주세요."
                     />
+                    <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
                 </div>
                 <div className="flex justify-end gap-4 mt-6">
                     <button
                         className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
-                        onClick={() => window.location.href = `/account/article/${categoryId}/detail/${articleId}`}
+                        onClick={() => router.push(`/account/article/${categoryId}/detail/${articleId}`)}
                     >
                         취소
                     </button>

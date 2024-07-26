@@ -4,9 +4,9 @@ import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getArticleList, getCategoryList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
 
-import Calendar from "./Global/Calendar";
-import Slider from "./Global/Slider";
-import Main from "./Global/layout/MainLayout";
+import Calendar from "./Global/component/Calendar";
+import Slider from "./Global/component/Slider";
+import Main from "./Global/layout/mainLayout";
 
 
 export default function Page() {
@@ -146,7 +146,7 @@ export default function Page() {
         {categories?.slice(0, 3).map((category) => (
           <div key={category.id} className="flex flex-col">
             <label className="text-start text-secondary font-bold text-xl pb-3 hover:text-primary hover:cursor-pointer">{category?.name}</label>
-            <table>
+            <table className="table">
               <thead>
                 <tr className="h-[40px] border-b-2 border-gray-500">
                   <th className="w-[100px] text-primary">번호</th>

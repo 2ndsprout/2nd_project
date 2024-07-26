@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "type": "chrome",   
+            "type": "chrome",
             "name": "main",
             "request": "launch",
             "url": "http://localhost:3000",

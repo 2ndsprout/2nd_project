@@ -294,6 +294,8 @@ interface PostArticleProps {
     title: string;
     content: string;
     categoryId: number;
+    tagName: string[];
+    topActive: boolean;
 }
 
 export const postArticle = async (data: PostArticleProps) => {
@@ -307,7 +309,7 @@ interface UpdateArticleProps {
     title: string;
     content: string; 
     topActive?: boolean; 
-    tagId?: number[];
+    articleTagId?: number[];
 }
 
 export const updateArticle = async (data: UpdateArticleProps) => {
@@ -323,6 +325,33 @@ export const getTopArticleList = async (data: number) => {
 export const deleteArticle = async (data: number) => {
     await UserApi.delete('/api/article', {headers: {'ArticleId': data}});
 }
+
+interface SearchArticleParams {
+    page: number;
+    keyword: string;
+    sort: number;
+    categoryId?: number;
+}
+
+export const searchArticles = async ({ page, keyword, sort, categoryId }: SearchArticleParams) => {
+    try {
+        const headers: { [key: string]: string } = {
+            'Page': page.toString(),
+            'Keyword': encodeURIComponent(keyword),
+            'Sort': sort.toString()
+        };
+
+        if (categoryId !== undefined) {
+            headers['CategoryId'] = categoryId.toString();
+        }
+
+        const response = await UserApi.get('/api/article/search', { headers });
+        return response.data;
+    } catch (error) {
+        console.error('Error in searchArticles:', error);
+        throw error;
+    }
+};
 
 
 // Tag
@@ -342,9 +371,9 @@ export const getTag = async (data: number) => {
     return response.data;
 }
 
-export const deleteTag = async (data: number) => {
-    await UserApi.delete('/api/tag', {headers: {'tagId': data}});
-}
+// export const deleteTag = async (data: number) => {
+//     await UserApi.delete('/api/tag', {headers: {'tagId': data}});
+// }
 // Love
 interface LoveResponseDTO {
     isLoved: boolean;
@@ -421,8 +450,6 @@ interface LessonProps {
     content: string,
     startDate: Date,
     endDate: Date,
-    startTime: Date,
-    endTime: Date
 }
 
 export const postLesson = async (data: LessonProps) => {
@@ -505,8 +532,14 @@ export const getCommentList = async ({ articleId, page }: GetCommentListProps) =
 // Lesson Request
 
 interface LessonRequestProps {
+    
     lessonId: number,
     type: number
+}
+
+export const updateLessonRequest = async (data: LessonRequestProps) => {
+    const response = await UserApi.put('/api/lesson/user', data);
+    return response.data;
 }
 
 export const postLessonRequest = async (data: LessonRequestProps) => {
@@ -528,3 +561,4 @@ export const getLessonRequestListByStaff = async () => {
     const response = await UserApi.get('/api/lesson/staff/list');
     return response.data;
 }
+

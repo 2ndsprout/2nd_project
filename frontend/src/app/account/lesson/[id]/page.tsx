@@ -1,12 +1,12 @@
 'use client';
 
 import { getProfile, getUser, getLessonList, getCenter, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
-import Calendar from "@/app/Global/Calendar";
-import Main from "@/app/Global/layout/MainLayout";
-import { getDateFormat, getDateTimeFormat, getTimeFormat } from "@/app/Global/Method";
+import Main from "@/app/Global/layout/mainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Calendar from "@/app/Global/component/Calendar";
+import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
+import { number } from "prop-types";
 
 interface LessonType {
     id: number;

@@ -2,14 +2,12 @@
 
 import { getCenterList, getProfile, getUser } from "@/app/API/UserAPI";
 import CenterSlider from "@/app/Global/CenterSlider";
-import Main from "@/app/Global/layout/MainLayout";
-import { getDateTimeFormat, getTimeFormat } from "@/app/Global/Method";
-import Slider from "@/app/Global/Slider";
+import Main from "@/app/Global/layout/mainLayout";
+
 import { redirect, useRouter } from "next/navigation";
-import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react";
-import { Swiper } from "swiper/types";
 import Link from "next/link";
+import { getTimeFormat } from "@/app/Global/component/Method";
 
 
 export default function Page() {

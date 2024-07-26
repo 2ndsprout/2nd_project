@@ -8,7 +8,6 @@ import com.second_team.apt_project.enums.Sorts;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
-import com.second_team.apt_project.repositories.ChatMessageRepository;
 import com.second_team.apt_project.securities.CustomUserDetails;
 import com.second_team.apt_project.securities.jwt.JwtTokenProvider;
 import com.second_team.apt_project.services.module.*;
@@ -492,8 +491,10 @@ public class MultiService {
             Optional<FileSystem> _fileSystem = fileSystemService.get(value);
             if (_fileSystem.isPresent()) {
                 File file = new File(path + _fileSystem.get().getV());
-                if (file.getParentFile().list().length == 1) this.deleteFolder(file.getParentFile());
-                else file.delete();
+                if (file.exists()) {
+                    if (file.getParentFile().list().length == 0) this.deleteFolder(file.getParentFile());
+                    else file.delete();
+                }
                 fileSystemService.delete(_fileSystem.get());
             }
             multiKeyService.delete(_multiKey.get());
@@ -1467,6 +1468,26 @@ public class MultiService {
         this.lessonService.delete(lesson);
     }
 
+    @Transactional
+    public List<LessonResponseDTO> getLessonStaff(String username, Long profileId, Long centerId) {
+        SiteUser user = userService.get(username);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        CultureCenter cultureCenter = cultureCenterService.findById(centerId);
+        if (cultureCenter == null)
+            throw new DataNotFoundException("센터 객체 없음");
+        if (!cultureCenter.getApt().equals(user.getApt()) || user.getRole() == UserRole.USER)
+            throw new IllegalArgumentException("권한 없음");
+        List<Lesson> lessonList = lessonService.findByProfileAndCenter(profile.getId(), cultureCenter.getId());
+        List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
+        for (Lesson lesson : lessonList){
+            lessonResponseDTOList.add(this.lessonResponseDTO(lesson));
+        }
+        return lessonResponseDTOList;
+    }
+
+
+
 
     /**
      * LessonUser
@@ -1703,4 +1724,6 @@ public class MultiService {
             chatRoomService.delete(chatRoom);
 
     }
+
+
 }

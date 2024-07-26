@@ -4,17 +4,22 @@ import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import { deleteProfile, getProfile, getUser, saveImage, saveProfileImage, updateProfile } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
-import { checkInput } from "@/app/Global/Method";
+import { checkInput } from "@/app/Global/component/Method";
+import ConfirmModal from "@/app/Global/component/ConfirmModal";
+import AlertModal from "@/app/Global/component/AlertModal";
+import useConfirm from "@/app/Global/hook/useConfirm";
+import useAlert from "@/app/Global/hook/useAlert";
 
 export default function Page() {
-  const [user, setUser] = useState(null as any);
-  const [profile, setProfile] = useState(null as any);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [url, setUrl] = useState('');
   const [name, setName] = useState('');
-  const [profileId, setProfileId] = useState<number | null>(null);
   const [error, setError] = useState('');
-  const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
-  const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+  const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+  const { alertState, showAlert, closeAlert } = useAlert();
+  const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
+  const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
@@ -27,7 +32,6 @@ export default function Page() {
         getProfile()
           .then(r => {
             setProfile(r);
-            setProfileId(parseInt(PROFILE_ID));
             setName(r.name);
             setUrl(r.url);
           })
@@ -43,39 +47,40 @@ export default function Page() {
   function Change(file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    saveImage(formData)
+    saveProfileImage(formData)
       .then(r => setUrl(r?.url))
       .catch(e => console.log(e));
   }
 
   function update() {
-    if (confirm('프로필을 수정하시겠습니까?')) {
-      if (profileId !== null) { // Ensure profileId is not null
-        updateProfile({ id: profileId, name: name, url: url })
-          .then(() => {
-            window.location.href = '/account/mypage';
-          })
-          .catch(e => {
-            setError('프로필 업데이트 중 오류가 발생했습니다.');
-            console.log(e);
-          });
-      } else {
-        setError('프로필 ID가 설정되지 않았습니다.');
-      }
+    if (PROFILE_ID !== null) { // Ensure profileId is not null
+      updateProfile({ id: parseInt(PROFILE_ID), name: name, url: url })
+        .then(() => {
+          closeConfirm();
+          showAlert('프로필 수정이 완료되었습니다.', '/account/mypage');
+        })
+        .catch(e => {
+          closeConfirm();
+          showAlert('프로필 수정 중 오류가 발생했습니다.');
+          console.log(e);
+        });
+    } else {
+      closeConfirm();
+      showAlert('프로필 ID가 존재하지 않습니다.');
     }
   }
 
+
   async function deleteProfiles() {
-    if (confirm('정말로 삭제하시겠습니까?')) {
-      try {
-        await deleteProfile(); // 비동기로 API 호출
-        alert('삭제되었습니다.');
-        window.location.href = '/account/profile';
-        // 이후 로그아웃 처리나 페이지 리다이렉션 추가 가능
-      } catch (error) {
-        console.error('탈퇴 처리 중 오류 발생:', error);
-        alert('탈퇴 처리 중 오류가 발생했습니다.');
-      }
+    try {
+      await deleteProfile();
+      closeConfirm();; // 비동기 함수 호출
+      showAlert('프로필 삭제가 완료되었습니다.', '/account/profile');
+
+    } catch (error) {
+      closeConfirm();;
+      console.error('탈퇴 처리 중 오류 발생:', error);
+      showAlert('프로필 삭제중 오류가 발생했습니다.');
     }
   }
 
@@ -83,7 +88,7 @@ export default function Page() {
     <Profile user={user} profile={profile}>
       <div className='flex flex-col'>
         <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>회원정보</label> 변경</label>
-        <div className="mt-9 w-[1300px] border-2 h-[600px] overflow-y-scroll rounded-lg">
+        <div className="mt-9 w-[1300px] border-2 h-[600px] rounded-lg">
           <div className="py-5 px-5">
             <div className="relative w-full h-auto flex justify-center items-center mb-10">
               <div className="w-[256px] h-[256px] rounded-full opacity-30 absolute hover:bg-gray-500" onClick={() => document.getElementById('file')?.click()}></div>
@@ -95,10 +100,10 @@ export default function Page() {
               <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
                 onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
                 onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
-              <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => update()}>프로필 수정</button>
+              <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => finalConfirm(profile.name, '프로필을 수정하시겠습니까?', '수정', update)}>프로필 수정</button>
               <button
-                onClick={deleteProfiles}
-                className="text-xs  text-red-500 hover:underline hover:font-bold mt-20"
+                onClick={() => finalConfirm(profile.name, '프로필을 삭제하시겠습니까?', '삭제', deleteProfiles)}
+                className="text-xs text-red-500 hover:underline hover:font-bold mt-20"
               >
                 프로필 삭제
               </button>
@@ -106,6 +111,8 @@ export default function Page() {
           </div>
         </div>
       </div>
+      <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+      <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert}/>
     </Profile>
   );
 }
