@@ -1474,13 +1474,11 @@ public class MultiService {
             throw new IllegalArgumentException("권한 없음");
         List<Lesson> lessonList = lessonService.findByProfileAndCenter(profile.getId(), cultureCenter.getId());
         List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
-        for (Lesson lesson : lessonList){
+        for (Lesson lesson : lessonList) {
             lessonResponseDTOList.add(this.lessonResponseDTO(lesson));
         }
         return lessonResponseDTOList;
     }
-
-
 
 
     /**
@@ -1497,7 +1495,10 @@ public class MultiService {
             throw new DataNotFoundException("레슨 객체 없음");
         if (!user.getApt().equals(lesson.getCultureCenter().getApt()))
             throw new IllegalArgumentException("같은 아파트 아님");
-        return lessonUserResponseDTO(lessonUserService.save(lesson, profile, type));
+        LessonUser lessonUser = lessonUserService.findByLessonAndProfile(lesson.getId(), profile.getId());
+        if (lessonUser == null)
+            lessonUser = lessonUserService.save(lesson, profile, type);
+        return this.lessonUserResponseDTO(lessonUser);
     }
 
     private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {
