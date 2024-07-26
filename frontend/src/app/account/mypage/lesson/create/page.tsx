@@ -13,19 +13,11 @@ import dynamic from "next/dynamic";
 import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
 import { Dayjs } from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus} from "@fortawesome/free-solid-svg-icons";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 const DatePickerComponent = dynamic(() => import('../../../../Global/component/DatePicker'), { ssr: false });
 
-interface LessonProps {
-    centerId: number,
-    name: string,
-    content: string,
-    startDate: Date,
-    endDate: Date,
-}
-
-export default function Page(props: LessonProps) {
+export default function Page() {
 
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
@@ -38,11 +30,21 @@ export default function Page(props: LessonProps) {
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [startTime, setStartTime] = useState<Dayjs | null>(null);
     const [endTime, setEndTime] = useState<Dayjs | null>(null);
-    const [centerId, setCenterId] = useState(props.centerId);
-    const [lessonName, setLessonName] = useState(props.name);
+    const [centerId, setCenterId] = useState<number | null>(null);
+    const [centerError, setCenterError] = useState('');
+    const [lessonName, setLessonName] = useState();
+    const [nameError, setNameError] = useState('');
     const [lessonContent, setLessonContent] = useState(`휴무일: ex) 월,금 \n\n\n내용:\n\n\n최대 인원:`);
-    const [lessonStartDate, setLessonStartDate] = useState(props.startDate);
-    const [lessonEndDate, setLessonEndDate] = useState(props.endDate);
+    const [contentError, setContentError] = useState('');
+    const [lessonStartDate, setLessonStartDate] = useState<Date | null>(null);
+    const [dateError, setDateError] = useState('');
+    const [first, setFirst] = useState(true);
+    const [errors, setErrors] = useState('');
+    const [lessonEndDate, setLessonEndDate] = useState<Date | null>(null);
+
+    const isInitialValue = (value: string) => {
+        return value === `휴무일: ex) 월,금\n\n\n내용:\n\n\n최대 인원:`;
+    };
 
     const handleStartTimeChange = (newStartTime: Dayjs | null) => {
         setStartTime(newStartTime);
@@ -110,6 +112,14 @@ export default function Page(props: LessonProps) {
         return typeName;
     }
 
+    const allErrors = () => {
+        if (centerError) return centerError;
+        if (dateError) return dateError;
+        if (nameError) return nameError;
+        if (contentError) return contentError;
+        return '';
+    }
+
     const handleDateChange = (newValue: DateValueType) => {
         if (newValue && typeof newValue === 'object' && 'startDate' in newValue && 'endDate' in newValue) {
             const { startDate, endDate } = newValue;
@@ -166,9 +176,50 @@ export default function Page(props: LessonProps) {
                         </div>
                     </div>
                     <div className="mr-5 mt-5 w-[50%]  flex flex-col">
-                        <input placeholder="레슨 제목을 작성해주세요" value={lessonName} type="text" className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-                        <textarea name="content" id="content" onChange={handleChange} value={lessonContent} className=" mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-                        <button className="mt-[20px] btn btn-active btn-secondary text-lg text-black">
+                        <div className="text-white font-xs">{allErrors()}</div>
+                        <input placeholder="레슨 제목을 작성해주세요"
+                            type="text"
+                            onFocus={e => { if ((e.target as HTMLInputElement).value == '') setNameError('레슨 제목을 작성해주세요.'); else setNameError('') }}
+                            onKeyUp={e => { if ((e.target as HTMLInputElement).value == '') setNameError('레슨 제목을 작성해주세요'); else setNameError('') }}
+                            onChange={e => { if (first) setFirst(false); if ((e.target as HTMLInputElement).value == '') setNameError('레슨 제목을 작성해주세요'); else setNameError('') }}
+                            className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+
+                        <textarea
+                            name="content"
+                            id="content"
+                            defaultValue={lessonContent}
+                            onFocus={(e) => {
+                                const value = (e.target as HTMLTextAreaElement).value;
+                                if (value.length <= 24 || !isInitialValue(value)) {
+                                    setNameError('레슨 내용을 작성해주세요.');
+                                } else {
+                                    setNameError('');
+                                }
+                            }}
+                            onKeyUp={(e) => {
+                                const value = (e.target as HTMLTextAreaElement).value;
+                                if (value.length <= 24 || !isInitialValue(value)) {
+                                    setNameError('레슨 내용을 작성해주세요');
+                                } else {
+                                    setNameError('');
+                                }
+                            }}
+                            onChange={(e) => {
+                                const value = (e.target as HTMLTextAreaElement).value;
+                                setLessonContent(value);
+                                if (first) {
+                                    setFirst(false);
+                                }
+                                if (value.length <= 24 || !isInitialValue(value)) {
+                                    setNameError('레슨 내용을 작성해주세요');
+                                } else {
+                                    setNameError('');
+                                }
+                            }}
+                            className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        />
+                        <button className="mt-[20px] btn btn-active btn-secondary text-lg text-black"
+                            disabled={first || !!allErrors()}>
                             <FontAwesomeIcon icon={faPlus} size="lg" />레슨 등록
                         </button>
                     </div>

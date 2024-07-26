@@ -178,13 +178,11 @@ export default function Page() {
     }
 
     const passwordErrors = () => {
-        if (oldPasswordError !== '')
-            return oldPasswordError;
-        if (newPassword1Error !== '' && oldPasswordError === '')
-            return newPassword1Error;
-        if (newPassword2Error !== '' && newPassword1Error === '' && oldPasswordError === '')
-            return newPassword2Error;
-    }
+        if (oldPasswordError) return oldPasswordError;
+        if (newPassword1Error) return newPassword1Error;
+        if (newPassword2Error) return newPassword2Error;
+        return '';
+    };
 
     return (
         <>
