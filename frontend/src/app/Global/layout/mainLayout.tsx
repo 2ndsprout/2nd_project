@@ -88,7 +88,7 @@ export default function Main(props: Readonly<PageInterface>) {
   }
 
   return (
-    <main id='main' className={'bg-black h-[953px] w-[1920px] flex flex-col items-center relative ' + className}>
+    <main id='main' className={'bg-black h-full w-[1920px] flex flex-col items-center relative ' + className}>
       <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[80px]'>
         <div className="navbar items-center">
           <div className="navbar-start">
@@ -119,9 +119,7 @@ export default function Main(props: Readonly<PageInterface>) {
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
-              <a href='/account/log/' className='border-black hover:text-secondary text-sm'>시설 안내</a>
-              <a href='/' className='hover:text-secondary text-sm'>프로그램 안내</a>
-              {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>레슨 등록</a> : null}
+              <a href='/account/culture_center/' className='border-black hover:text-secondary text-sm'>편의시설</a>
             </div>
           </DropDown>
           <DropDown open={boardHover} onClose={() => !setBoardHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-38}>

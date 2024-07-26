@@ -46,10 +46,13 @@ export default function Page() {
               .then(r => setCategories(r))
               .catch(e => console.log(e))
             getMyLessonList()
-              .then(r =>
+              .then(r => {
                 r.forEach((r: any) => {
-                  r.type === 'APPLIED' && setLessons(prev => [...prev, r]);
-                }))
+                  if(r.type === 'APPLIED') {
+                    setLessons(prev => [...prev, r.lessonResponseDTO])
+                  }
+                });
+              })
               .catch(e => console.log(e));
           })
           .catch(e => console.log(e));
@@ -74,7 +77,7 @@ export default function Page() {
           case 1:
             setNotiArticleList(r.content);
             setNotiTotalElements(r.totalElements);
-            console.log(r);
+            console.log('noti', r);
             break;
           case 2:
             setFreeArticleList(r.content);
