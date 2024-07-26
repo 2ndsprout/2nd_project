@@ -90,7 +90,7 @@ export default function Main(props: Readonly<PageInterface>) {
 
   return (
     <main id='main' className={'bg-black h-[953px] w-[1920px] flex flex-col items-center relative ' + className}>
-            <div className={"absolute bg-black w-full h-full z-[1000]" + (props.isLoading ? ' hidden' : '')} />
+            <div className={"absolute bg-black w-full min-h-screen z-[1000]" + (props.isLoading ? ' hidden' : '')} />
       <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[80px]'>
         <div className="navbar items-center">
           <div className="navbar-start">

@@ -111,7 +111,7 @@ export default function Page(props: PageProps) {
                         <p className="ml-[20px]">강의 설명 :</p>
                         <div className="w-[450px] relative bg-black h-[400px] my-[10px] ml-[20px] rounded">
                             <p className="block break-words whitespace-normal overflow-y-hidden h-[380px] overflow-y-scroll m-2">
-                                {targetLesson.content}
+                            <div dangerouslySetInnerHTML={{ __html: targetLesson.content }} />
                             </p>
                         </div>
                     </div>

@@ -66,7 +66,7 @@ body {
 
 @layer base {
   html {
-    color-scheme: light !important;
+    color-scheme: dark !important;
   }
 }
 
@@ -121,4 +121,61 @@ body {
 .fc-event:hover {
   transition: background-color 0.3s;
   filter: brightness(85%);
+}
+.ql-container {
+  border: 1px solid #000000; /* 에디터 테두리 색상 */
+  border-bottom-left-radius: 8px; /* 에디터 모서리 둥글기 */
+  border-bottom-right-radius: 8px; /* 에디터 모서리 둥글기 */
+  background-color: #f5f5f5; /* 에디터 배경색상 */
+  color: #000;
+}
+
+/* 툴바 스타일 */
+.ql-toolbar {
+  background-color: #333; /* 툴바 배경색상 */
+  border-top-left-radius: 8px; /* 에디터 모서리 둥글기 */
+  border-top-right-radius: 8px; /* 에디터 모서리 둥글기 */
+  border-bottom: 1px solid #000000; /* 툴바 하단 테두리 색상 */
+  color: #000000; /* 툴바 버튼 색상 */
+}
+.ql-editor img {
+  max-width: 50%; /* 이미지가 에디터의 너비를 넘지 않도록 설정 */
+  height: 50%; /* 비율을 유지하면서 이미지의 높이 자동 조정 */
+}
+button:hover .ql-stroke,
+.ql-picker-label:hover .ql-stroke {
+  fill: none;
+  stroke: #ff5722 !important;
+  color:#ff5722 !important;
+}
+
+.ql-active .ql-stroke {
+  fill: none;
+  stroke: #ff5722 !important;
+}
+
+button:hover .ql-fill,
+.ql-picker-label:hover .ql-fill {
+  fill: #ff5722 !important;
+  stroke: none;
+}
+
+.ql-active .ql-fill {
+  fill: #ff5722 !important;
+  stroke: none;
+}
+.ql-toolbar button,
+.ql-toolbar select,
+.ql-picker-label {
+  color: #000 !important; 
+}
+
+.ql-toolbar .ql-stroke {
+  fill: none;
+  stroke: #000 !important; 
+}
+
+.ql-toolbar .ql-fill {
+  fill: #000 !important; 
+  stroke: none;
 }

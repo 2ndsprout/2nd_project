@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { redirect } from "next/navigation";
-import { getCenterList, getProfile, getUser, postLesson } from "@/app/API/UserAPI";
+import { getCenterList, getProfile, getUser, postLesson, saveImage, saveImageList } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
@@ -14,12 +14,17 @@ import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { start } from "repl";
+import QuillNoSSRWrapper from "@/app/Global/component/QuillNoSSRWrapper";
+import ReactQuill from "react-quill";
+import 'react-quill/dist/quill.snow.css';
 
-const DatePickerComponent = dynamic(() => import('../../../../Global/component/DatePicker'), { ssr: false });
+
+const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
 
 export default function Page() {
 
+    const quillInstance = useRef<ReactQuill>(null);
+    const [url, setUrl] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
@@ -36,45 +41,22 @@ export default function Page() {
     const [isLoading, setIsLoading] = useState(false);
     const [lessonName, setLessonName] = useState('');
     const [nameError, setNameError] = useState('레슨 제목을 작성해주세요.');
-    const [lessonContent, setLessonContent] = useState(`휴무일: ex) 월,금 \n\n\n내용:\n\n\n최대 인원:`);
-    const [contentError, setContentError] = useState('레슨 내용을 입력해주세요.');
+    const [lessonContent, setLessonContent] = useState(`휴무일: ex) 월,금 <br><br><br>내용: <br><br><br>최대 인원: `);
     const [lessonStartDate, setLessonStartDate] = useState(null as any);
     const [dateError, setDateError] = useState('날짜를 선택해주세요.');
+    const [contentError, setContentError] = useState('레슨 내용을 입력해 주세요.')
     const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
     const [endTimeError, setEndTimeError] = useState('종료 시간을 설정해 주세요.');
     const [first, setFirst] = useState(true);
     const [lessonEndDate, setLessonEndDate] = useState(null as any);
     const [selectedCenter, setSelectedCenter] = useState('');
 
-    useEffect(() => {
-        if (ACCESS_TOKEN) {
-            getUser()
-                .then(r => {
-                    setUser(r);
-                    if (r.role === 'USER') {
-                        showAlert('접근할 수 없는 페이지 입니다.', '/');
-                    }
-                })
-                .catch(e => console.log(e));
-            if (PROFILE_ID) {
-                getProfile()
-                    .then(r => {
-                        setProfile(r);
-                        getCenterList()
-                            .then(r => {
-                                setCenterList(r);
-                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
-                            })
-                            .catch(e => console.log(e));
-                    })
-                    .catch(e => console.log(e));
-            } else {
-                redirect('/account/profile');
-            }
-        } else {
-            redirect('/account/login');
-        }
-    }, [ACCESS_TOKEN, PROFILE_ID]);
+    const submit = () => {
+        const lessonStartDateString = `${startDate}T${startTime}`;
+        const lessonEndDateString = `${endDate}T${endTime}`;
+        setLessonStartDate(lessonStartDateString);
+        setLessonEndDate(lessonEndDateString);
+    };
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -88,31 +70,6 @@ export default function Page() {
         }
     };
 
-    const isInitialValue = (value: string) => {
-        return value === `휴무일: ex) 월,금 \n\n\n내용:\n\n\n최대 인원:`;
-    };
-
-    function typeTransfer(type: string) {
-        let typeName: string | null;
-
-        switch (type) {
-            case 'GYM':
-                typeName = '헬스장';
-                break;
-            case 'SWIMMING_POOL':
-                typeName = '수영장';
-                break;
-            case 'SCREEN_GOLF':
-                typeName = '스크린 골프장';
-                break;
-            case 'LIBRARY':
-                typeName = '도서관';
-                break;
-            default:
-                typeName = '문화센터가 존재하지 않습니다.';
-        }
-        return typeName;
-    }
     const allErrors = () => {
         if (centerError) return centerError;
         if (dateError) return dateError;
@@ -167,12 +124,92 @@ export default function Page() {
             setEndTimeError('');
     };
 
-    const submit = () => {
-        const lessonStartDateString = `${startDate}T${startTime}`;
-        const lessonEndDateString = `${endDate}T${endTime}`;
-        setLessonStartDate(lessonStartDateString);
-        setLessonEndDate(lessonEndDateString);
+    const imageHandler = () => {
+        const input = document.createElement('input') as HTMLInputElement;
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+    
+        input.addEventListener('change', async () => {
+            const file = input.files?.[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                try {
+                    const { url } = await saveImage(formData);
+                    const editor = (quillInstance?.current as any).getEditor();
+                    const range = editor.getSelection();
+                    editor.insertEmbed(range.index, 'image', url);
+                    editor.setSelection(range.index + 1);
+                } catch (error) {
+                    console.error("Error uploading image:", error);
+                }
+            }
+        });
     };
+    const formats = [
+        'header',
+        'font',
+        'size',
+        'bold',
+        'italic',
+        'underline',
+        'strike',
+        'blockquote',
+        'list',
+        'bullet',
+        'align',
+        'image',
+    ];
+    
+    const modules = useMemo(
+        () => ({
+            toolbar: {
+                container: [
+                    [{ header: '1' }, { header: '2' }],
+                    [{ size: [] }],
+                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                    [{ list: 'ordered' }, { list: 'bullet' }, { align: [] }],
+                    ['image'],
+                ],
+                handlers: { image: imageHandler },
+            },
+            clipboard: {
+                matchVisual: false,
+            },
+        }),
+        [],
+    );
+
+    useEffect(() => {
+        if (ACCESS_TOKEN) {
+            getUser()
+                .then(r => {
+                    setUser(r);
+                    if (r.role === 'USER') {
+                        showAlert('접근할 수 없는 페이지 입니다.', '/');
+                    }
+                })
+                .catch(e => console.log(e));
+            if (PROFILE_ID) {
+                getProfile()
+                    .then(r => {
+                        setProfile(r);
+                        getCenterList()
+                            .then(r => {
+                                setCenterList(r);
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
+                            })
+                            .catch(e => console.log(e));
+                    })
+                    .catch(e => console.log(e));
+            } else {
+                redirect('/account/profile');
+            }
+        } else {
+            redirect('/account/login');
+        }
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
         if (lessonStartDate && lessonEndDate) {
@@ -184,6 +221,42 @@ export default function Page() {
                 .catch(e => showAlert(allErrors() || e));
         }
     }, [lessonStartDate, lessonEndDate]);
+
+    
+
+    function typeTransfer(type: string) {
+        let typeName: string | null;
+
+        switch (type) {
+            case 'GYM':
+                typeName = '헬스장';
+                break;
+            case 'SWIMMING_POOL':
+                typeName = '수영장';
+                break;
+            case 'SCREEN_GOLF':
+                typeName = '스크린 골프장';
+                break;
+            case 'LIBRARY':
+                typeName = '도서관';
+                break;
+            default:
+                typeName = '문화센터가 존재하지 않습니다.';
+        }
+        return typeName;
+    }
+    
+    function Change(file: any) {
+        const formData = new FormData();
+        formData.append('file', file);
+        saveImage(formData)
+            .then(r => setUrl(r?.url))
+            .catch(e => console.log(e))
+    }
+
+
+
+
 
     return (
         <Profile user={user} profile={profile} isLoading={isLoading}>
@@ -248,45 +321,45 @@ export default function Page() {
                                 else setNameError('')
                             }}
                             className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-
-                        <textarea
-                            name="content"
-                            id="content"
-                            defaultValue={lessonContent}
-                            onFocus={(e) => {
-                                const value = (e.target as HTMLTextAreaElement).value;
-                                if (value.length <= 24 || isInitialValue(value)) {
-                                    setContentError('레슨 내용을 작성해주세요.');
-                                } else {
-                                    setContentError('');
-                                }
-                            }}
-                            onKeyUp={(e) => {
-                                const value = (e.target as HTMLTextAreaElement).value;
-                                if (value.length <= 24 || isInitialValue(value)) {
-                                    setContentError('레슨 내용을 작성해주세요');
-                                } else {
-                                    setContentError('');
-                                }
-                            }}
-                            onChange={(e) => {
-                                const value = (e.target as HTMLTextAreaElement).value;
-                                setLessonContent(value);
-                                if (first) {
-                                    setFirst(false);
-                                }
-                                if (value.length <= 24 || isInitialValue(value)) {
-                                    setContentError('레슨 내용을 작성해주세요');
-                                } else {
-                                    setContentError('');
-                                }
-                            }}
-                            className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        />
+                        <div className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" >
+                            <QuillNoSSRWrapper
+                                forwardedRef={quillInstance}
+                                value={lessonContent}
+                                onChange={(e: any) => {
+                                    setLessonContent(e);
+                                    if (first) {
+                                        setFirst(false);
+                                    }
+                                    if (e.length <= 10) {
+                                        setContentError('레슨 내용을 작성해주세요');
+                                    } else {
+                                        setContentError('');
+                                    }
+                                }}
+                                onFocus={(e: any) => {
+                                    if (e.length <= 10) {
+                                        setContentError('레슨 내용을 작성해주세요.');
+                                    } else {
+                                        setContentError('');
+                                    }
+                                }}
+                                onKeyUp={(e: any) => {
+                                    if (e.length <= 10) {
+                                        setContentError('레슨 내용을 작성해주세요.');
+                                    } else {
+                                        setContentError('');
+                                    }
+                                }}
+                                modules={modules}
+                                theme="snow"
+                                className='w-full h-[385px]'
+                                placeholder="내용을 입력해주세요."
+                            />
+                        </div>
                         <button className="mt-[20px] btn btn-active btn-secondary text-lg text-black"
                             disabled={first || !!allErrors()}
                             onClick={() => finalConfirm(lessonName, '해당 레슨을 등록 하시겠습니까?', '등록', submit)}>
-                            <FontAwesomeIcon icon={faPlus} size="lg" />레슨 등록
+                            <FontAwesomeIcon icon={faPlus}/>레슨 등록
                         </button>
                     </div>
                 </div>
