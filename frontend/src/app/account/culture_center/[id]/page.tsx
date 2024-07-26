@@ -1,6 +1,6 @@
 'use client';
 
-import { getProfile, getUser, getLessonList, getCenter } from "@/app/API/UserAPI";
+import { getProfile, getUser, getLessonList, getCenter, getCenterList } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
 
 import { redirect, useParams, useRouter } from "next/navigation";
@@ -44,6 +44,11 @@ export default function Page(props: PageProps) {
     const [totalPages, setTotalPages] = useState(1);
     const [totalElements, setTotalElements] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [gymUrlList, setGymUrlList] = useState([] as any[]);
+    const [swimUrlList, setSwimUrlList] = useState([] as any[]);
+    const [libUrlList, setLibUrlList] = useState([] as any[]);
+    const [golfUrlList, setGolfUrlList] = useState([] as any[]);
+    const [centerList, setCenterList] = useState([] as any[]);
 
     const countTotalLesson = (lessonList: any[]): number => {
         return lessonList.reduce((total, lesson) => {
@@ -63,6 +68,42 @@ export default function Page(props: PageProps) {
                 getProfile()
                     .then(r => {
                         setProfile(r);
+                        getCenterList()
+                            .then(r => {
+                                setCenterList(r);
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                                setGymUrlList([]);
+                                setSwimUrlList([]);
+                                setLibUrlList([]);
+                                setGolfUrlList([]);
+                                r.forEach((r: any) => {
+                                    switch (r.type) {
+                                        case 'GYM':
+                                            r.imageListResponseDTOS?.forEach((image: any) => {
+                                                setGymUrlList(prev => [...prev, image.value]);
+                                            });
+                                            break;
+                                        case 'SWIMMING_POOL':
+                                            r.imageListResponseDTOS?.forEach((image: any) => {
+                                                setSwimUrlList(prev => [...prev, image.value]);
+                                            });
+                                            break;
+                                        case 'LIBRARY':
+                                            r.imageListResponseDTOS?.forEach((image: any) => {
+                                                setLibUrlList(prev => [...prev, image.value]);
+                                            });
+                                            break;
+                                        case 'SCREEN_GOLF':
+                                            r.imageListResponseDTOS?.forEach((image: any) => {
+                                                setGolfUrlList(prev => [...prev, image.value]);
+                                            });
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                })
+                            })
+                            .catch(e => console.log(e));
                     })
                     .catch(e => console.log(e));
                 getCenter(centerId)
@@ -91,7 +132,18 @@ export default function Page(props: PageProps) {
                     <div className="mt-5 ml-20 flex flex-col items-end">
                         <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
                         <div className="mb-2">
-                            <a href="/account/culture_center/">편의시설</a>
+                            <div>
+                                {centerList?.map((center) =>
+                                    <div key={center.id} >
+                                        <Link href={`/account/culture_center/${center.id}`} >
+                                            {center?.type === 'GYM' ? '헬스장' : ''
+                                                || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
+                                                    || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''
+                                                        || center?.type === 'LIBRARY' ? '도서관' : ''}
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </aside>
@@ -106,7 +158,7 @@ export default function Page(props: PageProps) {
                     {lessonList.map((lesson, index) => (
                         <tbody key={index}>
                             <tr className="bg-gray-800 p-2 rounded-lg w-[1000px] flex items-center h-[120px] hover:cursor-pointer"
-                            onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
+                                onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
                                 <td><img src={lesson.profileResponseDTO?.url ? lesson.profileResponseDTO.url : '/user.png'} className="ml-[15px] w-[100px] flex h-full justify-center rounded-full" alt="profile" /></td>
                                 <td><div className="w-[200px] h-1/3 flex items-center justify-center ml-[15px]">{lesson.profileResponseDTO.name}</div></td>
                                 <td><h3 className="text-xl font-bold h-1/4 w-full text-orange-300 flex justify-center">{lesson.name}</h3></td>

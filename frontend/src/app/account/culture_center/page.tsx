@@ -24,9 +24,7 @@ export default function Page() {
     //
     const Router = useRouter();
 
-    const onClickHandler = (centerId: number) => {
-        Router.push(`/account/culture_center/${centerId}`);
-    }
+    
 
 
     useEffect(() => {
