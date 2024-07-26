@@ -532,7 +532,7 @@ export const getCommentList = async ({ articleId, page }: GetCommentListProps) =
 // Lesson Request
 
 interface LessonRequestProps {
-    
+    id : number | null,
     lessonId: number,
     type: number
 }

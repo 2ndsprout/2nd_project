@@ -2,10 +2,11 @@
 
 import { getProfile, getUser, getLessonList, getCenter } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
-import { getDateFormat } from "@/app/Global/Method";
+
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getDateFormat } from "@/app/Global/component/Method";
 
 interface Lesson {
     id: number;

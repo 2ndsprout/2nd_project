@@ -40,12 +40,9 @@
     "react-dom": "^18",
     "react-ios-time-picker": "^0.2.2",
     "react-quill": "^2.0.0",
-<<<<<<< HEAD
     "react-router-dom": "^6.25.1",
-=======
     "react-tailwindcss-datepicker": "^1.6.6",
     "react-time-picker": "^7.0.0",
->>>>>>> 0ababf7a640df6ec1f307b4cf5ab66831f5a8137
     "sockjs-client": "^1.6.1",
     "styled-components": "^6.1.12",
     "swiper": "^11.1.5",
