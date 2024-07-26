@@ -2,34 +2,12 @@
 
 import { getProfile, getUser, getLessonList, getCenter } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/mainLayout";
-
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { getDateFormat } from "@/app/Global/component/Method";
-import Router from "next/router";
 
-interface Lesson {
-    id: number;
-    startDate: number;
-    endDate: number;
-    profileResponseDTO: any;
-    name: string;
-}
 
-interface LessonPage {
-    content: Lesson[];
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
-}
-
-interface PageProps {
-    lessonList: Lesson[];
-}
-
-export default function Page(props: PageProps) {
+export default function Page() {
     const router = useRouter();
     const params = useParams();
     const [user, setUser] = useState(null as any);
@@ -39,7 +17,7 @@ export default function Page(props: PageProps) {
     const [lessons, setLessons] = useState([] as any[]);
     const centerId = Number(params?.id);
     const [center, setCenter] = useState(null as any);
-    const [lessonList, setLessonList] = useState<Lesson[]>(props.lessonList || []);
+    const [lessonList, setLessonList] = useState([] as any[]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalElements, setTotalElements] = useState(0);
@@ -68,11 +46,15 @@ export default function Page(props: PageProps) {
                 getCenter(centerId)
                     .then(r => {
                         setCenter(r);
-                        return getLessonList(r.id, 0);
+                        console.log(r);
+                        getLessonList(r.id, 0)
+                            .then(r => {
+                                setLessonList(r.content);
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                            })
+                            .catch(e => console.log(e));
                     })
                     .then(r => {
-                        setLessonList(r.content);
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                     })
                     .catch(e => console.log(e));
             } else {
@@ -106,10 +88,10 @@ export default function Page(props: PageProps) {
                     {lessonList.map((lesson, index) => (
                         <tbody key={index}>
                             <tr className="bg-gray-800 p-2 rounded-lg w-[1000px] flex items-center h-[120px] hover:cursor-pointer"
-                            onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
+                                onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
                                 <td><img src={lesson.profileResponseDTO?.url ? lesson.profileResponseDTO.url : '/user.png'} className="ml-[15px] w-[100px] flex h-full justify-center rounded-full" alt="profile" /></td>
-                                <td><div className="w-[200px] h-1/3 flex items-center justify-center ml-[15px]">{lesson.profileResponseDTO.name}</div></td>
-                                <td><h3 className="text-xl font-bold h-1/4 w-full text-orange-300 flex justify-center">{lesson.name}</h3></td>
+                                <td className="w-[300px] h-1/3 flex items-center justify-center">{lesson.profileResponseDTO.name}</td>
+                                <td className="text-xl font-bold w-[600px] text-orange-300 flex overflow-hidden overflow-ellipsis whitespace-nowrap">{lesson.name}</td>
                                 <td className="ml-48 flex h-3/4 w-full items-center justify-center">{getDateFormat(lesson.startDate)} ~ {getDateFormat(lesson.endDate)}</td>
                             </tr>
                         </tbody>
