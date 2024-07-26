@@ -1244,7 +1244,10 @@ public class MultiService {
         if (!cultureCenter.getApt().equals(user.getApt()) && UserRole.ADMIN != user.getRole())
             throw new IllegalArgumentException("권한이 없음");
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
-        return _newMultiKey.map(multiKey -> centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+        MultiKey newMultiKey = null;
+        if(_newMultiKey.isPresent())
+            newMultiKey = _newMultiKey.get();
+        return centerResponseDTO(cultureCenter, newMultiKey);
     }
 
     @Transactional
@@ -1290,7 +1293,10 @@ public class MultiService {
             multiKeyService.delete(_newMultiKey.get());
         }
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
-        return _multiKey.map(multiKey -> this.centerResponseDTO(cultureCenter, multiKey)).orElse(null);
+        MultiKey newMultiKey = null;
+        if(_multiKey.isPresent())
+            newMultiKey = _multiKey.get();
+        return centerResponseDTO(cultureCenter, newMultiKey);
 
     }
 
@@ -1474,13 +1480,11 @@ public class MultiService {
             throw new IllegalArgumentException("권한 없음");
         List<Lesson> lessonList = lessonService.findByProfileAndCenter(profile.getId(), cultureCenter.getId());
         List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
-        for (Lesson lesson : lessonList){
+        for (Lesson lesson : lessonList) {
             lessonResponseDTOList.add(this.lessonResponseDTO(lesson));
         }
         return lessonResponseDTOList;
     }
-
-
 
 
     /**
@@ -1497,7 +1501,10 @@ public class MultiService {
             throw new DataNotFoundException("레슨 객체 없음");
         if (!user.getApt().equals(lesson.getCultureCenter().getApt()))
             throw new IllegalArgumentException("같은 아파트 아님");
-        return lessonUserResponseDTO(lessonUserService.save(lesson, profile, type));
+        LessonUser lessonUser = lessonUserService.findByLessonAndProfile(lesson.getId(), profile.getId());
+        if (lessonUser == null)
+            lessonUser = lessonUserService.save(lesson, profile, type);
+        return this.lessonUserResponseDTO(lessonUser);
     }
 
     private LessonUserResponseDTO lessonUserResponseDTO(LessonUser lessonUser) {

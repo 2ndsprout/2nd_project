@@ -462,8 +462,8 @@ export const getLesson = async (data: number) => {
     return response.data;
 }
 
-export const getLessonList = async (data: number) => {
-    const response = await UserApi.get('/api/lesson/list', {headers: {'Page': data}});
+export const getLessonList = async (data: number, page: number) => {
+    const response = await UserApi.get('/api/lesson/list', {headers: {'CenterId':data, 'Page': page}});
     return response.data;
 }
 
@@ -532,7 +532,7 @@ export const getCommentList = async ({ articleId, page }: GetCommentListProps) =
 // Lesson Request
 
 interface LessonRequestProps {
-    id: number,
+    id : number | null,
     lessonId: number,
     type: number
 }
@@ -540,6 +540,10 @@ interface LessonRequestProps {
 export const updateLessonRequest = async (data: LessonRequestProps) => {
     const response = await UserApi.put('/api/lesson/user', data);
     return response.data;
+}
+
+export const deleteLessonRequest = async (data: number) => {
+    await UserApi.delete('/api/lesson/user', {headers: {'LessonUserId': data}});
 }
 
 export const postLessonRequest = async (data: LessonRequestProps) => {

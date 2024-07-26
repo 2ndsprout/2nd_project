@@ -48,4 +48,7 @@ public class LessonUserService {
         return lessonUserRepository.findByProfileId(id);
     }
 
+    public LessonUser findByLessonAndProfile(Long lessonId, Long profileId) {
+        return lessonUserRepository.findByLessonAndProfile(lessonId, profileId).orElse(null);
+    }
 }
