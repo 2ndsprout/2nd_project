@@ -18,6 +18,8 @@ import QuillNoSSRWrapper from "@/app/Global/component/QuillNoSSRWrapper";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import { getTimeFormat, getTimeFormatting } from "@/app/Global/component/Method";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+dayjs.extend(isSameOrBefore);
 
 
 const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
@@ -52,36 +54,43 @@ export default function Page() {
     const [first, setFirst] = useState(true);
     const [lessonEndDate, setLessonEndDate] = useState(null as any);
     const [selectedCenter, setSelectedCenter] = useState('');
-    const [dateTimeError, setDateTimeError] = useState('');
 
     const submit = () => {
         const lessonStartDateString = `${startDate}T${startTime}`;
         const lessonEndDateString = `${endDate}T${endTime}`;
         const now = dayjs();
-
-        if (dayjs(lessonStartDateString).isBefore(now) || dayjs(lessonEndDateString).isBefore(now)) {
+    
+        // 시작일이 현재 날짜 이전인지 확인
+        if (dayjs(startDate).isBefore(now, 'day')) {
             closeConfirm();
-            showAlert('레슨시작일과 종료일은 현재 시간보다 이후여야 합니다.');
-            setDateTimeError('레슨시작일과 종료일은 현재 시간보다 이후여야 합니다.');
+            showAlert('레슨 시작일은 현재 날짜 이후여야 합니다.');
             return;
         }
-
+    
+        // 종료일이 시작일보다 이전인지 확인
+        if (dayjs(endDate).isBefore(dayjs(startDate), 'day')) {
+            closeConfirm();
+            showAlert('레슨 종료일은 레슨 시작일과 같거나 그 이후여야 합니다.');
+            return;
+        }
+    
         const startTime24 = dayjs(startTime, 'HH:mm:ss');
         const endTime24 = dayjs(endTime, 'HH:mm:ss');
         const centerOpenTime24 = dayjs(centerOpenTime, 'HH:mm');
         const centerCloseTime24 = dayjs(centerCloseTime, 'HH:mm');
-
+    
+        // 레슨 시간이 문화센터 운영 시간 내에 있는지 확인
         if (startTime24.isBefore(centerOpenTime24) || endTime24.isAfter(centerCloseTime24)) {
             closeConfirm();
             showAlert('레슨 시간은 문화센터 운영 시간 내에 있어야 합니다.');
-            setDateTimeError('레슨 시간은 문화센터 운영 시간 내에 있어야 합니다.');
             return;
         }
-
+    
         setLessonStartDate(lessonStartDateString);
         setLessonEndDate(lessonEndDateString);
-        setDateTimeError('');
     };
+    
+    
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -101,13 +110,8 @@ export default function Page() {
         }
     };
     const allErrors = () => {
-        if (centerError) return centerError;
-        if (dateError) return dateError;
-        if (startTimeError) return startTimeError;
-        if (endTimeError) return endTimeError;
-        if (nameError) return nameError;
-        if (dateTimeError) return dateTimeError;
-        return '';
+        const errors = [centerError, dateError, startTimeError, endTimeError, nameError];
+        return errors.find(error => error !== '') || '';
     };
 
     const handleDateChange = (newValue: DateValueType | string) => {
@@ -141,17 +145,13 @@ export default function Page() {
         setEndTime(dayjsTime.format('HH:mm:ss'));
     };
 
-    const handleStartTimeError = (error: string) => {
-        setStartTimeError(error);
-        if (error == '')
-            setStartTimeError('');
+    const handleTimeError = (errorSetter: React.Dispatch<React.SetStateAction<string>>, error: string) => {
+        errorSetter(error);
     };
 
-    const handleEndTimeError = (error: string) => {
-        setEndTimeError(error);
-        if (error == '')
-            setEndTimeError('');
-    };
+    const handleStartTimeError = (error: string) => handleTimeError(setStartTimeError, error);
+
+    const handleEndTimeError = (error: string) => handleTimeError(setEndTimeError, error);
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
