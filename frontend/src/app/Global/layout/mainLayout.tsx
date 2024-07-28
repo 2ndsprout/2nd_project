@@ -91,12 +91,12 @@ export default function Main(props: Readonly<PageInterface>) {
   return (
     <main id='main' className={'bg-black h-[953px] w-[1920px] flex flex-col items-center relative ' + className}>
             <div className={"absolute bg-black w-full min-h-screen z-[1000]" + (props.isLoading ? ' hidden' : '')} />
-      <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[80px]'>
+      <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[56px]'>
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
-              <img src="/user.png" alt="logo" className="mt-1 w-[48px] h-[48px] ml-10" />
-              <label className="text-xl font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
+              <img src="/user.png" alt="logo" className="mt-1 w-[36px] h-[36px] ml-10" />
+              <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
             </a>
           </div>
           <div className="navbar-center justify-between w-[800px]">
@@ -117,14 +117,14 @@ export default function Main(props: Readonly<PageInterface>) {
             </a>
           </div>
 
-          <DropDown open={centerHover} onClose={() => !setCenterHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-30}>
+          <DropDown open={centerHover} onClose={() => !setCenterHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={4} x={-30}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
               <a href='/account/culture_center/' className='border-black hover:text-secondary text-sm'>편의시설</a>
             </div>
           </DropDown>
-          <DropDown open={boardHover} onClose={() => !setBoardHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-38}>
+          <DropDown open={boardHover} onClose={() => !setBoardHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={4} x={-38}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setBoardHover)}
               onMouseLeave={() => closeHover(setBoardHover)}>
@@ -133,7 +133,7 @@ export default function Main(props: Readonly<PageInterface>) {
               {user?.role !== 'USER' ? <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a> : null}
             </div>
           </DropDown>
-          <DropDown open={manageHover} onClose={() => !setManageHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-20}>
+          <DropDown open={manageHover} onClose={() => !setManageHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={4} x={-20}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
@@ -152,7 +152,7 @@ export default function Main(props: Readonly<PageInterface>) {
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
-              <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px] rounded-full' alt="profile" />
+              <img src={profile?.url ? profile.url : '/user.png'} className='w-[48px] h-[48px] rounded-full' alt="profile" />
             </button>
             <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
               <div
