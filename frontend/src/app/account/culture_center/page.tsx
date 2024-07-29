@@ -21,8 +21,6 @@ export default function Page() {
     const [swimUrlList, setSwimUrlList] = useState([] as any[]);
     const [libUrlList, setLibUrlList] = useState([] as any[]);
     const [golfUrlList, setGolfUrlList] = useState([] as any[]);
-    //
-    const Router = useRouter();
 
     
 
@@ -120,11 +118,12 @@ export default function Page() {
     }
 
 
+
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6">
-                    <div className="mt-5 ml-20 flex flex-col items-end">
+                    <div className="mt-5 ml-20 flex flex-col items-center">
                         <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
                         <div className="mb-2">
                             <div>
