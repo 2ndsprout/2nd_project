@@ -2,7 +2,7 @@
 
 import { deleteCategory, getArticleList, getCategoryList, getProfile, getUser, postCategory, updateCategory } from '@/app/API/UserAPI';
 import CategoryList from "@/app/Global/component/CategoryList";
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import Link from 'next/link';
 import { redirect, useRouter } from "next/navigation";
 import React, { useEffect, useState } from 'react';

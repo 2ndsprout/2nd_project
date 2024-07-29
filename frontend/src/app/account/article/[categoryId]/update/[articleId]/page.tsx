@@ -183,7 +183,7 @@ export default function EditPage() {
         <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6 bg-gray-800">
-                    <CategoryList />
+                    <CategoryList userRole={user?.role} />
                 </aside>
                 <div className="flex-1 p-10">
                     <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>

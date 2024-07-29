@@ -2,7 +2,7 @@
 
 import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
 import Link from "next/link";
@@ -133,7 +133,7 @@ export default function ArticleListPage() {
         <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="flex w-full h-full">
                 <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
-                    <CategoryList />
+                    <CategoryList userRole={user?.role}/>
                 </aside>
                 <div className="flex-1 max-w-7xl p-10 ml-[400px]">
                     {error ? (
