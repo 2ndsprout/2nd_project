@@ -2,7 +2,7 @@
 
 import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
 import Link from "next/link";

@@ -1,7 +1,7 @@
 'use client';
 
 import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Calendar from "@/app/Global/component/Calendar";
@@ -84,7 +84,7 @@ export default function Page(props: PageProps) {
         postLessonRequest({ id: null, lessonId, type: 0 })
             .then(() => {
                 console.log("수강 신청 완료");
-                window.location.href = `/account/lesson/${lessonId}`;
+                window.location.href = `/account/mypage/lesson/log/`;
             }).catch((error) => {
                 console.error('수강 신청 중 오류:', error);
                 setError('수강 신청 중 오류가 발생했습니다.');
