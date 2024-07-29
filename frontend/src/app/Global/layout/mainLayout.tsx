@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import DropDown, { Direcion } from "../component/DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
+import { getCenterList } from "@/app/API/UserAPI";
+import Link from "next/link";
 
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -76,6 +78,13 @@ export default function Main(props: Readonly<PageInterface>) {
   const [manageHover, setManageHover] = useState(false);
   const [userHoverInterval, setUserHoverInterval] = useState<any>(null);
   const [userHover, setUserHover] = useState(false);
+  const [centerList, setCenterList] = useState([] as any[]);
+  const [gymUrlList, setGymUrlList] = useState([] as any[]);
+  const [swimUrlList, setSwimUrlList] = useState([] as any[]);
+  const [libUrlList, setLibUrlList] = useState([] as any[]);
+  const [golfUrlList, setGolfUrlList] = useState([] as any[]);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   function openHover(setHover: React.Dispatch<React.SetStateAction<boolean>>) {
     if (userHoverInterval) clearInterval(userHoverInterval);
@@ -88,7 +97,49 @@ export default function Main(props: Readonly<PageInterface>) {
     setUserHoverInterval(interval);
   }
 
+  useEffect(() => {
+    if (getCenterList != null) {
+      getCenterList()
+        .then(r => {
+          setCenterList(r);
+          const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+          setGymUrlList([]);
+          setSwimUrlList([]);
+          setLibUrlList([]);
+          setGolfUrlList([]);
+          r.forEach((r: any) => {
+            switch (r.type) {
+              case 'GYM':
+                r.imageListResponseDTOS?.forEach((image: any) => {
+                  setGymUrlList(prev => [...prev, image.value]);
+                });
+                break;
+              case 'SWIMMING_POOL':
+                r.imageListResponseDTOS?.forEach((image: any) => {
+                  setSwimUrlList(prev => [...prev, image.value]);
+                });
+                break;
+              case 'LIBRARY':
+                r.imageListResponseDTOS?.forEach((image: any) => {
+                  setLibUrlList(prev => [...prev, image.value]);
+                });
+                break;
+              case 'SCREEN_GOLF':
+                r.imageListResponseDTOS?.forEach((image: any) => {
+                  setGolfUrlList(prev => [...prev, image.value]);
+                });
+                break;
+              default:
+                break;
+            }
+          })
+        })
+        .catch(e => console.log(e));
+    }
+  })
+
   return (
+
     <main id='main' className={'bg-black h-full w-[1903px] flex flex-col relative ' + className}>
       <div className={"absolute bg-black w-full min-h-screen z-[1000]" + (props.isLoading ? ' hidden' : '')} />
       <header className='fixed rounded-b-xl bg-gray-700 flex w-[1903px] items-center h-[80px] z-[950]'>
@@ -100,7 +151,7 @@ export default function Main(props: Readonly<PageInterface>) {
             </a>
           </div>
           <div className="navbar-center justify-between w-[800px]">
-            <a id="center" href="/" className="btn btn-ghost text-xl hover:text-secondary"
+            <a id="center" href="/account/culture_center/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
               문화센터
@@ -121,7 +172,16 @@ export default function Main(props: Readonly<PageInterface>) {
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
-              <a href='/account/culture_center/' className='border-black hover:text-secondary text-sm'>편의시설</a>
+              {centerList?.map((center) =>
+                <div key={center.id} >
+                  <a href={`/account/culture_center/${center.id}`} className='hover:text-secondary text-sm'>
+                    {center?.type === 'GYM' ? '헬스장' : ''
+                      || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
+                        || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''
+                          || center?.type === 'LIBRARY' ? '도서관' : ''}
+                  </a>
+                </div>
+              )}
             </div>
           </DropDown>
           <DropDown open={boardHover} onClose={() => !setBoardHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-38}>

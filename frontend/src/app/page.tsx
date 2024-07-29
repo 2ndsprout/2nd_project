@@ -6,7 +6,7 @@ import { getArticleList, getCategoryList, getMyLessonList, getProfile, getUser }
 
 import Calendar from "./Global/component/Calendar";
 import Slider from "./Global/component/Slider";
-import Main from "./Global/layout/mainLayout";
+import Main from "./Global/layout/MainLayout";
 
 
 
@@ -51,7 +51,7 @@ export default function Page() {
             getMyLessonList()
               .then(r => {
                 r.forEach((r: any) => {
-                  if(r.type === 'APPLIED') {
+                  if (r.type === 'APPLIED') {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
                 });
