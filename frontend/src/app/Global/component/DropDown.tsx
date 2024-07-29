@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 interface DropProps {
     open: boolean;
@@ -21,29 +21,41 @@ export enum Direcion {
 const DropDown = (props: DropProps) => {
     if (!props.open) return null;
 
-    let direction = props.defaultDriection;
-    const x = props.x ? props.x : 0;
-    const y = props.y ? props.y : 0;
+    const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
 
-    let position = {};
-    const background = document.getElementById(props.background)?.getBoundingClientRect();
-    const button = document.getElementById(props.button)?.getBoundingClientRect();
-
-    if (background && button) {
-        switch (direction) {
-            case Direcion.UP:
-                position = { top: button.y - background.y - props.height - button.height / 2 + y, left: x + button.x, width: props.width + 'px', height: props.height + 'px' };
-                break;
-            case Direcion.DOWN:
-                position = { top: button.y - background.y + button.height + y, left: x + button.x, width: props.width + 'px', height: props.height + 'px' };
-                break;
-            case Direcion.LEFT:
-                position = { left: button.x - background.x - props.width + x, top: button.y - background.y - button.height + y, width: props.width + 'px', height: props.height + 'px' };
-                break;
-            case Direcion.RIGHT:
-                position = { left: button.x - background.x + button.width + x, top: button.y - background.y - button.height + y, width: props.width + 'px', height: props.height + 'px' };
-                break;
+    useEffect(() => {
+        const buttonElement = document.getElementById(props.button);
+        if (buttonElement) {
+            setButtonRect(buttonElement.getBoundingClientRect());
         }
+    }, [props.button]);
+
+    if (!buttonRect) return null;
+
+    const direction = props.defaultDriection;
+    const x = props.x || 0;
+    const y = props.y || 0;
+
+    let top = 0;
+    let left = 0;
+
+    switch (direction) {
+        case Direcion.UP:
+            top = buttonRect.top - props.height - y;
+            left = buttonRect.left + x;
+            break;
+        case Direcion.DOWN:
+            top = buttonRect.bottom + y;
+            left = buttonRect.left + x;
+            break;
+        case Direcion.LEFT:
+            top = buttonRect.top + y;
+            left = buttonRect.left - props.width - x;
+            break;
+        case Direcion.RIGHT:
+            top = buttonRect.top + y;
+            left = buttonRect.right + x;
+            break;
     }
 
     const handleClick = (e: React.MouseEvent) => {
@@ -51,7 +63,19 @@ const DropDown = (props: DropProps) => {
     };
 
     return (
-        <div onClick={handleClick} className={'p-2 shadow menu dropdown-content absolute z-[10] ' + props.className} style={position}>
+        <div
+            onClick={handleClick}
+            className={`p-2 shadow menu dropdown-content ${props.className}`}
+            style={{
+                position: 'fixed',
+                top: `${top}px`,
+                left: `${left}px`,
+                width: `${props.width}px`,
+                height: `${props.height}px`,
+                zIndex: 1000,
+                backgroundColor: props.background,
+            }}
+        >
             {props.children}
         </div>
     );

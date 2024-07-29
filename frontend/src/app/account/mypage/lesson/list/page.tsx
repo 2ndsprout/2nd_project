@@ -120,8 +120,8 @@ export default function Page() {
     return (
         <Profile user={user} profile={profile} isLoading={isLoading}>
             <div className='flex flex-col'>
-                <label className='mt-4 text-xl font-bold'><label className='text-xl text-secondary font-bold'>내 레슨</label> 목록</label>
-                <div className="mt-5 p-10 flex flex-col w-[1300px] border-2 h-[1000px] rounded-lg">
+                <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>내 레슨</label> 목록</label>
+                <div className="mt-9 p-10 flex flex-col w-[1300px] border-2 h-[1000px] rounded-lg">
                     <p className="mb-10 text-xl font-bold">진행중인 레슨 : <span className="text-secondary tex-2xl">{appliedLessons?.length !== 0 ? appliedLessons.length : '0'}</span> 개</p>
                     <div className="flex w-full h-[40%] flex flex-col">
                         <label className='text-xl font-bold border-b'><label className='text-xl text-secondary font-bold'>신청</label> 목록</label>
