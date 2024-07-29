@@ -50,11 +50,11 @@ export default function Page() {
             getMyLessonList()
               .then(r => {
                 r.forEach((r: any) => {
-                  if(r.type === 'APPLIED') {
+                  if (r.type === 'APPLIED') {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
-                  const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                 });
+                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
               })
               .catch(e => console.log(e));
           })
