@@ -18,21 +18,12 @@ export default function Page() {
     const centerId = Number(params?.id);
     const [center, setCenter] = useState(null as any);
     const [lessonList, setLessonList] = useState([] as any[]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalElements, setTotalElements] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [gymUrlList, setGymUrlList] = useState([] as any[]);
     const [swimUrlList, setSwimUrlList] = useState([] as any[]);
     const [libUrlList, setLibUrlList] = useState([] as any[]);
     const [golfUrlList, setGolfUrlList] = useState([] as any[]);
     const [centerList, setCenterList] = useState([] as any[]);
-
-    const countTotalLesson = (lessonList: any[]): number => {
-        return lessonList.reduce((total, lesson) => {
-            return total + 1 + countTotalLesson(lessonList || []);
-        }, 0);
-    };
 
 
     useEffect(() => {

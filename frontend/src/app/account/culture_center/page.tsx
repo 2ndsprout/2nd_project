@@ -159,7 +159,6 @@ export default function Page() {
                         </div>
                     )}
                 </div>
-                {/* 페이징기능 */}
             </div>
         </Main>
     );
