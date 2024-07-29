@@ -196,7 +196,7 @@ export default function Main(props: Readonly<PageInterface>) {
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
-              <a href='/account/log/' className='hover:text-secondary text-sm'>FAQ</a>
+              <a href='/account/FAQ/4' className='hover:text-secondary text-sm'>FAQ</a>
               <a href='/' className='hover:text-secondary text-sm'>건의사항</a>
               {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>1:1 문의</a> : null}
             </div>
