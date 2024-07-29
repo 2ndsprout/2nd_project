@@ -40,6 +40,7 @@ export default function Page() {
           }
         })
         .catch(e => console.log(e));
+        
       if (PROFILE_ID) {
         getProfile()
           .then(r => {
@@ -53,12 +54,12 @@ export default function Page() {
                   if(r.type === 'APPLIED') {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
-                  const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                 });
+                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
               })
-              .catch(e => console.log(e));
+              .catch(e => {console.log(e); setIsLoading(true);});
           })
-          .catch(e => console.log(e));
+          .catch(e => {console.log(e); setIsLoading(true);});
       } else {
         redirect('/account/profile');
       }
@@ -141,7 +142,7 @@ export default function Page() {
 
   return (
     <Main user={user} profile={profile} isLoading={isLoading}>
-      <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
+      <div className="mt-5 flex w-full justify-between h-[480px] px-0 px-5">
         <Slider urlList={displayUrls} />
         <Calendar lessons={lessons} height={480} width={900} />
       </div>

@@ -10,51 +10,51 @@ const ScrollToTopButton = () => {
 
   // 페이지 스크롤 이벤트를 추가합니다.
   useEffect(() => {
-      const handleScroll = () => {
-          if (window.pageYOffset > 300) {
-              setIsVisible(true);
-          } else {
-              setIsVisible(false);
-          }
-      };
+    const handleScroll = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
 
-      window.addEventListener('scroll', handleScroll);
-      return () => {
-          window.removeEventListener('scroll', handleScroll);
-      };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   // 버튼 클릭 시 화면 최상단으로 이동시킵니다.
   const scrollToTop = () => {
-      window.scrollTo({
-          top: 0,
-          behavior: 'smooth' // 부드럽게 스크롤
-      });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 부드럽게 스크롤
+    });
   };
 
   return (
-      <>
-          {isVisible && (
-              <button
-                  onClick={scrollToTop}
-                  style={{
-                      position: 'fixed',
-                      bottom: '100px',
-                      right: '100px',
-                      padding: '10px 20px',
-                      fontSize: 'small',
-                      backgroundColor: 'gray',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '100%',
-                      cursor: 'pointer',
-                  }}
-              >
-                  <FontAwesomeIcon icon={faUpLong} /><br />
-                  Top
-              </button>
-          )}
-      </>
+    <>
+      {isVisible && (
+        <button
+          onClick={scrollToTop}
+          style={{
+            position: 'fixed',
+            bottom: '100px',
+            right: '100px',
+            padding: '10px 20px',
+            fontSize: 'small',
+            backgroundColor: 'gray',
+            color: 'white',
+            border: 'none',
+            borderRadius: '100%',
+            cursor: 'pointer',
+          }}
+        >
+          <FontAwesomeIcon icon={faUpLong} /><br />
+          Top
+        </button>
+      )}
+    </>
   );
 };
 
@@ -68,9 +68,9 @@ interface PageInterface {
 }
 
 export default function Main(props: Readonly<PageInterface>) {
-  
-  const { className, user, profile} = props;
-  
+
+  const { className, user, profile } = props;
+
   const [centerHover, setCenterHover] = useState(false);
   const [boardHover, setBoardHover] = useState(false);
   const [manageHover, setManageHover] = useState(false);
@@ -89,9 +89,9 @@ export default function Main(props: Readonly<PageInterface>) {
   }
 
   return (
-    <main id='main' className={'bg-black h-[953px] w-[1920px] flex flex-col items-center relative ' + className}>
-            <div className={"absolute bg-black w-full min-h-screen z-[1000]" + (props.isLoading ? ' hidden' : '')} />
-      <header className='rounded-b-xl bg-gray-700 flex w-full items-center h-[80px]'>
+    <main id='main' className={'bg-black h-full w-[1903px] flex flex-col relative ' + className}>
+      <div className={"absolute bg-black w-full min-h-screen z-[1000]" + (props.isLoading ? ' hidden' : '')} />
+      <header className='fixed rounded-b-xl bg-gray-700 flex w-[1903px] items-center h-[80px] z-[950]'>
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
@@ -117,14 +117,14 @@ export default function Main(props: Readonly<PageInterface>) {
             </a>
           </div>
 
-          <DropDown open={centerHover} onClose={() => !setCenterHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-30}>
+          <DropDown open={centerHover} onClose={() => !setCenterHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-30}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
               <a href='/account/culture_center/' className='border-black hover:text-secondary text-sm'>편의시설</a>
             </div>
           </DropDown>
-          <DropDown open={boardHover} onClose={() => !setBoardHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-38}>
+          <DropDown open={boardHover} onClose={() => !setBoardHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-38}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setBoardHover)}
               onMouseLeave={() => closeHover(setBoardHover)}>
@@ -133,7 +133,7 @@ export default function Main(props: Readonly<PageInterface>) {
               {user?.role !== 'USER' ? <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a> : null}
             </div>
           </DropDown>
-          <DropDown open={manageHover} onClose={() => !setManageHover} className='border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-20}>
+          <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-20}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
@@ -154,7 +154,7 @@ export default function Main(props: Readonly<PageInterface>) {
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
               <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px] rounded-full' alt="profile" />
             </button>
-            <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
+            <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="fixed z-[950] mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
               <div
                 onMouseEnter={() => openHover(setUserHover)}
                 onMouseLeave={() => closeHover(setUserHover)}>
@@ -171,12 +171,11 @@ export default function Main(props: Readonly<PageInterface>) {
           </div>
         </div>
       </header>
-      <nav>
-
-      </nav>
-      {props.children}
+      <div className="mt-[80px]">
+        {props.children}
+      </div>
       <ScrollToTopButton />
-      <footer className='flex flex-col w-[1450px] mt-18 mb-8 ml-52 p-10 gap-2'>
+      <footer className='flex flex-col w-[1450px] mt-18 ml-52 p-10 gap-2 z-[950]'>
         <div className='flex justify-between'>
           <div className='text-secondary flex font-bold'>상호명 및 호스팅 서비스 제공 :
             <span className='text-white flex flex-col ml-2'> 꿀단지(주)</span>
