@@ -131,11 +131,11 @@ export default function ArticleListPage() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
-            <div className="flex w-full">
-                <aside className="w-1/6 p-6 bg-gray-800">
+            <div className="flex w-full h-full">
+                <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
                     <CategoryList />
                 </aside>
-                <div className="flex-1 max-w-7xl p-10">
+                <div className="flex-1 max-w-7xl p-10 ml-[400px]">
                     {error ? (
                         <p className="text-red-500">{error}</p>
                     ) : articleList.length === 0 ? (

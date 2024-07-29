@@ -2,7 +2,7 @@
 
 import { getArticle, getProfile, getUser, saveImageList, updateArticle } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import TagInput from '../../../tag/page';
@@ -35,6 +35,7 @@ export default function EditPage() {
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
     const [localImages, setLocalImages] = useState<File[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
@@ -64,6 +65,7 @@ export default function EditPage() {
                         key: `existing-${index}`,
                         value: url
                     })) : []);
+                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                 })
                 .catch(e => console.log(e));
         }
@@ -178,7 +180,7 @@ export default function EditPage() {
     };
 
     return (
-        <Main user={user} profile={profile}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6 bg-gray-800">
                     <CategoryList />
