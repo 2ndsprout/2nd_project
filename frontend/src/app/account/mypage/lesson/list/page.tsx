@@ -7,7 +7,7 @@ import Profile from "@/app/Global/layout/ProfileLayout";
 import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faClock, faHourglassStart, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faClock, faHourglassStart, faXmark } from "@fortawesome/free-solid-svg-icons";
 import useAlert from "@/app/Global/hook/useAlert";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import AlertModal from "@/app/Global/component/AlertModal";
@@ -134,13 +134,13 @@ export default function Page() {
                                                 {pending.lessonResponseDTO.name}
                                             </div>
                                         </Link>
-                                        <p className="p-1 rounded-lg text-sm border-secondary mr-[40px] bg-secondary text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 승인 대기중</p>
+                                        <p className="p-1 rounded-lg text-xs border-secondary mr-[40px] bg-secondary w-[85px] text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 승인 대기중</p>
                                     </div>
                                     <div className=" mt-2 overflow-hidden justify-between overflow-ellipsis whitespace-nowrap flex items-center mb-2 mr-[40px]">
                                         <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(pending.lessonResponseDTO.startDate)} ~ {getDateFormat(pending.lessonResponseDTO.endDate)}
                                             <label className="ml-14 text-xs text-gray-400">({getTimeFormat(pending.lessonResponseDTO.startDate)} ~ {getTimeFormat(pending.lessonResponseDTO.endDate)})</label>
                                         </div>
-                                        <button onClick={() => finalConfirm(pending.lessonResponseDTO.name, '해당 레슨 신청을 취소하시겠습니까?', '신청취소', () => deleteLessonUser(pending.id))} className="btn btn-error text-xs btn-xs"><FontAwesomeIcon icon={faXmark} />신청 취소</button>
+                                        <button onClick={() => finalConfirm(pending.lessonResponseDTO.name, '해당 레슨 신청을 취소하시겠습니까?', '신청취소', () => deleteLessonUser(pending.id))} className="btn btn-error text-xs btn-xs h-[28px]"><FontAwesomeIcon icon={faXmark} size="xs" />신청 취소</button>
                                     </div>
                                 </div>
                             )}
@@ -158,10 +158,10 @@ export default function Page() {
                                                     {applied.lessonResponseDTO.name}
                                                 </div>
                                             </Link>
-                                            <button onClick={() => finalConfirm(applied.lessonResponseDTO.name, '해당 레슨을 취소하시겠습니까?', '수강중단', () => updateLesson(applied.id, applied.lessonResponseDTO.id, 'CANCELLING'))} className="btn btn-error text-xs mr-[10px] btn-xs"><FontAwesomeIcon icon={faXmark} />수강 중단</button>
+                                            <button onClick={() => finalConfirm(applied.lessonResponseDTO.name, '해당 레슨을 취소하시겠습니까?', '수강중단', () => updateLesson(applied.id, applied.lessonResponseDTO.id, 'CANCELLING'))} className="btn btn-error text-xs mr-[10px] btn-xs text-center "><FontAwesomeIcon icon={faXmark} />수강 중단</button>
                                         </div>
                                         <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(applied.lessonResponseDTO.startDate)} ~ {getDateFormat(applied.lessonResponseDTO.endDate)}
-                                            <label className="ml-14 text-xs text-gray-400">({getTimeFormat(applied.lessonResponseDTO.startDate)} ~ {getTimeFormat(applied.lessonResponseDTO.endDate)})</label>
+                                            <label className="flex justify-start ml-4 text-xs text-gray-400">({getTimeFormat(applied.lessonResponseDTO.startDate)} ~ {getTimeFormat(applied.lessonResponseDTO.endDate)})</label>
                                         </div>
                                     </div>
 
@@ -179,10 +179,10 @@ export default function Page() {
                                                     {cancelling.lessonResponseDTO.name}
                                                 </div>
                                             </Link>
-                                            <span className="p-1 rounded-lg mr-[10px] text-sm border-gray-400 bg-gray-400 text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 취소 대기중</span>
+                                            <span className="p-1 rounded-lg mr-[10px] text-xs border-gray-400 bg-gray-400 text-black text-center cursor-default"><FontAwesomeIcon icon={faHourglassStart} size="xs" /> 취소 대기중</span>
                                         </div>
                                         <div className="mt-1 text-sm"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(cancelling.lessonResponseDTO.startDate)} ~ {getDateFormat(cancelling.lessonResponseDTO.endDate)}
-                                            <label className="ml-14 text-xs text-gray-400">({getTimeFormat(cancelling.lessonResponseDTO.startDate)} ~ {getTimeFormat(cancelling.lessonResponseDTO.endDate)})</label>
+                                            <label className="flex justify-start ml-4 text-xs text-gray-400">({getTimeFormat(cancelling.lessonResponseDTO.startDate)} ~ {getTimeFormat(cancelling.lessonResponseDTO.endDate)})</label>
                                         </div>
                                     </div>
                                 )}
@@ -200,10 +200,10 @@ export default function Page() {
                                                 </div>
                                             </Link>
 
-                                            <span className="p-1 rounded-lg text-sm border-gray-400 bg-gray-400 text-gray-700 text-center cursor-default mr-[10px]"><FontAwesomeIcon icon={faCheckCircle} size="xs" /> 취소 완료</span>
+                                            <span className="p-1 rounded-lg text-xs border-gray-400 bg-gray-400 text-black text-center cursor-default mr-[10px]"><FontAwesomeIcon icon={faCheck} className="mr-1" /> 취소 완료</span>
                                         </div>
                                         <div className="mt-1 text-sm text-gray-400"><label><FontAwesomeIcon icon={faClock} /> </label>{getDateFormat(cancelled.lessonResponseDTO.startDate)} ~ {getDateFormat(cancelled.lessonResponseDTO.endDate)}
-                                            <label className="ml-14 text-xs text-gray-400">({getTimeFormat(cancelled.lessonResponseDTO.startDate)} ~ {getTimeFormat(cancelled.lessonResponseDTO.endDate)})</label>
+                                            <label className="flex justify-start ml-4 text-xs text-gray-400">({getTimeFormat(cancelled.lessonResponseDTO.startDate)} ~ {getTimeFormat(cancelled.lessonResponseDTO.endDate)})</label>
                                         </div>
                                     </div>
                                 )}
