@@ -14,7 +14,6 @@ import AlertModal from "@/app/Global/component/AlertModal";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
 import Link from "next/link";
 
-
 export default function Page() {
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
@@ -47,7 +46,6 @@ export default function Page() {
                                 setCancellingLessons([]);
                                 setCancelledLessons([]);
                                 r.forEach((r: any) => {
-                                    console.log('lu', r);
                                     switch (r.type) {
                                         case 'PENDING':
                                             setPendingLessons(prev => [...prev, r]);
@@ -77,10 +75,10 @@ export default function Page() {
         }
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
-    console.log('Pending Lessons: ', pendingLessons);
-    console.log('Applied Lessons: ', appliedLessons);
-    console.log('Cancelling Lessons: ', cancellingLessons);
-    console.log('Cancelled Lessons: ', cancelledLessons);
+    // console.log('Pending Lessons: ', pendingLessons);
+    // console.log('Applied Lessons: ', appliedLessons);
+    // console.log('Cancelling Lessons: ', cancellingLessons);
+    // console.log('Cancelled Lessons: ', cancelledLessons);
 
     function updateLesson(id: number, lessonId: number, type: string) {
         let typeNumber: number | null;
@@ -105,7 +103,7 @@ export default function Page() {
         if (typeNumber !== null) {
             updateLessonRequest({ id, lessonId, type: typeNumber });
             closeConfirm();
-            showAlert('레슨 취소 신청이 완료되었습니다.', '/account/mypage/lesson/log');
+            showAlert('레슨 취소 신청이 완료되었습니다.', '/account/mypage/lesson/list');
         } else {
             showAlert('레슨 상태 변경 중 오류가 발생했습니다.');
         }
@@ -114,7 +112,7 @@ export default function Page() {
     function deleteLessonUser(id: number) {
         deleteLessonRequest(id);
         closeConfirm();
-        showAlert('레슨 신청 취소가 완료되었습니다.', '/account/mypage/lesson/log');
+        showAlert('레슨 신청 취소가 완료되었습니다.', '/account/mypage/lesson/list');
     }
 
     return (
@@ -127,7 +125,7 @@ export default function Page() {
                         <label className='text-xl font-bold border-b'><label className='text-xl text-secondary font-bold'>신청</label> 목록</label>
                         <div className="h-[300px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                             {pendingLessons.map((pending, pendingIndex) =>
-                                <div key={pending.lessonResponseDTO.id} className="w-[1200px] ml-[20px] flex flex-col border-gray-500 border-b-[1px] hover:text-primary my-2">
+                                <div key={`${pending.lessonResponseDTO.id}-${pendingIndex}`} className="w-[1200px] ml-[20px] flex flex-col border-gray-500 border-b-[1px] hover:text-primary my-2">
                                     <div className="flex font-semibold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
                                         <Link href={`/account/lesson/${pending.lessonResponseDTO.id}`}>
                                             <div className="flex justify-start  items-center text-lg w-4/5 hover:cursor-pointer hover:text-secondary">
@@ -151,7 +149,7 @@ export default function Page() {
                             <div className='text-xl font-bold mb-3 border-b'><label className='text-xl text-secondary font-bold'>진행중인 </label> 목록</div>
                             <div className="h-[400px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                                 {appliedLessons?.slice(0, 5).map((applied, appliedIndex) =>
-                                    <div key={applied.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
+                                    <div key={`${applied.lessonResponseDTO.id}-${appliedIndex}`} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
                                         <div className="flex font-bold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
                                             <Link href={`/account/lesson/${applied.lessonResponseDTO.id}`}>
                                                 <div className="hover:cursor-pointer hover:text-secondary">
@@ -172,7 +170,7 @@ export default function Page() {
                             <div className='text-xl font-bold mb-3 border-b'><label className='text-xl text-secondary font-bold'>취소 신청 </label> 목록</div>
                             <div className="h-[400px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                                 {cancellingLessons?.slice(0, 5).map((cancelling, cancellingIndex) =>
-                                    <div key={cancelling.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
+                                    <div key={`${cancelling.lessonResponseDTO.id}-${cancellingIndex}`} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
                                         <div className="flex font-bold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
                                             <Link href={`/account/lesson/${cancelling.lessonResponseDTO.id}`}>
                                                 <div className="hover:cursor-pointer hover:text-secondary">
@@ -192,7 +190,7 @@ export default function Page() {
                             <div className='text-xl font-bold mb-3 border-b'><label className='text-xl text-secondary font-bold'>취소 완료</label> 목록</div>
                             <div className="h-[400px] overflow-y-scroll overflow-x-hidden bg-gray-800">
                                 {cancelledLessons?.slice(0, 5).map((cancelled, cancelledIndex) =>
-                                    <div key={cancelled.lessonResponseDTO.id} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
+                                    <div key={`${cancelled.lessonResponseDTO.id}-${cancelledIndex}`} className="border-gray-500 border-b-[1px] hover:text-primary my-2 ml-[10px]">
                                         <div className="flex font-bold justify-between overflow-hidden overflow-ellipsis whitespace-nowrap">
                                             <Link href={`/account/lesson/${cancelled.lessonResponseDTO.id}`}>
                                                 <div className=" hover:cursor-pointer hover:text-secondary">

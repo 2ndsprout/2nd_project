@@ -1,28 +1,18 @@
 'use client';
 
 import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Calendar from "@/app/Global/component/Calendar";
 import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
 import { number } from "prop-types";
+import useConfirm from "@/app/Global/hook/useConfirm";
+import useAlert from "@/app/Global/hook/useAlert";
+import ConfirmModal from "@/app/Global/component/ConfirmModal";
+import AlertModal from "@/app/Global/component/AlertModal";
 
-interface LessonType {
-    id: number;
-    name: string;
-    content: string;
-    startDate: number;
-    endDate: number;
-    profileResponseDTO: any;
-}
-
-
-interface PageProps {
-    lessonList: LessonType[];
-}
-
-export default function Page(props: PageProps) {
+export default function Page() {
     const params = useParams();
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
@@ -30,9 +20,11 @@ export default function Page(props: PageProps) {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const lessonId = Number(params?.id);
     const [isLoading, setIsLoading] = useState(false);
-    const [lessonList, setLessonList] = useState<LessonType[]>(props.lessonList || []);
-    const [targetLesson, setTargetLesson] = useState<LessonType | null>(null);
+    const [lessonList, setLessonList] = useState([] as any[]);
+    const [targetLesson, setTargetLesson] = useState(null as any);
     const [error, setError] = useState('');
+    const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const { alertState, showAlert, closeAlert } = useAlert();
 
 
 
@@ -83,10 +75,11 @@ export default function Page(props: PageProps) {
 
         postLessonRequest({ id: null, lessonId, type: 0 })
             .then(() => {
-                console.log("수강 신청 완료");
-                window.location.href = `/account/mypage/lesson/log/`;
+                closeConfirm();
+                showAlert('수강 신청 완료',`/account/lesson/${lessonId}`);
             }).catch((error) => {
-                console.error('수강 신청 중 오류:', error);
+                closeConfirm();
+                showAlert('수강 신청 중 오류:'+ error);
                 setError('수강 신청 중 오류가 발생했습니다.');
             });
     }
@@ -132,10 +125,21 @@ export default function Page(props: PageProps) {
                 ) : (
                     <p>Loading lesson details...</p>
                 )}
-
-
+                <div className="flex items-start h-[550px] flex-col">
+                    <Calendar lessons={lessonList} height={500} width={700} />
+                    <div className="w-[700px] h-[80px] justify-end items-end flex">
+                        <button
+                            id='submit'
+                            className='bg-transparent p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 flex items-end text-white'
+                            onClick={() => finalConfirm(targetLesson.name, '수강 신청을 하시겠습니까?', '신청', Submit)}
+                        >
+                            수강 신청
+                        </button>
+                    </div>
+                </div>
             </div>
-
+            <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />
         </Main >
     );
 }

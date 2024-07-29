@@ -51,6 +51,11 @@ export function getDateFormat(data: any) {
     return date.getFullYear() + "-" + (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + "-" + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
 }
 export function getTimeFormat(data: any) {
+
+    if (!data) {
+        return '00:00';
+    }
+
     const date = new Date(data);
     let hours = date.getHours();
     const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
@@ -66,6 +71,20 @@ export function getTimeFormat(data: any) {
     return ampm + " " + formattedHours + ":" + minutes + " ";
 }
 
+export function getTimeFormatting(data: any) {
+    if (!data) {
+        return '00:00';
+    }
+
+    const date = new Date(data);
+    const hours = date.getHours();
+    const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+
+    // Format hour and minutes as two digits
+    const formattedHours = hours < 10 ? '0' + hours : hours;
+
+    return formattedHours + ":" + minutes;
+}
 
 export function getDateTimeFormatInput(data: any) {
     const date = new Date(data);

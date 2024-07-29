@@ -164,8 +164,8 @@ export default function Main(props: Readonly<PageInterface>) {
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
-              <img src="/user.png" alt="logo" className="mt-1 w-[48px] h-[48px] ml-10" />
-              <label className="text-xl font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
+              <img src="/user.png" alt="logo" className="mt-1 w-[36px] h-[36px] ml-10" />
+              <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
             </a>
           </div>
           <div className="navbar-center justify-between w-[800px]">
@@ -230,7 +230,7 @@ export default function Main(props: Readonly<PageInterface>) {
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
-              <img src={profile?.url ? profile.url : '/user.png'} className='w-[64px] h-[64px] rounded-full' alt="profile" />
+              <img src={profile?.url ? profile.url : '/user.png'} className='w-[48px] h-[48px] rounded-full' alt="profile" />
             </button>
             <DropDown open={userHover} onClose={() => !setUserHover} background="main" button="user" className="fixed z-[950] mt-[1px] text-black" defaultDriection={Direcion.DOWN} height={100} width={180} x={-100} y={8}>
               <div

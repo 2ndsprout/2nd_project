@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { redirect } from "next/navigation";
-import { getCenterList, getProfile, getUser, postLesson, saveImage, saveImageList } from "@/app/API/UserAPI";
+import { getCenterList, getProfile, getUser, postLesson, saveImage } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
@@ -17,8 +17,9 @@ import { faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons
 import QuillNoSSRWrapper from "@/app/Global/component/QuillNoSSRWrapper";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
-import { checkInput } from "@/app/Global/component/Method";
-
+import { getTimeFormatting } from "@/app/Global/component/Method";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+dayjs.extend(isSameOrBefore);
 
 const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
 
@@ -38,14 +39,15 @@ export default function Page() {
     const [startTime, setStartTime] = useState<Dayjs | string>('');
     const [endTime, setEndTime] = useState<Dayjs | string>('');
     const [centerId, setCenterId] = useState(0);
+    const [centerOpenTime, setCenterOpenTime] = useState('');
+    const [centerCloseTime, setCenterCloseTime] = useState('');
     const [centerError, setCenterError] = useState('문화센터를 설정해주세요.');
     const [isLoading, setIsLoading] = useState(false);
     const [lessonName, setLessonName] = useState('');
     const [nameError, setNameError] = useState('레슨 제목을 작성해주세요.');
-    const [lessonContent, setLessonContent] = useState(`휴무일: ex) 월,금 <br><br><br>내용: <br><br><br>최대 인원: `);
+    const [lessonContent, setLessonContent] = useState(`<p>휴무일: ex) 월,금</p><p><br></p><p><br></p><p>내용: </p><p><br></p><p><br></p><p>최대 인원:</p>`);
     const [lessonStartDate, setLessonStartDate] = useState(null as any);
     const [dateError, setDateError] = useState('날짜를 선택해주세요.');
-    const [contentError, setContentError] = useState('레슨 내용을 입력해 주세요.')
     const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
     const [endTimeError, setEndTimeError] = useState('종료 시간을 설정해 주세요.');
     const [first, setFirst] = useState(true);
@@ -55,9 +57,39 @@ export default function Page() {
     const submit = () => {
         const lessonStartDateString = `${startDate}T${startTime}`;
         const lessonEndDateString = `${endDate}T${endTime}`;
+        const now = dayjs();
+    
+        // 시작일이 현재 날짜 이전인지 확인
+        if (dayjs(startDate).isBefore(now, 'day')) {
+            closeConfirm();
+            showAlert('레슨 시작일은 현재 날짜 이후여야 합니다.');
+            return;
+        }
+    
+        // 종료일이 시작일보다 이전인지 확인
+        if (dayjs(endDate).isBefore(dayjs(startDate), 'day')) {
+            closeConfirm();
+            showAlert('레슨 종료일은 레슨 시작일과 같거나 그 이후여야 합니다.');
+            return;
+        }
+    
+        const startTime24 = dayjs(startTime, 'HH:mm:ss');
+        const endTime24 = dayjs(endTime, 'HH:mm:ss');
+        const centerOpenTime24 = dayjs(centerOpenTime, 'HH:mm');
+        const centerCloseTime24 = dayjs(centerCloseTime, 'HH:mm');
+    
+        // 레슨 시간이 문화센터 운영 시간 내에 있는지 확인
+        if (startTime24.isBefore(centerOpenTime24) || endTime24.isAfter(centerCloseTime24)) {
+            closeConfirm();
+            showAlert('레슨 시간은 문화센터 운영 시간 내에 있어야 합니다.');
+            return;
+        }
+    
         setLessonStartDate(lessonStartDateString);
         setLessonEndDate(lessonEndDateString);
     };
+    
+    
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -68,17 +100,17 @@ export default function Page() {
             setCenterError('문화 센터를 선택해주세요.');
         } else {
             setCenterError('');
+            const selectedCenter = centerList.find(center => center.id === Number(value));
+            if (selectedCenter) {
+                console.log(selectedCenter);
+                setCenterOpenTime(getTimeFormatting(selectedCenter.startDate));
+                setCenterCloseTime(getTimeFormatting(selectedCenter.endDate));
+            }
         }
     };
-
     const allErrors = () => {
-        if (centerError) return centerError;
-        if (dateError) return dateError;
-        if (startTimeError) return startTimeError;
-        if (endTimeError) return endTimeError;
-        if (nameError) return nameError;
-        if (contentError) return contentError;
-        return '';
+        const errors = [centerError, dateError, startTimeError, endTimeError, nameError];
+        return errors.find(error => error !== '') || '';
     };
 
     const validateInput = (value: string) => {
@@ -120,27 +152,22 @@ export default function Page() {
 
 
     const handleStartTimeChange = (time: Dayjs | string) => {
-        // 문자열인 경우 Dayjs 객체로 변환
-        const dayjsTime = typeof time === 'string' ? dayjs(time) : time;
-        setStartTime(dayjsTime.format('HH:mm:ss')); // 포맷된 시간 문자열 출력
+        const dayjsTime = typeof time === 'string' ? dayjs(time, 'HH:mm') : time;
+        setStartTime(dayjsTime.format('HH:mm:ss'));
     };
 
     const handleEndTimeChange = (time: Dayjs | string) => {
-        const dayjsTime = typeof time === 'string' ? dayjs(time) : time;
-        setEndTime(dayjsTime.format('HH:mm:ss')); // 포맷된 시간 문자열 출력
+        const dayjsTime = typeof time === 'string' ? dayjs(time, 'HH:mm') : time;
+        setEndTime(dayjsTime.format('HH:mm:ss'));
     };
 
-    const handleStartTimeError = (error: string) => {
-        setStartTimeError(error);
-        if (error == '')
-            setStartTimeError('');
+    const handleTimeError = (errorSetter: React.Dispatch<React.SetStateAction<string>>, error: string) => {
+        errorSetter(error);
     };
 
-    const handleEndTimeError = (error: string) => {
-        setEndTimeError(error);
-        if (error == '')
-            setEndTimeError('');
-    };
+    const handleStartTimeError = (error: string) => handleTimeError(setStartTimeError, error);
+
+    const handleEndTimeError = (error: string) => handleTimeError(setEndTimeError, error);
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -272,6 +299,10 @@ export default function Page() {
             .catch(e => console.log(e))
     }
 
+    function convertTo12HourFormat(time: string): string {
+        const formattedTime = dayjs(time, 'HH:mm').format('A hh:mm');
+        return formattedTime;
+    }
 
     return (
         <Profile user={user} profile={profile} isLoading={isLoading}>
@@ -283,19 +314,24 @@ export default function Page() {
                         <select
                             className="mt-5 font-bold text-white select select-bordered w-full max-w-xs"
                             value={selectedCenter}
-                            onChange={e => {
-                                handleSelectChange(e);  // handleChange 함수를 호출합니다.
-                            }}
+                            onChange={handleSelectChange}  // handleChange 함수를 호출합니다.
                         >
                             <option className="text-black font-bold" value="" disabled>
                                 문화 센터 목록
                             </option>
                             {centerList.map((center) => (
-                                <option className="text-black" key={center.id} value={center.id}>
+                                <option
+                                    className="text-black"
+                                    key={center.id}
+                                    value={center.id}
+                                >
                                     {typeTransfer(center.type)}
                                 </option>
                             ))}
                         </select>
+                        {centerOpenTime && centerCloseTime ? (
+                            <div>{convertTo12HourFormat(centerOpenTime)} ~ {convertTo12HourFormat(centerCloseTime)}</div>
+                        ) : null}
                         <div className="mt-6">
                             <div className="text-secondary text-lg font-bold">레슨 <span className="text-white">시작 및 종료일</span></div>
                             <div className="w-[300px] mt-5">
@@ -340,25 +376,6 @@ export default function Page() {
                                     setLessonContent(e);
                                     if (first) {
                                         setFirst(false);
-                                    }
-                                    if (e.length <= 10) {
-                                        setContentError('레슨 내용을 작성해주세요');
-                                    } else {
-                                        setContentError('');
-                                    }
-                                }}
-                                onFocus={(e: any) => {
-                                    if (e.length <= 10) {
-                                        setContentError('레슨 내용을 작성해주세요.');
-                                    } else {
-                                        setContentError('');
-                                    }
-                                }}
-                                onKeyUp={(e: any) => {
-                                    if (e.length <= 10) {
-                                        setContentError('레슨 내용을 작성해주세요.');
-                                    } else {
-                                        setContentError('');
                                     }
                                 }}
                                 modules={modules}
