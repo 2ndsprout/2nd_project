@@ -17,6 +17,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import QuillNoSSRWrapper from "@/app/Global/component/QuillNoSSRWrapper";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
+import { checkInput } from "@/app/Global/component/Method";
 
 
 const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
@@ -129,7 +130,7 @@ export default function Page() {
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
-    
+
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
             if (file) {
@@ -161,7 +162,7 @@ export default function Page() {
         'align',
         'image',
     ];
-    
+
     const modules = useMemo(
         () => ({
             toolbar: {
@@ -216,13 +217,13 @@ export default function Page() {
             postLesson({ centerId, startDate: lessonStartDate, endDate: lessonEndDate, name: lessonName, content: lessonContent })
                 .then(() => {
                     closeConfirm();
-                    showAlert('레슨 등록이 완료되었습니다.', '/account/mypage/lesson/log/');
+                    showAlert('레슨 등록이 완료되었습니다.', '/account/mypage/lesson/manage/');
                 })
                 .catch(e => showAlert(allErrors() || e));
         }
     }, [lessonStartDate, lessonEndDate]);
 
-    
+
 
     function typeTransfer(type: string) {
         let typeName: string | null;
@@ -245,7 +246,7 @@ export default function Page() {
         }
         return typeName;
     }
-    
+
     function Change(file: any) {
         const formData = new FormData();
         formData.append('file', file);
@@ -253,9 +254,6 @@ export default function Page() {
             .then(r => setUrl(r?.url))
             .catch(e => console.log(e))
     }
-
-
-
 
 
     return (
@@ -304,16 +302,29 @@ export default function Page() {
                             type="text"
                             value={lessonName}
                             onFocus={e => {
-                                if ((e.target as HTMLInputElement).value == '')
+                                checkInput(e, '{1,25}$',
+                                    () => setNameError(''),
+                                    () => setNameError('레슨 제목은 1자 이상 25자 이하로 작성해주세요.')
+                                );
+                                if (e.target.value === '')
                                     setNameError('레슨 제목을 작성해주세요.');
-                                else setNameError('')
+                                else
+                                    setNameError('');
                             }}
                             onKeyUp={e => {
+                                checkInput(e, '{1,25}$',
+                                    () => setNameError(''),
+                                    () => setNameError('레슨 제목은 1자 이상 25자 이하로 작성해주세요.')
+                                );
                                 if ((e.target as HTMLInputElement).value == '')
                                     setNameError('레슨 제목을 작성해주세요');
                                 else setNameError('')
                             }}
                             onChange={e => {
+                                checkInput(e, '{1,25}$',
+                                    () => setNameError(''),
+                                    () => setNameError('레슨 제목은 1자 이상 25자 이하로 작성해주세요.')
+                                );
                                 setLessonName(e.target.value);
                                 if (first) setFirst(false);
                                 if ((e.target as HTMLInputElement).value == '')
@@ -359,7 +370,7 @@ export default function Page() {
                         <button className="mt-[20px] btn btn-active btn-secondary text-lg text-black"
                             disabled={first || !!allErrors()}
                             onClick={() => finalConfirm(lessonName, '해당 레슨을 등록 하시겠습니까?', '등록', submit)}>
-                            <FontAwesomeIcon icon={faPlus}/>레슨 등록
+                            <FontAwesomeIcon icon={faPlus} />레슨 등록
                         </button>
                     </div>
                 </div>

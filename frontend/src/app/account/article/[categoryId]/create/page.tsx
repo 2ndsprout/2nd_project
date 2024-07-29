@@ -169,10 +169,10 @@ export default function Page() {
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
-                <aside className="w-1/6 p-6 bg-gray-800">
+                <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
                     <CategoryList />
                 </aside>
-                <div className="flex-1 p-10">
+                <div className="flex-1 p-10 ml-[400px]">
                     <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
                     <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px] overflow-auto">
                         <input
