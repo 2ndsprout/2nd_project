@@ -49,7 +49,7 @@ export default function Page() {
   function Change(file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    saveProfileImage(formData)
+    saveImage(formData)
       .then(r => setUrl(r?.url))
       .catch(e => console.log(e));
   }
