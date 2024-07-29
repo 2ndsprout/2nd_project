@@ -1,7 +1,7 @@
 'use client'
 
 import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { getDateTimeFormat } from '@/app/Global/component/Method';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
@@ -163,7 +163,8 @@ export default function ArticleDetail() {
                 <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
                 <div className="bg-gray-800 flex flex-col min-h-[600px] p-6 rounded-lg shadow-lg">
-                    <div className="flex-grow" dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                    {/* <div className="flex-grow" dangerouslySetInnerHTML={renderSafeHTML(article.content)} /> */}
+                    <div className="flex-grow" dangerouslySetInnerHTML={{ __html: article.content }} />
                     <div className="mt-4">
                     {/* <h3 className="text-lg font-semibold">태그:</h3> */}
                     <ul className="flex flex-wrap">
