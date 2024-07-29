@@ -2,7 +2,7 @@
 
 import { getArticle, getProfile, getUser, saveImageList, updateArticle } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import TagInput from '../../../tag/page';

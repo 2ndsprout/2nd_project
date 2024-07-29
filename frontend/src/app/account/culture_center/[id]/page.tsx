@@ -1,7 +1,7 @@
 'use client';
 
 import { getProfile, getUser, getLessonList, getCenter, getCenterList } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/MainLayout";
+import Main from "@/app/Global/layout/mainLayout";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getDateFormat } from "@/app/Global/component/Method";
@@ -106,7 +106,7 @@ export default function Page() {
         <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex h-full">
                 <aside className="w-1/6 p-6">
-                    <div className="mt-5 ml-20 flex flex-col items-center">
+                    <div className="mt-5 ml-20 flex flex-col items-start">
                         <h2 className="text-3xl font-bold  mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
                         <div className="mb-2">
                             <div>

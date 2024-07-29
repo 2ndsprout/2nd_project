@@ -244,7 +244,7 @@ export const getCategory = async (data: number) => {
 // Article
 interface getArticleList {
     categoryId: number;
-    page: number;
+    page?: number;
 }
 
 export const getArticleList = async ({ categoryId, page }: getArticleList) => {

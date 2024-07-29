@@ -138,6 +138,24 @@ export default function Main(props: Readonly<PageInterface>) {
     }
   })
 
+  const getDefaultHeight = () => {
+    if (centerList.length === 1) {
+      return 35;
+    }
+    if (centerList.length === 2) {
+      return 75;
+    }
+    if (centerList.length === 3) {
+      return 100;
+    }
+    if (centerList.length === 4) {
+      return 130;
+    }
+    return 0; // 기본 높이
+  };
+
+  const defaultHeight = getDefaultHeight();
+
   return (
 
     <main id='main' className={'bg-black h-full w-[1903px] flex flex-col relative ' + className}>
@@ -161,14 +179,14 @@ export default function Main(props: Readonly<PageInterface>) {
               onMouseLeave={() => closeHover(setBoardHover)}>
               게시판
             </a>
-            <a id="manage" href="/" className="btn btn-ghost text-xl hover:text-secondary"
+            <a id="manage" href="/account/FAQ/" className="btn btn-ghost text-xl hover:text-secondary"
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
               관리사무소
             </a>
           </div>
 
-          <DropDown open={centerHover} onClose={() => !setCenterHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-30}>
+          <DropDown open={centerHover} onClose={() => !setCenterHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={defaultHeight} width={180} y={14} x={-30}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>
@@ -197,7 +215,7 @@ export default function Main(props: Readonly<PageInterface>) {
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setManageHover)}
               onMouseLeave={() => closeHover(setManageHover)}>
-              <a href='/account/log/' className='hover:text-secondary text-sm'>FAQ</a>
+              <a href='/account/FAQ/' className='hover:text-secondary text-sm'>FAQ</a>
               <a href='/' className='hover:text-secondary text-sm'>건의사항</a>
               {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>1:1 문의</a> : null}
             </div>
