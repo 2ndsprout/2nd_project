@@ -40,7 +40,6 @@ export default function Page() {
                         setProfile(r);
                         getMyLessonList()
                             .then(r => {
-                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                                 setPendingLessons([]);
                                 setAppliedLessons([]);
                                 setCancellingLessons([]);
@@ -63,6 +62,7 @@ export default function Page() {
                                             break;
                                     }
                                 });
+                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                             })
                             .catch(e => console.log(e))
                     })

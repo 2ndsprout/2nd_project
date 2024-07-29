@@ -8,55 +8,57 @@ import dayjs, { Dayjs } from 'dayjs';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 
 interface TimePickerViewRenderersProps {
-  onStartTimeChange: (time: Dayjs | string) => void;
-  onEndTimeChange: (time: Dayjs | string) => void;
-  onStartTimeError: (error: string) => void; // 시작 시간 에러를 부모에게 전달할 콜백
-  onEndTimeError: (error: string) => void; // 종료 시간 에러를 부모에게 전달할 콜백
+  startTime?: Dayjs;
+  endTime?: Dayjs;
+  onStartTimeChange: (time: Dayjs) => void;
+  onEndTimeChange: (time: Dayjs) => void;
+  onStartTimeError: (error: string) => void;
+  onEndTimeError: (error: string) => void;
 }
 
 const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
+  startTime: initialStartTime,
+  endTime: initialEndTime,
   onStartTimeChange,
   onEndTimeChange,
   onStartTimeError,
   onEndTimeError
 }) => {
-  const [startTime, setStartTime] = React.useState<Dayjs | null>(dayjs().startOf('day'));
-  const [endTime, setEndTime] = React.useState<Dayjs | null>(dayjs().startOf('day'));
+  const [startTime, setStartTime] = React.useState<Dayjs>(initialStartTime || dayjs().startOf('day'));
+  const [endTime, setEndTime] = React.useState<Dayjs>(initialEndTime || dayjs().startOf('day'));
 
   const handleStartTimeChange = (newValue: Dayjs | null) => {
-    setStartTime(newValue);
-
     if (newValue) {
+      setStartTime(newValue);
       onStartTimeChange(newValue);
-      onStartTimeError(''); // 시작 시간 에러 초기화
+      onStartTimeError('');
     } else {
-      onStartTimeError('시작 시간을 설정해 주세요.'); // 시작 시간 에러 설정
+      onStartTimeError('시작 시간을 설정해 주세요.');
     }
   };
 
   const handleEndTimeChange = (newValue: Dayjs | null) => {
-    setEndTime(newValue);
-
     if (newValue) {
+      setEndTime(newValue);
       onEndTimeChange(newValue);
-      onEndTimeError(''); // 종료 시간 에러 초기화
+      onEndTimeError('');
     } else {
-      onEndTimeError('종료 시간을 설정해 주세요.'); // 종료 시간 에러 설정
+      onEndTimeError('종료 시간을 설정해 주세요.');
     }
   };
 
   const theme = createTheme({
     palette: {
-      mode: 'dark', // 다크 모드 설정
+      mode: 'dark',
       primary: {
-        main: '#ff5722', // 오렌지 색상 설정
+        main: '#ff5722',
       },
       background: {
-        default: '#1E293B', // 다크 모드 배경 색상
-        paper: '#1e293b', // 카드 배경 색상
+        default: '#1E293B',
+        paper: '#1e293b',
       },
       text: {
-        primary: '#ffffff', // 기본 텍스트 색상
+        primary: '#ffffff',
       },
     },
     components: {
@@ -64,13 +66,13 @@ const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
         styleOverrides: {
           root: {
             '& fieldset': {
-              borderColor: '#ee9a00', // 오렌지 색상으로 테두리 설정
+              borderColor: '#ee9a00',
             },
             '&:hover fieldset': {
-              borderColor: '#ee9a00', // 오렌지 색상으로 테두리 설정
+              borderColor: '#ee9a00',
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#ee9a00', // 오렌지 색상으로 테두리 설정
+              borderColor: '#ee9a00',
             },
           },
         },
@@ -78,9 +80,9 @@ const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
       MuiFormLabel: {
         styleOverrides: {
           root: {
-            color: '#ffffff', // 다크 모드에서 폼 레이블 색상
+            color: '#ffffff',
             '&.Mui-focused': {
-              color: '#ee9a00', // 오렌지 색상으로 포커스 시 레이블 색상
+              color: '#ee9a00',
             },
           },
         },
@@ -88,8 +90,8 @@ const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
       MuiIconButton: {
         styleOverrides: {
           root: {
-            color: '#ee9a00', // 오렌지 색상으로 아이콘 색상 설정
-            fontSize: '1.5rem', // 아이콘 버튼 크기
+            color: '#ee9a00',
+            fontSize: '1.5rem',
           },
         },
       },
@@ -121,7 +123,7 @@ const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
               '& .MuiFormLabel-root.Mui-focused': { color: '#ee9a00' },
               '& .MuiIconButton-root': {
                 color: '#ee9a00',
-                fontSize: '1.5rem', // Increase the size of the icon button
+                fontSize: '1.5rem',
               }
             }}
           />
@@ -145,7 +147,7 @@ const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
               '& .MuiFormLabel-root.Mui-focused': { color: '#ee9a00' },
               '& .MuiIconButton-root': {
                 color: '#ee9a00',
-                fontSize: '1.5rem', // Increase the size of the icon button
+                fontSize: '1.5rem',
               }
             }}
           />
