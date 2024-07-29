@@ -138,6 +138,24 @@ export default function Main(props: Readonly<PageInterface>) {
     }
   })
 
+  const getDefaultHeight = () => {
+    if (centerList.length === 1) {
+      return 35;
+    }
+    if (centerList.length === 2) {
+      return 75;
+    }
+    if (centerList.length === 3) {
+      return 100;
+    }
+    if (centerList.length === 4) {
+      return 130;
+    }
+    return 0; // 기본 높이
+  };
+
+  const defaultHeight = getDefaultHeight();
+
   return (
 
     <main id='main' className={'bg-black h-full w-[1903px] flex flex-col relative ' + className}>
@@ -168,7 +186,7 @@ export default function Main(props: Readonly<PageInterface>) {
             </a>
           </div>
 
-          <DropDown open={centerHover} onClose={() => !setCenterHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={100} width={180} y={14} x={-30}>
+          <DropDown open={centerHover} onClose={() => !setCenterHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDriection={Direcion.DOWN} height={defaultHeight} width={180} y={14} x={-30}>
             <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
               onMouseEnter={() => openHover(setCenterHover)}
               onMouseLeave={() => closeHover(setCenterHover)}>

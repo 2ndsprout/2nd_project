@@ -10,6 +10,7 @@ import Main from "./Global/layout/MainLayout";
 
 
 
+
 export default function Page() {
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
