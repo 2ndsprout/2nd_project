@@ -1,4 +1,4 @@
-import Main from "./mainLayout";
+import Main from "./MainLayout";
 import SideList from "./SideList";
 
 interface pageInterface {
@@ -15,8 +15,10 @@ export default function Profile(props: pageInterface) {
         <Main user={user} profile={profile} isLoading={props.isLoading}>
             <div className="flex flex-col w-[1500px]">
                 <div className="flex">
-                    <SideList user={user} profile={profile} />
-                    <div className="flex flex-col mt-4 w-full">
+                    <div className="mt-4 ml-48">
+                        <SideList user={user} profile={profile} />
+                    </div>
+                    <div className="flex flex-col mt-8 w-full">
                         {props.children}
                     </div>
                 </div>

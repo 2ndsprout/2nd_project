@@ -87,25 +87,39 @@ export default function Page() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
-            <div className="flex justify-center mt-[70px] mb-[20px] w-[1350px] h-[800px] items-center bg-gray-700">
+            <div className="flex justify-center mt-[70px] mb-[20px] w-[1350px] h-full items-center bg-gray-700">
                 {targetLesson ? (
-                    <div className="w-[500px] h-[750px] mr-[15px]">
-                        <div className="flex flex">
-                            <div className="ml-[20px] mb-[20px]">
-                                <img src={targetLesson.profileResponseDTO?.url ? targetLesson.profileResponseDTO.url : '/user.png'} className="ml-[15px] my-[15px] w-[100px] flex h-[100px] justify-center rounded-full" alt="profile" />
-                                <p>강사 : {targetLesson.profileResponseDTO.name}</p>
+                    <div className="w-[1200px] h-full">
+                        <div className="flex mt-[30px]">
+                            <div className="flex flex-col w-[500px]">
+                                <div className="ml-[20px] mb-[15px]">
+                                    <img src={targetLesson.profileResponseDTO?.url ? targetLesson.profileResponseDTO.url : '/user.png'} className="my-[15px] w-[200px] flex h-[200px] justify-center rounded-full" alt="profile" />
+                                </div>
+                                <div className="flex flex-col justify-center items-start m-[20px]">
+                                    <p className="text-2xl font-bold mb-4 "><p className="border-b" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>프로그램 명</p><p className="mt-[30px]">{targetLesson.name}</p></p>
+                                    <p className="font-semibold flex flex-row">강사 <p className="ml-[40px] mr-[10px]">:</p> {targetLesson.profileResponseDTO.name}</p>
+                                    <p className="font-semibold flex flex-row"><p>수강 기간 :</p> <p className="ml-[10px]">{getDateFormat(targetLesson.startDate)} ~ {getDateFormat(targetLesson.endDate)}</p></p>
+                                    <p className="font-semibold flex flex-row"><p>강의 시간 :</p> <p className="ml-[10px]"> {getTimeFormat(targetLesson.startDate)} ~ {getTimeFormat(targetLesson.endDate)}</p></p>
+                                </div>
                             </div>
-                            <div className="ml-[30px] y-[150px] flex flex-col justify-center">
-                                <p className="text-2xl font-semibold mb-2" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>{targetLesson.name}</p>
-                                <p>수강 기간 : {getDateFormat(targetLesson.startDate)} ~ {getDateFormat(targetLesson.endDate)}</p>
-                                <p>강의 시간 : {getTimeFormat(targetLesson.startDate)} ~ {getTimeFormat(targetLesson.endDate)}</p>
+                            <div className="flex ">
+                                <Calendar lessons={lessonList} height={500} width={700} />
                             </div>
                         </div>
-                        <p className="ml-[20px]">강의 설명 :</p>
-                        <div className="w-[450px] relative bg-black h-[400px] my-[10px] ml-[20px] rounded">
-                            <p className="block break-words whitespace-normal overflow-y-hidden h-[380px] overflow-y-scroll m-2">
-                            <div dangerouslySetInnerHTML={{ __html: targetLesson.content }} />
+                        <div className="w-[1200px] relative bg-black h-[700px] mt-[50px] my-[10px] items-center rounded flex mb-[50px]">
+                            <p className="block break-words whitespace-normal overflow-y-hidden h-[680px] w-full overflow-y-scroll m-2">
+                                <div dangerouslySetInnerHTML={{ __html: targetLesson.content }} />
                             </p>
+                        </div>
+
+                        <div className="w-[1200px] h-[80px] justify-end items-start flex">
+                            <button
+                                id='submit'
+                                className='bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
+                                onClick={() => Submit()}
+                            >
+                                수강 신청
+                            </button>
                         </div>
                     </div>
                 ) : (
@@ -123,7 +137,6 @@ export default function Page() {
                         </button>
                     </div>
                 </div>
-
             </div>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
             <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />

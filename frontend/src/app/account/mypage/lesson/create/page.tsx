@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { redirect } from "next/navigation";
-import { getCenterList, getProfile, getUser, postLesson, saveImage, saveImageList } from "@/app/API/UserAPI";
+import { getCenterList, getProfile, getUser, postLesson, saveImage } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
@@ -13,14 +13,13 @@ import dynamic from "next/dynamic";
 import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import QuillNoSSRWrapper from "@/app/Global/component/QuillNoSSRWrapper";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
-import { getTimeFormat, getTimeFormatting } from "@/app/Global/component/Method";
+import { getTimeFormatting } from "@/app/Global/component/Method";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 dayjs.extend(isSameOrBefore);
-
 
 const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
 
@@ -112,6 +111,23 @@ export default function Page() {
     const allErrors = () => {
         const errors = [centerError, dateError, startTimeError, endTimeError, nameError];
         return errors.find(error => error !== '') || '';
+    };
+
+    const validateInput = (value: string) => {
+        const pattern = /^.{1,25}$/;
+        if (pattern.test(value)) {
+            setNameError('');
+        } else {
+            setNameError('레슨 제목은 1 ~ 25자 이내로 작성해주세요.');
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setLessonName(value);
+        validateInput(value);
+        if (first) setFirst(false);
+        if (value === '') setNameError('레슨 제목을 작성해주세요');
     };
 
     const handleDateChange = (newValue: DateValueType | string) => {
@@ -245,7 +261,7 @@ export default function Page() {
             postLesson({ centerId, startDate: lessonStartDate, endDate: lessonEndDate, name: lessonName, content: lessonContent })
                 .then(() => {
                     closeConfirm();
-                    showAlert('레슨 등록이 완료되었습니다.', '/account/mypage/lesson/log/');
+                    showAlert('레슨 등록이 완료되었습니다.', '/account/mypage/lesson/manage/');
                 })
                 .catch(e => showAlert(allErrors() || e));
         }
@@ -291,8 +307,8 @@ export default function Page() {
     return (
         <Profile user={user} profile={profile} isLoading={isLoading}>
             <div className='flex flex-col'>
-                <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>레슨</label> 등록</label>
-                <div className="mt-9 w-[1300px] border-2 h-[640px] rounded-lg flex">
+                <label className='text-xl font-bold mb-9'><label className='text-xl text-secondary font-bold'>레슨</label> 등록</label>
+                <div className="w-[1300px] border-2 h-[640px] rounded-lg flex">
                     <div className="ml-5 mt-5 w-[50%]  flex flex-col">
                         <div className="text-secondary text-lg font-bold">문화 센터<span className="text-white">목록</span></div>
                         <select
@@ -333,29 +349,25 @@ export default function Page() {
                             </div>
                         </div>
                     </div>
-                    <div className="mr-5 mt-5 w-[50%]  flex flex-col">
-                        <div className="text-white font-xs">{allErrors()}</div>
-                        <input placeholder="레슨 제목을 작성해주세요"
+                    <div className="mr-5 mt-5 w-[50%] flex flex-col">
+                        {allErrors() !== '' ?<div className="badge badge-warning gap-2 w-[350px] p-3">
+                            <span className="text-sm"><FontAwesomeIcon icon={faTriangleExclamation} /> {allErrors()}</span>
+                        </div> : null}
+                        <input
+                            placeholder="레슨 제목을 작성해주세요"
                             type="text"
                             value={lessonName}
-                            onFocus={e => {
-                                if ((e.target as HTMLInputElement).value == '')
-                                    setNameError('레슨 제목을 작성해주세요.');
-                                else setNameError('')
+                            onFocus={(e) => {
+                                validateInput(e.target.value);
+                                if (e.target.value === '') setNameError('레슨 제목을 작성해주세요.');
                             }}
-                            onKeyUp={e => {
-                                if ((e.target as HTMLInputElement).value == '')
-                                    setNameError('레슨 제목을 작성해주세요');
-                                else setNameError('')
+                            onKeyUp={(e) => {
+                                validateInput((e.target as HTMLInputElement).value);
+                                if ((e.target as HTMLInputElement).value === '') setNameError('레슨 제목을 작성해주세요');
                             }}
-                            onChange={e => {
-                                setLessonName(e.target.value);
-                                if (first) setFirst(false);
-                                if ((e.target as HTMLInputElement).value == '')
-                                    setNameError('레슨 제목을 작성해주세요');
-                                else setNameError('')
-                            }}
-                            className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                            onChange={handleInputChange}
+                            className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        />
                         <div className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" >
                             <QuillNoSSRWrapper
                                 forwardedRef={quillInstance}

@@ -10,6 +10,7 @@ import Main from "./Global/layout/mainLayout";
 
 
 
+
 export default function Page() {
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
@@ -78,18 +79,18 @@ export default function Page() {
       .then((r) => {
         switch (categoryId) {
           case 1:
-            setNotiArticleList(r.content);
-            setNotiTotalElements(r.totalElements);
+            setNotiArticleList(r?.content);
+            setNotiTotalElements(r?.totalElements);
             console.log('noti', r);
             break;
           case 2:
-            setFreeArticleList(r.content);
-            setFreeTotalElements(r.totalElements);
+            setFreeArticleList(r?.content);
+            setFreeTotalElements(r?.totalElements);
             console.log(r);
             break;
           case 3:
-            setSaleArticleList(r.content);
-            setSaleTotalElements(r.totalElements);
+            setSaleArticleList(r?.content);
+            setSaleTotalElements(r?.totalElements);
             console.log(r);
             break;
           default:

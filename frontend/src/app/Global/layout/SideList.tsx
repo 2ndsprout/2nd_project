@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { deleteProfile } from "@/app/API/UserAPI";
 
 interface sideListProps {
     user: any;

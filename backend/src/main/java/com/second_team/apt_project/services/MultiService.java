@@ -928,7 +928,7 @@ public class MultiService {
                 String newUrl = this.fileMove(_fileSystem.get().getV(), newFile, _fileSystem.get());
                 if (_articleMulti.isEmpty()) {
                     MultiKey multiKey1 = multiKeyService.save(ImageKey.ARTICLE.getKey(article.getId().toString()), ImageKey.ARTICLE.getKey(article.getId().toString() + ".0"));
-                    fileSystemService.save(multiKey.getVs().getLast(), newUrl);
+                    fileSystemService.save(multiKey1.getVs().getLast(), newUrl);
                 } else {
                     multiKeyService.add(_articleMulti.get(), ImageKey.ARTICLE.getKey(article.getId().toString()) + "." + _articleMulti.get().getVs().size());
                     fileSystemService.save(_articleMulti.get().getVs().getLast(), newUrl);

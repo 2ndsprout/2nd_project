@@ -21,12 +21,8 @@ export default function Page() {
     const [swimUrlList, setSwimUrlList] = useState([] as any[]);
     const [libUrlList, setLibUrlList] = useState([] as any[]);
     const [golfUrlList, setGolfUrlList] = useState([] as any[]);
-    //
-    const Router = useRouter();
 
-    const onClickHandler = (centerId: number) => {
-        Router.push(`/account/culture_center/${centerId}`);
-    }
+    
 
 
     useEffect(() => {
@@ -121,14 +117,27 @@ export default function Page() {
         }
     }
 
+
+
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6">
-                    <div className="mt-5 ml-20 flex flex-col items-end">
+                    <div className="mt-5 ml-20 flex flex-col items-start">
                         <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
                         <div className="mb-2">
-                            <a href="/account/culture_center/">편의시설</a>
+                            <div>
+                                {centerList?.map((center) =>
+                                    <div key={center.id} >
+                                        <Link href={`/account/culture_center/${center.id}`} >
+                                            {center?.type === 'GYM' ? '헬스장' : ''
+                                                || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
+                                                    || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''
+                                                        || center?.type === 'LIBRARY' ? '도서관' : ''}
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </aside>
@@ -150,7 +159,6 @@ export default function Page() {
                         </div>
                     )}
                 </div>
-                {/* 페이징기능 */}
             </div>
         </Main>
     );
