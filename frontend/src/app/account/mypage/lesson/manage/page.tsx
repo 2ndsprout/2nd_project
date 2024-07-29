@@ -40,10 +40,10 @@ export default function Page() {
         getProfile()
           .then(r => {
             setProfile(r);
-            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
             getCenterList()
               .then(r => {
                 setCenterList(r);
+                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
               })
               .catch(e => console.log(e));
           })
@@ -124,13 +124,13 @@ export default function Page() {
                 </div>
                 <div>
                   {getCenterData(center?.type)?.slice(0, 5)?.map((lesson) => (
-                    <div key={lesson.id} className='flex items-center justify-between border-b-2 p-4'>
+                    <div key={lesson?.id} className='flex items-center justify-between border-b-2 p-4'>
                       <div className='flex items-center'>
                         <div className='ml-4'>
                           <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{lesson?.name}</div>
                         </div>
                       </div>
-                      <button className='text-sm font-bold text-primary hover:text-secondary' onClick={() => handleRowClick(lesson.id)}>수정</button>
+                      <button className='text-sm font-bold text-primary hover:text-secondary' onClick={() => handleRowClick(lesson?.id)}>수정</button>
                     </div>
                   ))}
                 </div>

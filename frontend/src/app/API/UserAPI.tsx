@@ -450,8 +450,6 @@ interface UpdateLessonProps {
     content: string,
     startDate: Date,
     endDate: Date,
-    startTime: Date,
-    endTime: Date
 }
 
 export const updateLesson = async (data: UpdateLessonProps) => {

@@ -1,5 +1,4 @@
 'use client';
-
 import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/mainLayout";
 import { redirect, useParams } from "next/navigation";
@@ -11,7 +10,6 @@ import useConfirm from "@/app/Global/hook/useConfirm";
 import useAlert from "@/app/Global/hook/useAlert";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
 import AlertModal from "@/app/Global/component/AlertModal";
-
 export default function Page() {
     const params = useParams();
     const [user, setUser] = useState(null as any);
@@ -25,16 +23,11 @@ export default function Page() {
     const [error, setError] = useState('');
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
-
-
-
     const countTotalLesson = (lessonList: any[]): number => {
         return lessonList.reduce((total, lesson) => {
             return total + 1 + countTotalLesson(lessonList || []);
         }, 0);
     };
-
-
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser()
@@ -62,7 +55,6 @@ export default function Page() {
             redirect('/account/login');
         }
     }, [ACCESS_TOKEN, PROFILE_ID, lessonId]);
-
     useEffect(() => {
         if (lessonList.length > 0) {
             const foundLesson = lessonList.find(lesson => lesson.id === lessonId);
@@ -70,9 +62,7 @@ export default function Page() {
             console.log('type', targetLesson)
         }
     }, [lessonList, lessonId]);
-
     function Submit() {
-
         postLessonRequest({ id: null, lessonId, type: 0 })
             .then(() => {
                 closeConfirm();
@@ -84,10 +74,9 @@ export default function Page() {
             });
     }
 
-
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
-            <div className="flex justify-center mt-[70px] mb-[20px] w-[1350px] h-full items-center bg-gray-700">
+            <div className="ml-[300px] flex justify-center mt-[30px] mb-[20px] w-[1350px] h-full items-center bg-gray-700">
                 {targetLesson ? (
                     <div className="w-[1200px] h-full">
                         <div className="flex mt-[30px]">
@@ -113,6 +102,7 @@ export default function Page() {
                         </div>
 
                         <div className="w-[1200px] h-[80px] justify-end items-start flex">
+                            <a href="/account/mypage/lesson/${targetLesson.id}/modify">dd</a>
                             <button
                                 id='submit'
                                 className='bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
@@ -125,18 +115,6 @@ export default function Page() {
                 ) : (
                     <p>Loading lesson details...</p>
                 )}
-                <div className="flex items-start h-[550px] flex-col">
-                    <Calendar lessons={lessonList} height={500} width={700} />
-                    <div className="w-[700px] h-[80px] justify-end items-end flex">
-                        <button
-                            id='submit'
-                            className='bg-transparent p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 flex items-end text-white'
-                            onClick={() => finalConfirm(targetLesson.name, '수강 신청을 하시겠습니까?', '신청', Submit)}
-                        >
-                            수강 신청
-                        </button>
-                    </div>
-                </div>
             </div>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
             <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />
