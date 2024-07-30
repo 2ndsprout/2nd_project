@@ -2,9 +2,9 @@
 
 import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
-import Main from "@/app/Global/layout/MainLayout";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
+import Main from "@/app/Global/layout/MainLayout";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -131,6 +131,8 @@ export default function ArticleListPage() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
+            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-1 w-full">
             <div className="flex w-full h-full">
                 <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
                     <CategoryList userRole={user?.role}/>
@@ -231,6 +233,8 @@ export default function ArticleListPage() {
                         />
                     </div>
                 </div>
+            </div>
+            </div>
             </div>
         </Main>
     );

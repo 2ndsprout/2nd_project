@@ -2,9 +2,9 @@
 
 import { deleteImageList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
-import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
+import Main from "@/app/Global/layout/MainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
@@ -54,12 +54,12 @@ export default function Page() {
                 const response = await saveImageList(formData);
     
                 if (!Array.isArray(response) || response.length === 0) {
-                    throw new Error('Unexpected API response format');
+                    throw new Error('서버 API 응답 형식이 올바르지 않습니다. 관리자에게 문의해 주세요.');
                 }
     
                 const newImage = response[response.length - 1];
                 if (!newImage || typeof newImage.value !== 'string') {
-                    throw new Error('Invalid image data received');
+                    throw new Error('이미지 데이터 형식이 올바르지 않습니다. 다시 시도해 주세요');
                 }
     
                 const imgUrl = newImage.value;
@@ -75,7 +75,7 @@ export default function Page() {
                 setUploadedImages(prev => [...prev, newImage]);
             } catch (error) {
                 console.error('Error uploading image:', error);
-                alert('이미지 업로드에 실패했습니다. 다시 시도해 주세요.');
+                alert('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
             }
         });
     };
@@ -104,7 +104,7 @@ export default function Page() {
             try {
                 await deleteImageList();
             } catch (error) {
-                // 에러 무시 (삭제할 이미지가 없는 경우 등)
+                console.error('삭제할 이미지없음(문제없음):', error);
             }
         };
 
@@ -156,7 +156,7 @@ export default function Page() {
             };
     
             await postArticle(requestData);
-            await deleteImageList(); // 게시물 등록 후 임시 이미지 삭제
+            await deleteImageList();
             window.location.href = `/account/article/${categoryId}`;
         } catch (error) {
             console.error('게시물 작성 중 오류:', error);
@@ -166,13 +166,14 @@ export default function Page() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
+            <div className="flex flex-1 w-full">
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
                     <CategoryList userRole={user?.role}/>
                 </aside>
-                <div className="flex-1 p-10 ml-[400px]">
+                <div className="p-10 ml-[400px] w-4/6">
                     <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px] overflow-auto">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
                         <input
                             id='title'
                             type='text'
@@ -184,7 +185,8 @@ export default function Page() {
                             onChange={e => setTitle(e.target.value)}
                             onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
                         />
-                        <div style={{ overflow: 'auto', maxHeight: '800px' }}>
+                        <div className="flex flex-col" style={{ maxHeight: '800px' }}>
+                            <div className="flex-grow">
                             <QuillNoSSRWrapper
                                 forwardedRef={quillInstance}
                                 value={content}
@@ -195,8 +197,11 @@ export default function Page() {
                                 placeholder="내용을 입력해주세요."
                                 style={{ minHeight: '600px'}}
                             />
+                            </div>
                         </div>
-                        <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
+                        <div className="mt-10">
+                            <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
+                            </div>
                     </div>
                     <div className="flex justify-end gap-4 mt-6">
                         <button
@@ -215,6 +220,8 @@ export default function Page() {
                     </div>
                 </div>
             </div>
+            </div>
+            
         </Main>
     );
 }

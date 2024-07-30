@@ -1,15 +1,15 @@
 'use client';
+
+import AlertModal from "@/app/Global/component/AlertModal";
+import Calendar from "@/app/Global/component/Calendar";
+import ConfirmModal from "@/app/Global/component/ConfirmModal";
+import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
+import useAlert from "@/app/Global/hook/useAlert";
+import useConfirm from "@/app/Global/hook/useConfirm";
 import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Calendar from "@/app/Global/component/Calendar";
-import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
-import { number } from "prop-types";
-import useConfirm from "@/app/Global/hook/useConfirm";
-import useAlert from "@/app/Global/hook/useAlert";
-import ConfirmModal from "@/app/Global/component/ConfirmModal";
-import AlertModal from "@/app/Global/component/AlertModal";
 export default function Page() {
     const params = useParams();
     const [user, setUser] = useState(null as any);

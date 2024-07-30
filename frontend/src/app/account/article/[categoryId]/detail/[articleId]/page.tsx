@@ -1,8 +1,8 @@
 'use client'
 
 import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
-import Main from "@/app/Global/layout/MainLayout";
 import { getDateTimeFormat } from '@/app/Global/component/Method';
+import Main from "@/app/Global/layout/MainLayout";
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import { redirect, useParams, useRouter } from "next/navigation";
@@ -40,12 +40,12 @@ export default function ArticleDetail() {
     const [user, setUser] = useState(null as any);
     const [error, setError] = useState('');
     const [profile, setProfile] = useState(null as any);
-    const [categories, setCategories] = useState<any[]>([]);
     const [ isDeleted, setIsDeleted ] = useState(false);
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const [ hasEditPermission, setHasEditPermission ] = useState(false);
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -58,10 +58,7 @@ export default function ArticleDetail() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
-                        // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
-                        // .then(r => setSearch(r))
-                        // .catch(e => console.log
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                     })
                     .catch(e => console.log(e));
             else
@@ -73,9 +70,25 @@ export default function ArticleDetail() {
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
-        console.log("articleId:", articleId);
-        console.log("categoryId:", categoryId);
-    }, [categoryId, articleId]);
+        console.log("User changed:", user);
+        console.log("Article changed:", article);
+        console.log("PROFILE_ID:", PROFILE_ID);
+        
+        if (user && article && PROFILE_ID) {
+            const isAdmin = user.role === 'ADMIN';
+            const isSecurity = user.role === 'SECURITY';
+            const isAuthor = PROFILE_ID === String(article.profileResponseDTO.id);
+            
+            console.log("Is Admin:", isAdmin);
+            console.log("Is Security:", isSecurity);
+            console.log("Is Author:", isAuthor);
+            console.log("Current Profile ID:", PROFILE_ID);
+            console.log("Article Author ID:", article.profileResponseDTO.id);
+            // 콘솔 로그 권한 확인용
+            
+            setHasEditPermission(isAdmin || isSecurity || isAuthor);
+        }
+    }, [user, article, PROFILE_ID]);
 
     useEffect(() => {
         const fetchArticle = async () => {
@@ -90,7 +103,7 @@ export default function ArticleDetail() {
         };
 
         fetchArticle();
-    }, [articleId]);
+    }, [articleId, user]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -163,17 +176,15 @@ export default function ArticleDetail() {
                 <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
                 <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
                 <div className="bg-gray-800 flex flex-col min-h-[600px] p-6 rounded-lg shadow-lg">
-                    {/* <div className="flex-grow" dangerouslySetInnerHTML={renderSafeHTML(article.content)} /> */}
                     <div className="flex-grow" dangerouslySetInnerHTML={{ __html: article.content }} />
                     <div className="mt-4">
-                    {/* <h3 className="text-lg font-semibold">태그:</h3> */}
-                    <ul className="flex flex-wrap">
-                        {article.tagResponseDTOList.map(tag => (
-                            <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 inline-block">
-                                #{tag.name}
-                            </li>
-                        ))}
-                    </ul>
+                        <ul className="flex flex-wrap">
+                            {article.tagResponseDTOList.map(tag => (
+                                <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 inline-block">
+                                    #{tag.name}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
                 <div className="mt-6">
@@ -181,33 +192,35 @@ export default function ArticleDetail() {
                 </div>
             </div>
             <aside className="w-1/6 p-6 flex flex-col items-start">
-                <div className="relative" id="dropdown">
-                    <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
-                        <span className="text-white">⁝</span>
-                    </button>
-                    {dropdownOpen && (
-                        <div className="absolute mt-2 bg-gray-800 rounded shadow-lg overflow-hidden">
-                            <div className="flex flex-col w-20">
-                                <Link 
-                                    href={`/account/article/${categoryId}/update/${article.articleId}`} 
-                                    className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
-                                >
-                                    수정
-                                </Link>
-                                <button 
-                                    onClick={handleDelete} 
-                                    className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
-                                >
-                                    삭제
-                                </button>
+                {hasEditPermission && (
+                    <div className="relative" id="dropdown">
+                        <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
+                            <span className="text-white">⁝</span>
+                        </button>
+                        {dropdownOpen && (
+                            <div className="absolute mt-2 bg-gray-800 rounded shadow-lg overflow-hidden">
+                                <div className="flex flex-col w-20">
+                                    <Link 
+                                        href={`/account/article/${categoryId}/update/${article.articleId}`} 
+                                        className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
+                                    >
+                                        수정
+                                    </Link>
+                                    <button 
+                                        onClick={handleDelete} 
+                                        className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
+                                    >
+                                        삭제
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </aside>
         </div>
     );
-
+    
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
             {content}
