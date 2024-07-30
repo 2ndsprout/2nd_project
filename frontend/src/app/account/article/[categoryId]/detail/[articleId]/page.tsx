@@ -1,7 +1,7 @@
 'use client'
 
 import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { getDateTimeFormat } from '@/app/Global/component/Method';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';

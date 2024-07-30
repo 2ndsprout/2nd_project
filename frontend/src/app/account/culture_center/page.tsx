@@ -2,7 +2,7 @@
 
 import { getCenterList, getProfile, getUser } from "@/app/API/UserAPI";
 import CenterSlider from "@/app/Global/CenterSlider";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
