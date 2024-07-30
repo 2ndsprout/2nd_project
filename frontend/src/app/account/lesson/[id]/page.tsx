@@ -1,6 +1,6 @@
 'use client';
 import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Calendar from "@/app/Global/component/Calendar";
