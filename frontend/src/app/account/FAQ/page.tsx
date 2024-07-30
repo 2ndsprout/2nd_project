@@ -42,7 +42,6 @@ export default function Page() {
     const [openArticleIds, setOpenArticleIds] = useState<Set<number>>(new Set());
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalElements, setTotalElements] = useState(0);
     const [error, setError] = useState('');
     const [categoryId, setCategoryId] = useState<any>(null);
 
@@ -110,7 +109,6 @@ export default function Page() {
 
             setArticleList(data.content);
             setTotalPages(Math.max(1, data.totalPages));
-            setTotalElements(data.totalElements);
             setCurrentPage(data.number + 1);
         } catch (error) {
             console.error('Error fetching articles:', error);
