@@ -26,7 +26,6 @@ const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePic
 export default function Page() {
 
     const quillInstance = useRef<ReactQuill>(null);
-    const [url, setUrl] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
@@ -175,51 +174,42 @@ export default function Page() {
         input.setAttribute('accept', 'image/*');
         input.click();
 
+
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
 
-            if (file) {
+            try {
                 const formData = new FormData();
-                formData.append('file', file);
-
-                try {
-                    // 서버에 이미지를 업로드하고 이미지 URL을 가져옵니다.
-                    const response = await saveImageList(formData);
-                    const imageUrl = response[0]?.value; // 서버 응답에서 이미지 URL을 가져옵니다.
-
-                    if (imageUrl) {
-                        const quillEditor = quillInstance.current?.getEditor();
-                        const range = quillEditor?.getSelection(true);
-
-                        if (range && quillEditor) {
-                            quillEditor.insertEmbed(range.index, 'image', imageUrl);
-                            quillEditor.setSelection(range.index + 1);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error uploading image:', error);
-                }
+                formData.append('file', file as any);
+                const imgUrl = (await saveImageList(formData));
+                
+                const editor = (quillInstance?.current as any).getEditor();
+                const range = editor.getSelection();
+                editor.insertEmbed(range.index, 'image', imgUrl[imgUrl.length-1].value);
+                editor.setSelection(range.index + 1);
+            } catch (error) {
+                console.log(error);
             }
         });
     };
-
-    const modules = useMemo(() => ({
-        toolbar: {
-            container: [
-                [{ 'header': '1' }, { 'header': '2' }],
-                [{ 'size': [] }],
-                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'align': [] }],
-                ['image']
-            ],
-            handlers: {
-                image: imageHandler
-            }
-        },
-        clipboard: {
-            matchVisual: false
-        }
-    }), []);
+    const modules = useMemo(
+        () => ({
+            toolbar: {
+                container: [
+                    [{ header: '1' }, { header: '2' }],
+                    [{ size: [] }],
+                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                    [{ list: 'ordered' }, { list: 'bullet' }, { align: [] }],
+                    ['image'],
+                ],
+                handlers: { image: imageHandler },
+            },
+            clipboard: {
+                matchVisual: false,
+            },
+        }),
+        [],
+    );
 
     const formats = [
         'header',

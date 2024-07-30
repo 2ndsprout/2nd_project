@@ -74,7 +74,7 @@ export const getUser = async () => {
 }
 // 유저정보 가져오기(어드민)
 export const getUserDetail = async (data: string) => {
-    const response = await UserApi.get('/api/user/detail', { headers: {'Username': data}});
+    const response = await UserApi.get('/api/user/detail', { headers: { 'Username': data } });
     return response.data;
 }
 export const getUserList = async (data: number) => {
@@ -150,6 +150,7 @@ export const saveImage = async (data: any) => {
     });
     return response.data;
 }
+
 export const saveImageList = async (data: any) => {
     const response = await UserApi.post('/api/image/list', data, {
         headers: {
@@ -158,9 +159,9 @@ export const saveImageList = async (data: any) => {
     });
     return response.data;
 }
+
 export const deleteImageList = async () => {
-    const response = await UserApi.delete('/api/image/list');
-    return response.data;
+    await UserApi.delete('/api/image/list');
 }
 
 export const saveProfileImage = async (data: any) => {
@@ -228,7 +229,7 @@ export const updateCategory = async (data: UpdateCategoryProps) => {
 }
 
 export const deleteCategory = async (data: number) => {
-    await UserApi.delete('/api/category', {headers: {'CategoryId': data}});
+    await UserApi.delete('/api/category', { headers: { 'CategoryId': data } });
 
 }
 
@@ -248,8 +249,8 @@ export const getArticleList = async ({ categoryId, page }: getArticleList) => {
     return response.data;
 }
 
-export const getArticle = async ( data: number ) => {
-    const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data }} );
+export const getArticle = async (data: number) => {
+    const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data } });
     return response.data
 }
 
@@ -268,10 +269,10 @@ export const postArticle = async (data: PostArticleProps) => {
 
 interface UpdateArticleProps {
     categoryId: number;
-    articleId: number; 
+    articleId: number;
     title: string;
-    content: string; 
-    topActive?: boolean; 
+    content: string;
+    topActive?: boolean;
     articleTagId?: number[];
 }
 
@@ -281,12 +282,12 @@ export const updateArticle = async (data: UpdateArticleProps) => {
 }
 
 export const getTopArticleList = async (data: number) => {
-    const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId' :  data}});
+    const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId': data } });
     return response.data;
 }
 
 export const deleteArticle = async (data: number) => {
-    await UserApi.delete('/api/article', {headers: {'ArticleId': data}});
+    await UserApi.delete('/api/article', { headers: { 'ArticleId': data } });
 }
 
 interface SearchArticleParams {
@@ -330,7 +331,7 @@ export const postTag = async (data: TagProps) => {
 }
 
 export const getTag = async (data: number) => {
-    const response = await UserApi.get('/api/tag', {headers: {'tagId': data}});
+    const response = await UserApi.get('/api/tag', { headers: { 'tagId': data } });
     return response.data;
 }
 
@@ -341,30 +342,30 @@ export const getTag = async (data: number) => {
 interface LoveResponseDTO {
     isLoved: boolean;
     count: number;
-  }
-  
-export const toggleLove = async (articleId: number): Promise<LoveResponseDTO> => {
-try {
-    const response = await UserApi.post('/api/love/toggle', null, {
-    headers: { 'ArticleId': articleId }
-    });
-    return response.data;
-} catch (error) {
-    console.error('Error toggling love:', error);
-    throw error;
 }
+
+export const toggleLove = async (articleId: number): Promise<LoveResponseDTO> => {
+    try {
+        const response = await UserApi.post('/api/love/toggle', null, {
+            headers: { 'ArticleId': articleId }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error toggling love:', error);
+        throw error;
+    }
 };
 
 export const getLoveInfo = async (articleId: number): Promise<LoveResponseDTO> => {
-try {
-    const response = await UserApi.get('/api/love/info', {
-    headers: { 'ArticleId': articleId }
-    });
-    return response.data;
-} catch (error) {
-    console.error('Error getting love info:', error);
-    throw error;
-}
+    try {
+        const response = await UserApi.get('/api/love/info', {
+            headers: { 'ArticleId': articleId }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error getting love info:', error);
+        throw error;
+    }
 };
 
 // Center
@@ -380,7 +381,7 @@ export const postCenter = async (data: CenterProps) => {
 }
 
 export const getCenter = async (data: number) => {
-    const response = await UserApi.get('/api/center', {headers: {'CenterId': data}});
+    const response = await UserApi.get('/api/center', { headers: { 'CenterId': data } });
     return response.data;
 }
 
@@ -403,7 +404,7 @@ export const updateCenter = async (data: UpdateCenterProps) => {
 }
 
 export const deleteCenter = async (data: number) => {
-    await UserApi.delete('/api/center', {headers: {'CenterId': data}});
+    await UserApi.delete('/api/center', { headers: { 'CenterId': data } });
 }
 
 // Lesson
@@ -421,12 +422,12 @@ export const postLesson = async (data: LessonProps) => {
 }
 
 export const getLesson = async (data: number) => {
-    const response = await UserApi.get('/api/lesson', {headers: {'LessonId': data}});
+    const response = await UserApi.get('/api/lesson', { headers: { 'LessonId': data } });
     return response.data;
 }
 
 export const getLessonList = async (data: number, page: number) => {
-    const response = await UserApi.get('/api/lesson/list', {headers: {'CenterId':data, 'Page': page}});
+    const response = await UserApi.get('/api/lesson/list', { headers: { 'CenterId': data, 'Page': page } });
     return response.data;
 }
 
@@ -436,7 +437,7 @@ export const getMyLessonList = async () => {
 }
 
 export const getStaffLessonList = async (data: number) => {
-    const response = await UserApi.get ('/api/lesson/staff', {headers: {'CenterId':data}});
+    const response = await UserApi.get('/api/lesson/staff', { headers: { 'CenterId': data } });
     return response.data;
 }
 interface UpdateLessonProps {
@@ -454,7 +455,7 @@ export const updateLesson = async (data: UpdateLessonProps) => {
 }
 
 export const deleteLesson = async (data: number) => {
-    await UserApi.delete('/api/lesson', {headers: {'LessonId': data}});
+    await UserApi.delete('/api/lesson', { headers: { 'LessonId': data } });
 }
 
 // Comment
@@ -481,7 +482,7 @@ export const updateComment = async (data: UpdateCommentProps) => {
 }
 
 export const deleteComment = async (data: number) => {
-    await UserApi.delete('/api/comment', {headers: {'CommentId': data}});
+    await UserApi.delete('/api/comment', { headers: { 'CommentId': data } });
 }
 
 export interface GetCommentListProps {
@@ -490,14 +491,14 @@ export interface GetCommentListProps {
 }
 
 export const getCommentList = async ({ articleId, page }: GetCommentListProps) => {
-    const response = await UserApi.get('/api/comment/list', { headers: { 'ArticleId': articleId, 'Page': page }});
+    const response = await UserApi.get('/api/comment/list', { headers: { 'ArticleId': articleId, 'Page': page } });
     return response.data;
 }
 
 // Lesson Request
 
 interface LessonRequestProps {
-    id : number | null,
+    id: number | null,
     lessonId: number,
     type: number
 }
@@ -508,7 +509,7 @@ export const updateLessonRequest = async (data: LessonRequestProps) => {
 }
 
 export const deleteLessonRequest = async (data: number) => {
-    await UserApi.delete('/api/lesson/user', {headers: {'LessonUserId': data}});
+    await UserApi.delete('/api/lesson/user', { headers: { 'LessonUserId': data } });
 }
 
 export const postLessonRequest = async (data: LessonRequestProps) => {
@@ -517,7 +518,7 @@ export const postLessonRequest = async (data: LessonRequestProps) => {
 }
 
 export const getLessonRequest = async (data: number) => {
-    const response = await UserApi.get('/api/lesson/user', {headers: {'LessonUserId': data}});
+    const response = await UserApi.get('/api/lesson/user', { headers: { 'LessonUserId': data } });
     return response.data;
 }
 

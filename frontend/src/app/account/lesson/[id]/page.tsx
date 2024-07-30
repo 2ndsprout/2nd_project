@@ -1,7 +1,7 @@
 'use client';
-import { getProfile, getUser, getLesson, postLesson, postLessonRequest, getCenterList } from "@/app/API/UserAPI";
+import { getProfile, getUser, getLesson, postLesson, postLessonRequest, getCenterList, deleteLesson } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Calendar from "@/app/Global/component/Calendar";
 import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
@@ -11,6 +11,7 @@ import useAlert from "@/app/Global/hook/useAlert";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
 import AlertModal from "@/app/Global/component/AlertModal";
 export default function Page() {
+    const router = useRouter();
     const params = useParams();
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
@@ -72,13 +73,32 @@ export default function Page() {
         postLessonRequest({ id: null, lessonId, type: 0 })
             .then(() => {
                 closeConfirm();
-                showAlert('수강 신청 완료',`/account/lesson/${lessonId}`);
+                showAlert('수강 신청 완료', `/account/lesson/${lessonId}`);
             }).catch((error) => {
                 closeConfirm();
-                showAlert('수강 신청 중 오류:'+ error);
+                showAlert('수강 신청 중 오류:' + error);
                 setError('수강 신청 중 오류가 발생했습니다.');
             });
     }
+
+    function updateLesson(lessonId: number) {
+        router.push(`/account/mypage/lesson/${lessonId}/modify`);
+    }
+
+
+    async function deleteLessons(lessonId: number) {
+        try {
+            await deleteLesson(lessonId);
+            closeConfirm();;
+            showAlert('레슨 삭제가 완료되었습니다.', '/account/mypage/lesson/manage');
+
+        } catch (error) {
+            closeConfirm();;
+            console.error('레슨 삭제 처리 중 오류 발생:', error);
+            showAlert('레슨 삭제중 오류가 발생했습니다.');
+        }
+    }
+
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
@@ -90,11 +110,12 @@ export default function Page() {
                                 <div className="ml-[20px] mb-[15px]">
                                     <img src={targetLesson.profileResponseDTO?.url ? targetLesson.profileResponseDTO.url : '/user.png'} className="my-[15px] w-[200px] flex h-[200px] justify-center rounded-full" alt="profile" />
                                 </div>
-                                <div className="flex flex-col justify-center items-start m-[20px]">
-                                    <p className="text-2xl font-bold mb-4 "><p className="border-b" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>프로그램 명</p><p className="mt-[30px]">{targetLesson.name}</p></p>
-                                    <p className="font-semibold flex flex-row">강사 <p className="ml-[40px] mr-[10px]">:</p> {targetLesson.profileResponseDTO.name}</p>
-                                    <p className="font-semibold flex flex-row"><p>수강 기간 :</p> <p className="ml-[10px]">{getDateFormat(targetLesson.startDate)} ~ {getDateFormat(targetLesson.endDate)}</p></p>
-                                    <p className="font-semibold flex flex-row"><p>강의 시간 :</p> <p className="ml-[10px]"> {getTimeFormat(targetLesson.startDate)} ~ {getTimeFormat(targetLesson.endDate)}</p></p>
+                                <div className="flex flex-col justify-center items-start m-[20px] gap-1">
+                                    <span className="text-2xl font-bold mb-4 "><span className="border-b text-secondary">프로그램 명</span></span>
+                                    <span className="mt-[10px] mb-[20px] text-2xl font-bold mb-4">{targetLesson.name}</span>
+                                    <span className="font-semibold flex flex-row"><span className="text-secondary">강사</span><span className="text-secondary ml-[40px] mr-[10px]">:</span> {targetLesson.profileResponseDTO.name}</span>
+                                    <span className="font-semibold flex flex-row"><span className="text-secondary">수강 기간 :</span> <span className="ml-[10px]">{getDateFormat(targetLesson.startDate)} ~ {getDateFormat(targetLesson.endDate)}</span></span>
+                                    <span className="font-semibold flex flex-row"><span className="text-secondary">강의 시간 :</span> <span className="ml-[10px]"> {getTimeFormat(targetLesson.startDate)} ~ {getTimeFormat(targetLesson.endDate)}</span></span>
                                 </div>
                             </div>
                             <div className="flex ">
@@ -102,24 +123,38 @@ export default function Page() {
                             </div>
                         </div>
                         <div className="w-[1200px] relative bg-black h-[700px] mt-[50px] my-[10px] items-center rounded flex mb-[50px]">
-                            <p className="block break-words whitespace-normal overflow-y-hidden h-[680px] w-full overflow-y-scroll m-2">
+                            <div className="block break-words whitespace-normal overflow-y-hidden h-[680px] w-full overflow-y-scroll m-2">
                                 <div dangerouslySetInnerHTML={{ __html: targetLesson.content }} />
-                            </p>
+                            </div>
                         </div>
 
                         <div className="w-[1200px] h-[80px] justify-end items-start flex">
-                            <a href="/account/mypage/lesson/${targetLesson.id}/modify">dd</a>
-                            <button
+                            {targetLesson?.profileResponseDTO?.name !== profile.name ? <button
                                 id='submit'
                                 className='bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
                                 onClick={() => Submit()}
                             >
                                 수강 신청
-                            </button>
+                            </button> : <div className="flex gap-3">
+                                <button
+                                    id='submit'
+                                    className='w-[100px] bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
+                                    onClick={() => finalConfirm(targetLesson.name, '수정 페이지로 넘어 가시겠습니까?', '확인', () => updateLesson(targetLesson.id))}
+                                >
+                                    수정
+                                </button>
+                                <button
+                                    id='submit'
+                                    className='w-[100px] bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
+                                    onClick={() => finalConfirm(targetLesson.name, '해당 레슨을 삭제하시겠습니까?', '삭제', () => deleteLessons(targetLesson.id))}
+                                >
+                                    삭제
+                                </button>
+                            </div>}
                         </div>
                     </div>
                 ) : (
-                    <p>Loading lesson details...</p>
+                    <span>Loading lesson details...</span>
                 )}
             </div>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
