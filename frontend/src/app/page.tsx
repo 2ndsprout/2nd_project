@@ -3,10 +3,10 @@
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getArticleList, getCategoryList, getCenterList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
-
 import Calendar from "./Global/component/Calendar";
 import Slider from "./Global/component/Slider";
 import Main from "./Global/layout/MainLayout";
+
 
 
 
@@ -35,11 +35,7 @@ export default function Page() {
         .then(r => {
           setUser(r);
           console.log(r);
-          if (Array.isArray(r.aptResponseDto.url)) {
-            setUrlList(r.aptResponseDto.url);
-          } else {
-            console.log('urlList is not an array:', r.aptResponseDto.url);
-          }
+          setUrlList(r.aptResponseDTO.urlList);
         })
         .catch(e => console.log(e));
       if (PROFILE_ID) {
