@@ -487,18 +487,19 @@ public class MultiService {
         this.userCheck(user, profile);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
-        if (_multiKey.isPresent()) for (String value : _multiKey.get().getVs()) {
-            Optional<FileSystem> _fileSystem = fileSystemService.get(value);
-            if (_fileSystem.isPresent()) {
-                File file = new File(path + _fileSystem.get().getV());
-                if (file.exists()) {
-                    if (file.getParentFile().list().length == 0) this.deleteFolder(file.getParentFile());
-                    else file.delete();
+        if (_multiKey.isPresent())
+            for (String value : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(value);
+                if (_fileSystem.isPresent()) {
+                    File file = new File(path + _fileSystem.get().getV());
+                    if (file.exists()) {
+                        if (file.getParentFile().list().length == 0) this.deleteFolder(file.getParentFile());
+                        else file.delete();
+                    }
+                    fileSystemService.delete(_fileSystem.get());
                 }
-                fileSystemService.delete(_fileSystem.get());
             }
-            multiKeyService.delete(_multiKey.get());
-        }
+        multiKeyService.delete(_multiKey.get());
     }
 
 
@@ -1245,7 +1246,7 @@ public class MultiService {
             throw new IllegalArgumentException("권한이 없음");
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         MultiKey newMultiKey = null;
-        if(_newMultiKey.isPresent())
+        if (_newMultiKey.isPresent())
             newMultiKey = _newMultiKey.get();
         return centerResponseDTO(cultureCenter, newMultiKey);
     }
@@ -1294,7 +1295,7 @@ public class MultiService {
         }
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         MultiKey newMultiKey = null;
-        if(_multiKey.isPresent())
+        if (_multiKey.isPresent())
             newMultiKey = _multiKey.get();
         return centerResponseDTO(cultureCenter, newMultiKey);
 

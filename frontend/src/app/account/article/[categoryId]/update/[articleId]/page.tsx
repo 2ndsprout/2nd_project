@@ -1,6 +1,6 @@
 'use client';
 
-import { getArticle, getProfile, getUser, saveImageList, updateArticle, deleteImageList } from '@/app/API/UserAPI';
+import { getArticle, getCenterList, getProfile, getUser, saveImageList, updateArticle, deleteImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -11,6 +11,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../../tag/page';
 import DOMPurify from 'dompurify';
+
 
 interface Tag {
     id: number;
@@ -34,14 +35,62 @@ export default function EditPage() {
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
+    const [localImages, setLocalImages] = useState<File[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [centerList, setCenterList] = useState([] as any[]);
     const [showEditConfirm, setShowEditConfirm] = useState(false);
     const [hasEditPermission, setHasEditPermission] = useState(false);
     const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
-
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
     const router = useRouter();
+
+    useEffect(() => {
+        if (ACCESS_TOKEN) {
+            getUser()
+            .then(r => 
+                setUser(r))
+            .catch(e => console.log(e));
+            if (PROFILE_ID)
+                getProfile()
+            .then(r => {
+                setProfile(r)
+                getCenterList()
+                .then(r => {
+                    setCenterList(r);
+                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                })
+        })
+            .catch(e => console.log(e));
+            else
+                redirect('/account/profile');
+        }
+        else
+            redirect('/account/login');
+
+        if (articleId) {
+            getArticle(Number(articleId))
+                .then(article => {
+                    setTitle(article.title);
+                    setContent(article.content);
+                    setTags(article.tagResponseDTOList.map((tag: any) => ({
+                        id: tag.id,
+                        name: tag.name
+                    })));
+                    setUploadedImages(article.urlList ? article.urlList.map((url: string, index: number) => ({
+                        key: `existing-${index}`,
+                        value: url
+                    })) : []);
+                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                })
+                .catch(e => console.log(e));
+        }
+
+        return () => {
+            setUploadedImages([]);
+        };
+    }, [ACCESS_TOKEN, PROFILE_ID, articleId]);
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -250,7 +299,7 @@ export default function EditPage() {
 
     if (!hasEditPermission) {
         return (
-            <Main user={user} profile={profile} isLoading={isLoading}>
+            <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
                 <div className="flex justify-center items-center h-screen">
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                         <strong className="font-bold">접근 불가!</strong>
@@ -265,7 +314,7 @@ export default function EditPage() {
     }
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="flex flex-1 w-full">
                 <div className="bg-black w-full min-h-screen text-white flex">
                     <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">

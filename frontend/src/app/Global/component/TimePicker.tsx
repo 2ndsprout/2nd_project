@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -6,10 +5,12 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
 import dayjs, { Dayjs } from 'dayjs';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import { useState } from 'react';
+
 
 interface TimePickerViewRenderersProps {
-  startTime?: Dayjs;
-  endTime?: Dayjs;
+  startTime?: Dayjs | string;
+  endTime?: Dayjs | string;
   onStartTimeChange: (time: Dayjs) => void;
   onEndTimeChange: (time: Dayjs) => void;
   onStartTimeError: (error: string) => void;
@@ -24,8 +25,12 @@ const TimePickerViewRenderers: React.FC<TimePickerViewRenderersProps> = ({
   onStartTimeError,
   onEndTimeError
 }) => {
-  const [startTime, setStartTime] = React.useState<Dayjs>(initialStartTime || dayjs().startOf('day'));
-  const [endTime, setEndTime] = React.useState<Dayjs>(initialEndTime || dayjs().startOf('day'));
+  const [startTime, setStartTime] = useState<Dayjs | null>(
+    initialStartTime ? dayjs(initialStartTime) : dayjs().startOf('day')
+  );
+  const [endTime, setEndTime] = useState<Dayjs | null>(
+    initialEndTime ? dayjs(initialEndTime) : dayjs().startOf('day')
+  );
 
   const handleStartTimeChange = (newValue: Dayjs | null) => {
     if (newValue) {

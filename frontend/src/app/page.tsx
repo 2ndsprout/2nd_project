@@ -2,7 +2,7 @@
 
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getArticleList, getCategoryList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
+import { getArticleList, getCategoryList, getCenterList, getMyLessonList, getProfile, getUser } from "./API/UserAPI";
 
 import Calendar from "./Global/component/Calendar";
 import Slider from "./Global/component/Slider";
@@ -15,6 +15,7 @@ export default function Page() {
   const [user, setUser] = useState(null as any);
   const [profile, setProfile] = useState(null as any);
   const [categories, setCategories] = useState([] as any[]);
+  const [centerList, setCenterList] = useState([] as any[]);
   const [notiArticleList, setNotiArticleList] = useState([] as any[]);
   const [freeArticleList, setFreeArticleList] = useState([] as any[]);
   const [saleArticleList, setSaleArticleList] = useState([] as any[]);
@@ -48,14 +49,19 @@ export default function Page() {
             getCategoryList()
               .then(r => setCategories(r))
               .catch(e => console.log(e))
+            getCenterList()
+              .then(r => {
+                setCenterList(r);
+              })
+              .catch(e => console.log(e));
             getMyLessonList()
               .then(r => {
                 r.forEach((r: any) => {
                   if(r.type === 'APPLIED') {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
-                  const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                 });
+                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
               })
               .catch(e => console.log(e));
           })
@@ -141,7 +147,7 @@ export default function Page() {
   };
 
   return (
-    <Main user={user} profile={profile} isLoading={isLoading}>
+    <Main user={user} profile={profile} centerList={centerList} isLoading={isLoading}>
       <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
         <Slider urlList={displayUrls} />
         <Calendar lessons={lessons} height={480} width={900} />
@@ -154,7 +160,7 @@ export default function Page() {
               <thead>
                 <tr className="h-[40px] border-b-2 border-gray-500">
                   <th className="w-[100px] text-primary">번호</th>
-                  <th className="w-[100px]">작성자</th>
+                  <th className="w-[150px]">작성자</th>
                   <th className="w-[200px]">제목</th>
                 </tr>
               </thead>

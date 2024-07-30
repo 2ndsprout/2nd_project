@@ -1,6 +1,7 @@
 'use client'
 
-import { deleteArticle, getArticle, getProfile, getUser } from '@/app/API/UserAPI';
+
+import { deleteArticle, getArticle, getCenterList, getProfile, getUser } from '@/app/API/UserAPI';
 import { getDateTimeFormat } from '@/app/Global/component/Method';
 import Main from "@/app/Global/layout/MainLayout";
 import DOMPurify from 'dompurify';
@@ -41,6 +42,7 @@ export default function ArticleDetail() {
     const [error, setError] = useState('');
     const [profile, setProfile] = useState(null as any);
     const [ isDeleted, setIsDeleted ] = useState(false);
+    const [centerList, setCenterList] = useState([] as any[]);
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
@@ -58,7 +60,15 @@ export default function ArticleDetail() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
+                        getCenterList()
+                            .then(r => {
+                                setCenterList(r);
+                            })
+                            .catch(e => console.log(e));
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                        // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
+                        // .then(r => setSearch(r))
+                        // .catch(e => console.log
                     })
                     .catch(e => console.log(e));
             else
@@ -222,7 +232,7 @@ export default function ArticleDetail() {
     );
     
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             {content}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
