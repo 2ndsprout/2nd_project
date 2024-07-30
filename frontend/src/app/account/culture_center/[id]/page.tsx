@@ -103,7 +103,7 @@ export default function Page() {
 
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="bg-black w-full min-h-screen text-white flex h-full">
                 <aside className="w-1/6 p-6">
                     <div className="mt-5 ml-20 flex flex-col items-start">
