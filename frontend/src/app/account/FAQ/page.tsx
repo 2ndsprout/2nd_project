@@ -42,8 +42,8 @@ export default function Page() {
     const [openArticleIds, setOpenArticleIds] = useState<Set<number>>(new Set());
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalElements, setTotalElements] = useState(0);
     const [error, setError] = useState('');
+    const [categoryId, setCategoryId] = useState<any>(null);
 
 
     useEffect(() => {
@@ -63,6 +63,7 @@ export default function Page() {
                                 setCategories(r);
                                 r.forEach((r: any) => {
                                     if (r?.name === 'FAQ') {
+                                        setCategoryId(r.id);
                                         getArticleList({ 'categoryId': r?.id })
                                             .then(r => {
                                                 console.log(r);
@@ -97,19 +98,27 @@ export default function Page() {
         });
     };
 
-    // const fetchArticles = async () => {
-    //     try {
-    //         let data: ArticlePage;
+    const fetchArticles = async () => {
+        try {
+            let data: ArticlePage;
 
-    //         setArticleList(articleList);
-    //         setTotalPages(Math.max(1, data.totalPages));
-    //         setTotalElements(data.totalElements);
-    //         setCurrentPage(data.number + 1);
-    //     } catch (error) {
-    //         console.error('Error fetching articles:', error);
-    //         setError('게시물을 불러오는데 실패했습니다.');
-    //     }
-    // };
+            data = await getArticleList({
+                page: currentPage - 1,
+                categoryId: Number(categoryId)
+            });
+
+            setArticleList(data.content);
+            setTotalPages(Math.max(1, data.totalPages));
+            setCurrentPage(data.number + 1);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            setError('게시물을 불러오는데 실패했습니다.');
+        }
+    };
+
+    useEffect(() => {
+        fetchArticles();
+    }, [categoryId, currentPage]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장

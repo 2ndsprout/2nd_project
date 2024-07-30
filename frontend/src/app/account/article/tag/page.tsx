@@ -61,7 +61,7 @@ const TagInput: React.FC<TagInputProps> = ({ tags, setTags, deletedTagIds, setDe
 
 
     return (
-        <div className="mt-5 flex">
+        <div className="flex">
             <input
                 type="text"
                 value={input}
