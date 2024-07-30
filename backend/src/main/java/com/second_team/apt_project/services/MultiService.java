@@ -1199,16 +1199,16 @@ public class MultiService {
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
         if (_multiKey.isPresent()) {
             for (String values : _multiKey.get().getVs()) {
-                Optional<MultiKey> _centerMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+                Optional<MultiKey> _centerMultiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
                 Optional<FileSystem> _fileSystem = fileSystemService.get(values);
                 if (_fileSystem.isPresent()) {
                     String newFile = "/api/center" + "/" + cultureCenter.getId() + "/";
                     String newUrl = this.fileMove(_fileSystem.get().getV(), newFile, _fileSystem.get());
                     if (_centerMultiKey.isPresent()) {
-                        MultiKey multiKey = multiKeyService.add(_centerMultiKey.get(), ImageKey.Center.getKey(cultureCenter.getId().toString() + "." + _centerMultiKey.get().getVs().size()));
+                        MultiKey multiKey = multiKeyService.add(_centerMultiKey.get(), ImageKey.CENTER.getKey(cultureCenter.getId().toString() + "." + _centerMultiKey.get().getVs().size()));
                         fileSystemService.save(multiKey.getVs().getLast(), newUrl);
                     } else {
-                        MultiKey multiKey = multiKeyService.save(ImageKey.Center.getKey(cultureCenter.getId().toString()), ImageKey.Center.getKey(cultureCenter.getId().toString() + ".0"));
+                        MultiKey multiKey = multiKeyService.save(ImageKey.CENTER.getKey(cultureCenter.getId().toString()), ImageKey.CENTER.getKey(cultureCenter.getId().toString() + ".0"));
                         fileSystemService.save(multiKey.getVs().getLast(), newUrl);
                     }
                 }
@@ -1216,7 +1216,7 @@ public class MultiService {
             }
             multiKeyService.delete(_multiKey.get());
         }
-        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         MultiKey multiKey = null;
         if (_newMultiKey.isPresent()) multiKey = _newMultiKey.get();
         return this.centerResponseDTO(cultureCenter, multiKey);
@@ -1243,7 +1243,7 @@ public class MultiService {
             throw new DataNotFoundException("센터 객체 없음");
         if (!cultureCenter.getApt().equals(user.getApt()) && UserRole.ADMIN != user.getRole())
             throw new IllegalArgumentException("권한이 없음");
-        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         MultiKey newMultiKey = null;
         if(_newMultiKey.isPresent())
             newMultiKey = _newMultiKey.get();
@@ -1262,7 +1262,7 @@ public class MultiService {
             throw new IllegalArgumentException("권한 불일치");
         cultureCenterService.update(cultureCenter, type, endDate, startDate);
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
-        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         if (_oldMulti.isPresent()) if (key != null) {
             for (String k : key) {
                 Optional<FileSystem> _fileSystem = fileSystemService.get(k);
@@ -1276,15 +1276,15 @@ public class MultiService {
         if (_newMultiKey.isPresent()) {
             String newFile = "/api/center" + "/" + cultureCenter.getId() + "/";
             for (String values : _newMultiKey.get().getVs()) {
-                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+                Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
                 Optional<FileSystem> _newFileSystem = fileSystemService.get(values);
                 if (_newFileSystem.isPresent()) {
                     String newUrl = this.fileMove(_newFileSystem.get().getV(), newFile, _newFileSystem.get());
                     if (_multiKey.isPresent()) {
-                        multiKeyService.add(_multiKey.get(), ImageKey.Center.getKey(cultureCenter.getId().toString() + "." + _multiKey.get().getVs().size()));
+                        multiKeyService.add(_multiKey.get(), ImageKey.CENTER.getKey(cultureCenter.getId().toString() + "." + _multiKey.get().getVs().size()));
                         fileSystemService.save(_multiKey.get().getVs().getLast(), newUrl);
                     } else {
-                        MultiKey multiKey = multiKeyService.save(ImageKey.Center.getKey(cultureCenter.getId().toString()), ImageKey.Center.getKey(cultureCenter.getId().toString() + ".0"));
+                        MultiKey multiKey = multiKeyService.save(ImageKey.CENTER.getKey(cultureCenter.getId().toString()), ImageKey.CENTER.getKey(cultureCenter.getId().toString() + ".0"));
                         fileSystemService.save(multiKey.getVs().getLast(), newUrl);
 
                     }
@@ -1292,7 +1292,7 @@ public class MultiService {
             }
             multiKeyService.delete(_newMultiKey.get());
         }
-        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         MultiKey newMultiKey = null;
         if(_multiKey.isPresent())
             newMultiKey = _multiKey.get();
@@ -1311,7 +1311,7 @@ public class MultiService {
             throw new DataNotFoundException("센터 객체 없음");
         if (user.getRole() == UserRole.USER && !user.getApt().equals(cultureCenter.getApt()))
             throw new IllegalArgumentException("권한 불일치");
-        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
         if (_multiKey.isPresent()) {
             for (String values : _multiKey.get().getVs()) {
@@ -1338,7 +1338,7 @@ public class MultiService {
         List<CenterResponseDTO> centerResponseDTOS = new ArrayList<>();
 
         for (CultureCenter cultureCenter : cultureCenterList) {
-            Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(cultureCenter.getId().toString()));
+            Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
             MultiKey multiKey = null;
             if (_multiKey.isPresent()) multiKey = _multiKey.get();
 
@@ -1362,13 +1362,36 @@ public class MultiService {
         if (cultureCenter == null)
             throw new DataNotFoundException("센터 객체가 없음");
         Lesson lesson = lessonService.save(cultureCenter, profile, name, content, startDate, endDate);
-
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
+        _multiKey.ifPresent(multiKey -> this.updateLessonContent(lesson, multiKey));
         return this.lessonResponseDTO(lesson);
+    }
+
+    private void updateLessonContent(Lesson lesson, MultiKey multiKey) {
+        String content = lesson.getContent();
+        for (String keyName : multiKey.getVs()) {
+            Optional<MultiKey> _articleMulti = multiKeyService.get(ImageKey.LESSON.getKey(lesson.getId().toString()));
+            Optional<FileSystem> _fileSystem = fileSystemService.get(keyName);
+            if (_fileSystem.isPresent()) {
+                String newFile = "/api/lesson" + "/" + lesson.getId() + "/";
+                String newUrl = this.fileMove(_fileSystem.get().getV(), newFile, _fileSystem.get());
+                if (_articleMulti.isEmpty()) {
+                    MultiKey multiKey1 = multiKeyService.save(ImageKey.LESSON.getKey(lesson.getId().toString()), ImageKey.LESSON.getKey(lesson.getId().toString() + ".0"));
+                    fileSystemService.save(multiKey1.getVs().getLast(), newUrl);
+                } else {
+                    multiKeyService.add(_articleMulti.get(), ImageKey.LESSON.getKey(lesson.getId().toString()) + "." + _articleMulti.get().getVs().size());
+                    fileSystemService.save(_articleMulti.get().getVs().getLast(), newUrl);
+                }
+                content = content.replace(_fileSystem.get().getV(), newUrl);
+            }
+        }
+        multiKeyService.delete(multiKey);
+        lessonService.updateContent(lesson, content);
     }
 
 
     private LessonResponseDTO lessonResponseDTO(Lesson lesson) {
-        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.Center.getKey(lesson.getCultureCenter().getId().toString()));
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.CENTER.getKey(lesson.getCultureCenter().getId().toString()));
         MultiKey centerMulti = null;
         if (_multiKey.isPresent()) centerMulti = _multiKey.get();
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(lesson.getProfile().getUser().getUsername() + "." + lesson.getProfile().getId()));
@@ -1442,6 +1465,8 @@ public class MultiService {
             throw new IllegalArgumentException("레슨 강사 아님");
 
         Lesson newLesson = lessonService.update(lesson, name, content, startDate, endDate);
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
+        _multiKey.ifPresent(multiKey -> this.updateLessonContent(newLesson, multiKey));
         return this.lessonResponseDTO(newLesson);
     }
 
