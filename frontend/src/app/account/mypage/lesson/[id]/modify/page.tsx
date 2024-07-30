@@ -13,35 +13,33 @@ import dynamic from "next/dynamic";
 import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faPlus, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import QuillNoSSRWrapper from "@/app/Global/component/QuillNoSSRWrapper";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
-import { getTimeFormatting } from "@/app/Global/component/Method";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 
-dayjs.extend(isSameOrBefore);
 
 const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
 
 export default function Page() {
+
     const params = useParams();
     const lessonId = Number(params?.id);
-    const [url, setUrl] = useState('');
+    const [lesson, setLesson] = useState(null as any);
     const quillInstance = useRef<ReactQuill>(null);
+    const [url, setUrl] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
-    const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
-    const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
-    const [centerList, setCenterList] = useState<any[]>([]);
+    const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
+    const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const [centerList, setCenterList] = useState([] as any[]);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
-    const [dateRange, setDateRange] = useState({ startDate: null as any, endDate: null as any });
+    const [startDate, setStartDate] = useState(null as any);
+    const [endDate, setEndDate] = useState(null as any);
     const [startTime, setStartTime] = useState<Dayjs | string>('');
     const [endTime, setEndTime] = useState<Dayjs | string>('');
     const [centerId, setCenterId] = useState(0);
-    const [centerOpenTime, setCenterOpenTime] = useState('');
-    const [centerCloseTime, setCenterCloseTime] = useState('');
     const [centerError, setCenterError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [lessonName, setLessonName] = useState('');
@@ -49,6 +47,7 @@ export default function Page() {
     const [lessonContent, setLessonContent] = useState(``);
     const [lessonStartDate, setLessonStartDate] = useState(null as any);
     const [dateError, setDateError] = useState('');
+    const [contentError, setContentError] = useState('')
     const [startTimeError, setStartTimeError] = useState('');
     const [endTimeError, setEndTimeError] = useState('');
     const [first, setFirst] = useState(true);
@@ -56,36 +55,8 @@ export default function Page() {
     const [selectedCenter, setSelectedCenter] = useState('');
 
     const submit = () => {
-        const lessonStartDateString = `${dateRange.startDate}T${startTime}`;
-        const lessonEndDateString = `${dateRange.endDate}T${endTime}`;
-        const now = dayjs();
-
-        // 시작일이 현재 날짜 이전인지 확인
-        if (dayjs(dateRange.startDate).isBefore(now, 'day')) {
-            closeConfirm();
-            showAlert('레슨 시작일은 현재 날짜 이후여야 합니다.');
-            return;
-        }
-
-        // 종료일이 시작일보다 이전인지 확인
-        if (dayjs(dateRange.endDate).isBefore(dayjs(dateRange.startDate), 'day')) {
-            closeConfirm();
-            showAlert('레슨 종료일은 레슨 시작일과 같거나 그 이후여야 합니다.');
-            return;
-        }
-
-        const startTime24 = dayjs(startTime, 'HH:mm:ss');
-        const endTime24 = dayjs(endTime, 'HH:mm:ss');
-        const centerOpenTime24 = dayjs(centerOpenTime, 'HH:mm');
-        const centerCloseTime24 = dayjs(centerCloseTime, 'HH:mm');
-
-        // 레슨 시간이 문화센터 운영 시간 내에 있는지 확인
-        if (startTime24.isBefore(centerOpenTime24) || endTime24.isAfter(centerCloseTime24)) {
-            closeConfirm();
-            showAlert('레슨 시간은 문화센터 운영 시간 내에 있어야 합니다.');
-            return;
-        }
-
+        const lessonStartDateString = `${startDate}T${startTime}`;
+        const lessonEndDateString = `${endDate}T${endTime}`;
         setLessonStartDate(lessonStartDateString);
         setLessonEndDate(lessonEndDateString);
     };
@@ -99,17 +70,17 @@ export default function Page() {
             setCenterError('문화 센터를 선택해주세요.');
         } else {
             setCenterError('');
-            const selectedCenter = centerList.find(center => center.id === Number(value));
-            if (selectedCenter) {
-                setCenterOpenTime(getTimeFormatting(selectedCenter.startDate));
-                setCenterCloseTime(getTimeFormatting(selectedCenter.endDate));
-            }
         }
     };
 
     const allErrors = () => {
-        const errors = [centerError, dateError, startTimeError, endTimeError, nameError];
-        return errors.find(error => error !== '') || '';
+        if (centerError) return centerError;
+        if (dateError) return dateError;
+        if (startTimeError) return startTimeError;
+        if (endTimeError) return endTimeError;
+        if (nameError) return nameError;
+        if (contentError) return contentError;
+        return '';
     };
 
     const validateInput = (value: string) => {
@@ -130,32 +101,48 @@ export default function Page() {
     };
 
     const handleDateChange = (newValue: DateValueType | string) => {
+        console.log(startDate, endDate);
+
         if (typeof newValue === 'object' && newValue !== null) {
-            const { startDate, endDate } = newValue;
-            setDateRange({ startDate, endDate });
+            // Date 객체가 있는 경우
+            const startISO = newValue.startDate ? newValue.startDate : null;
+            const endISO = newValue.endDate ? newValue.endDate : null;
+            setStartDate(startISO);
+            setEndDate(endISO);
             setDateError('');
+
         } else if (typeof newValue === 'string') {
+            // 문자열 오류 메시지 처리
             setDateError(newValue);
+            console.log("Error message received:", newValue);
+        } else {
+            console.log("Unhandled DateValueType:", newValue);
         }
     };
 
+
     const handleStartTimeChange = (time: Dayjs | string) => {
-        const dayjsTime = typeof time === 'string' ? dayjs(time, 'HH:mm') : time;
-        setStartTime(dayjsTime.format('HH:mm:ss'));
+        // 문자열인 경우 Dayjs 객체로 변환
+        const dayjsTime = typeof time === 'string' ? dayjs(time) : time;
+        setStartTime(dayjsTime.format('HH:mm:ss')); // 포맷된 시간 문자열 출력
     };
 
     const handleEndTimeChange = (time: Dayjs | string) => {
-        const dayjsTime = typeof time === 'string' ? dayjs(time, 'HH:mm') : time;
-        setEndTime(dayjsTime.format('HH:mm:ss'));
+        const dayjsTime = typeof time === 'string' ? dayjs(time) : time;
+        setEndTime(dayjsTime.format('HH:mm:ss')); // 포맷된 시간 문자열 출력
     };
 
-    const handleTimeError = (errorSetter: React.Dispatch<React.SetStateAction<string>>, error: string) => {
-        errorSetter(error);
+    const handleStartTimeError = (error: string) => {
+        setStartTimeError(error);
+        if (error == '')
+            setStartTimeError('');
     };
 
-    const handleStartTimeError = (error: string) => handleTimeError(setStartTimeError, error);
-
-    const handleEndTimeError = (error: string) => handleTimeError(setEndTimeError, error);
+    const handleEndTimeError = (error: string) => {
+        setEndTimeError(error);
+        if (error == '')
+            setEndTimeError('');
+    };
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -233,18 +220,12 @@ export default function Page() {
                                 getLesson(lessonId)
                                     .then(r => {
                                         console.log(r);
-                                        setDateRange({
-                                            startDate: dayjs(r.startDate).format('YYYY-MM-DD'),
-                                            endDate: dayjs(r.endDate).format('YYYY-MM-DD'),
-                                        });
                                         setStartTime(dayjs(r.startTime, 'HH:mm:ss'));
                                         setEndTime(dayjs(r.endTime, 'HH:mm:ss'));
                                         setLessonName(r.name);
                                         setLessonContent(r.content);
                                         setCenterId(r.centerResponseDTO.id);
                                         setSelectedCenter(r.centerResponseDTO.id.toString());
-                                        setCenterOpenTime(getTimeFormatting(r.centerResponseDTO.startDate));
-                                        setCenterCloseTime(getTimeFormatting(r.centerResponseDTO.endDate));
                                     })
                                     .catch(e => console.log(e));
                                     const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
@@ -263,14 +244,7 @@ export default function Page() {
 
     useEffect(() => {
         if (lessonStartDate && lessonEndDate) {
-            updateLesson({
-                id: lessonId,
-                centerId,
-                startDate: lessonStartDate,
-                endDate: lessonEndDate,
-                name: lessonName,
-                content: lessonContent
-            })
+            updateLesson({ id:lessonId, centerId: centerId, startDate: lessonStartDate, endDate: lessonEndDate, name: lessonName, content: lessonContent })
                 .then(() => {
                     closeConfirm();
                     showAlert('레슨 수정이 완료되었습니다.', '/account/mypage/lesson/manage/');
@@ -279,19 +253,28 @@ export default function Page() {
         }
     }, [lessonStartDate, lessonEndDate]);
 
+
+
     function typeTransfer(type: string) {
+        let typeName: string | null;
+
         switch (type) {
             case 'GYM':
-                return '헬스장';
+                typeName = '헬스장';
+                break;
             case 'SWIMMING_POOL':
-                return '수영장';
+                typeName = '수영장';
+                break;
             case 'SCREEN_GOLF':
-                return '스크린 골프장';
+                typeName = '스크린 골프장';
+                break;
             case 'LIBRARY':
-                return '도서관';
+                typeName = '도서관';
+                break;
             default:
-                return '문화센터가 존재하지 않습니다.';
+                typeName = '문화센터가 존재하지 않습니다.';
         }
+        return typeName;
     }
 
     function convertTo12HourFormat(time: string): string {
@@ -301,73 +284,51 @@ export default function Page() {
     return (
         <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className='flex flex-col'>
-                <label className='text-xl font-bold mb-9'>
-                    <span className='text-xl text-secondary font-bold'>레슨</span> 등록
-                </label>
+                <label className='text-xl font-bold mb-9'><label className='text-xl text-secondary font-bold'>레슨</label> 등록</label>
                 <div className="w-[1300px] border-2 h-[640px] rounded-lg flex">
-                    <div className="ml-5 mt-5 w-[50%] flex flex-col">
-                        <div className="text-secondary text-lg font-bold">
-                            문화 센터<span className="text-white"> 목록</span>
-                        </div>
+                    <div className="ml-5 mt-5 w-[50%]  flex flex-col">
+                        <div className="text-secondary text-lg font-bold">문화 센터<span className="text-white">목록</span></div>
                         <select
                             className="mt-5 font-bold text-white select select-bordered w-full max-w-xs"
-                            value={selectedCenter}
-                            onChange={handleSelectChange}
+                            defaultValue={selectedCenter}
+                            onChange={e => {
+                                handleSelectChange(e);  // handleChange 함수를 호출합니다.
+                            }}
                         >
                             <option className="text-black font-bold" value="" disabled>
                                 문화 센터 목록
                             </option>
                             {centerList.map((center) => (
-                                <option
-                                    className="text-black"
-                                    key={center.id}
-                                    value={center.id}
-                                >
+                                <option className="text-black" key={center.id} value={center.id}>
                                     {typeTransfer(center.type)}
                                 </option>
                             ))}
                         </select>
-                        {centerOpenTime && centerCloseTime && (
-                            <div>{convertTo12HourFormat(centerOpenTime)} ~ {convertTo12HourFormat(centerCloseTime)}</div>
-                        )}
                         <div className="mt-6">
-                            <div className="text-secondary text-lg font-bold">
-                                레슨 <span className="text-white">시작 및 종료일</span>
-                            </div>
-                            <div className="w-[300px] mt-5">
-                                <DatePickerComponent
-                                    startDate={dateRange.startDate ? new Date(dateRange.startDate) : null}
-                                    endDate={dateRange.endDate ? new Date(dateRange.endDate) : null}
-                                    onDateChange={handleDateChange}
-                                />
-                            </div>
+                            <div className="text-secondary text-lg font-bold">레슨 <span className="text-white">시작 및 종료일</span></div>
+                            {/* <div className="w-[300px] mt-5">
+                                <DatePickerComponent onDateChange={handleDateChange} />
+                            </div> */}
                         </div>
                         <div className="mt-6">
-                            <div className="text-secondary text-lg font-bold">
-                                레슨 <span className="text-white">시간 설정</span>
-                            </div>
+                            <div className="text-secondary text-lg font-bold">레슨 <span className="text-white">시간 설정</span></div>
                             <div className="w-[800px] mt-5">
                                 <StaticTimePickerLandscape
                                     onStartTimeChange={handleStartTimeChange}
                                     onEndTimeChange={handleEndTimeChange}
                                     onStartTimeError={handleStartTimeError}
-                                    onEndTimeError={handleEndTimeError}
-                                />
+                                    onEndTimeError={handleEndTimeError} />
                             </div>
                         </div>
                     </div>
                     <div className="mr-5 mt-5 w-[50%] flex flex-col">
-                        {allErrors() && (
-                            <div className="badge badge-warning gap-2 w-[350px] p-3">
-                                <span className="text-sm">
-                                    <FontAwesomeIcon icon={faTriangleExclamation} /> {allErrors()}
-                                </span>
-                            </div>
-                        )}
+                        {allErrors() !== '' ? <div className="badge badge-warning gap-2 w-[350px] p-3">
+                            <span className="text-sm"><FontAwesomeIcon icon={faTriangleExclamation} /> {allErrors()}</span>
+                        </div> : null}
                         <input
                             placeholder="레슨 제목을 작성해주세요"
                             type="text"
-                            value={lessonName}
+                            defaultValue={lessonName}
                             onFocus={(e) => {
                                 validateInput(e.target.value);
                                 if (e.target.value === '') setNameError('레슨 제목을 작성해주세요.');
@@ -379,14 +340,33 @@ export default function Page() {
                             onChange={handleInputChange}
                             className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         />
-                        <div className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <div className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" >
                             <QuillNoSSRWrapper
                                 forwardedRef={quillInstance}
-                                value={lessonContent}
+                                defaultValue={lessonContent}
                                 onChange={(e: any) => {
                                     setLessonContent(e);
                                     if (first) {
                                         setFirst(false);
+                                    }
+                                    if (e.length <= 10) {
+                                        setContentError('레슨 내용을 작성해주세요');
+                                    } else {
+                                        setContentError('');
+                                    }
+                                }}
+                                onFocus={(e: any) => {
+                                    if (e.length <= 10) {
+                                        setContentError('레슨 내용을 작성해주세요.');
+                                    } else {
+                                        setContentError('');
+                                    }
+                                }}
+                                onKeyUp={(e: any) => {
+                                    if (e.length <= 10) {
+                                        setContentError('레슨 내용을 작성해주세요.');
+                                    } else {
+                                        setContentError('');
                                     }
                                 }}
                                 modules={modules}
@@ -395,12 +375,10 @@ export default function Page() {
                                 placeholder="내용을 입력해주세요."
                             />
                         </div>
-                        <button
-                            className="mt-[20px] btn btn-active btn-secondary text-lg text-black"
+                        <button className="mt-[20px] btn btn-active btn-secondary text-lg text-black"
                             disabled={first || !!allErrors()}
-                            onClick={() => finalConfirm(lessonName, '해당 레슨을 등록 하시겠습니까?', '등록', submit)}
-                        >
-                            <FontAwesomeIcon icon={faPlus} /> 레슨 수정
+                            onClick={() => finalConfirm(lessonName, '해당 레슨을 수정 하시겠습니까?', '수정', submit)}>
+                            <FontAwesomeIcon icon={faPen} />레슨 수정
                         </button>
                     </div>
                 </div>
