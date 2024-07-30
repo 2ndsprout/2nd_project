@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { redirect, useParams } from "next/navigation";
-import { getCenterList, getLesson, getProfile, getUser, saveImage, updateLesson } from "@/app/API/UserAPI";
+import { deleteImageList, getCenterList, getLesson, getProfile, getUser, saveImage, saveImageList, updateLesson } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
@@ -163,39 +163,23 @@ export default function Page() {
         input.setAttribute('accept', 'image/*');
         input.click();
 
+
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
-            if (file) {
+
+            try {
                 const formData = new FormData();
-                formData.append('file', file);
-                try {
-                    const { url } = await saveImage(formData);
-                    const editor = (quillInstance.current as any).getEditor();
-                    const range = editor.getSelection();
-                    editor.insertEmbed(range.index, 'image', url);
-                    editor.setSelection(range.index + 1);
-                } catch (error) {
-                    console.error("Error uploading image:", error);
-                }
+                formData.append('file', file as any);
+                const imgUrl = (await saveImageList(formData)).url;
+                const editor = (quillInstance?.current as any).getEditor();
+                const range = editor.getSelection();
+                editor.insertEmbed(range.index, 'image', imgUrl);
+                editor.setSelection(range.index + 1);
+            } catch (error) {
+                console.log(error);
             }
         });
     };
-
-    const formats = [
-        'header',
-        'font',
-        'size',
-        'bold',
-        'italic',
-        'underline',
-        'strike',
-        'blockquote',
-        'list',
-        'bullet',
-        'align',
-        'image',
-    ];
-
     const modules = useMemo(
         () => ({
             toolbar: {
@@ -215,6 +199,20 @@ export default function Page() {
         [],
     );
 
+    const formats = [
+        'header',
+        'font',
+        'size',
+        'bold',
+        'italic',
+        'underline',
+        'strike',
+        'blockquote',
+        'list',
+        'bullet',
+        'align',
+        'image',
+    ];
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser()
@@ -249,7 +247,7 @@ export default function Page() {
                                         setCenterCloseTime(getTimeFormatting(r.centerResponseDTO.endDate));
                                     })
                                     .catch(e => console.log(e));
-                                setIsLoading(true);
+                                    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                             })
                             .catch(e => console.log(e));
                     })
@@ -260,6 +258,7 @@ export default function Page() {
         } else {
             redirect('/account/login');
         }
+        deleteImageList();
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
@@ -295,20 +294,12 @@ export default function Page() {
         }
     }
 
-    function Change(file: any) {
-        const formData = new FormData();
-        formData.append('file', file);
-        saveImage(formData)
-            .then(r => setUrl(r?.url))
-            .catch(e => console.log(e))
-    }
-
     function convertTo12HourFormat(time: string): string {
         return dayjs(time, 'HH:mm').format('A hh:mm');
     }
 
     return (
-        <Profile user={user} profile={profile} isLoading={isLoading}>
+        <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className='flex flex-col'>
                 <label className='text-xl font-bold mb-9'>
                     <span className='text-xl text-secondary font-bold'>레슨</span> 등록

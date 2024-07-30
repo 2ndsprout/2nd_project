@@ -65,25 +65,20 @@ interface PageInterface {
   className?: string;
   user: any;
   profile: any;
+  centerList: any[];
   keyword?: string;
   isLoading: boolean;
 }
 
 export default function Main(props: Readonly<PageInterface>) {
 
-  const { className, user, profile } = props;
+  const { className, user, profile, centerList } = props;
 
   const [centerHover, setCenterHover] = useState(false);
   const [boardHover, setBoardHover] = useState(false);
   const [manageHover, setManageHover] = useState(false);
   const [userHoverInterval, setUserHoverInterval] = useState<any>(null);
   const [userHover, setUserHover] = useState(false);
-  const [centerList, setCenterList] = useState([] as any[]);
-  const [gymUrlList, setGymUrlList] = useState([] as any[]);
-  const [swimUrlList, setSwimUrlList] = useState([] as any[]);
-  const [libUrlList, setLibUrlList] = useState([] as any[]);
-  const [golfUrlList, setGolfUrlList] = useState([] as any[]);
-  const [isLoading, setIsLoading] = useState(false);
 
 
   function openHover(setHover: React.Dispatch<React.SetStateAction<boolean>>) {
@@ -97,58 +92,17 @@ export default function Main(props: Readonly<PageInterface>) {
     setUserHoverInterval(interval);
   }
 
-  useEffect(() => {
-    if (getCenterList != null) {
-      getCenterList()
-        .then(r => {
-          setCenterList(r);
-          const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
-          setGymUrlList([]);
-          setSwimUrlList([]);
-          setLibUrlList([]);
-          setGolfUrlList([]);
-          r.forEach((r: any) => {
-            switch (r.type) {
-              case 'GYM':
-                r.imageListResponseDTOS?.forEach((image: any) => {
-                  setGymUrlList(prev => [...prev, image.value]);
-                });
-                break;
-              case 'SWIMMING_POOL':
-                r.imageListResponseDTOS?.forEach((image: any) => {
-                  setSwimUrlList(prev => [...prev, image.value]);
-                });
-                break;
-              case 'LIBRARY':
-                r.imageListResponseDTOS?.forEach((image: any) => {
-                  setLibUrlList(prev => [...prev, image.value]);
-                });
-                break;
-              case 'SCREEN_GOLF':
-                r.imageListResponseDTOS?.forEach((image: any) => {
-                  setGolfUrlList(prev => [...prev, image.value]);
-                });
-                break;
-              default:
-                break;
-            }
-          })
-        })
-        .catch(e => console.log(e));
-    }
-  })
-
   const getDefaultHeight = () => {
-    if (centerList.length === 1) {
+    if (centerList?.length === 1) {
       return 35;
     }
-    if (centerList.length === 2) {
+    if (centerList?.length === 2) {
       return 75;
     }
-    if (centerList.length === 3) {
+    if (centerList?.length === 3) {
       return 100;
     }
-    if (centerList.length === 4) {
+    if (centerList?.length === 4) {
       return 130;
     }
     return 0; // 기본 높이

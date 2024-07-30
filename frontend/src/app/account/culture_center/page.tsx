@@ -2,7 +2,7 @@
 
 import { getCenterList, getProfile, getUser } from "@/app/API/UserAPI";
 import CenterSlider from "@/app/Global/CenterSlider";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 
 import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -105,13 +105,13 @@ export default function Page() {
     function urlList(type: any): string[] {
         switch (type) {
             case 'GYM':
-                return gymUrlList.length === 0 ? defaultUrls : gymUrlList;
+                return gymUrlList?.length === 0 ? defaultUrls : gymUrlList;
             case 'SWIMMING_POOL':
-                return swimUrlList.length === 0 ? defaultUrls : swimUrlList;
+                return swimUrlList?.length === 0 ? defaultUrls : swimUrlList;
             case 'LIBRARY':
-                return libUrlList.length === 0 ? defaultUrls : libUrlList;
+                return libUrlList?.length === 0 ? defaultUrls : libUrlList;
             case 'SCREEN_GOLF':
-                return golfUrlList.length === 0 ? defaultUrls : golfUrlList;
+                return golfUrlList?.length === 0 ? defaultUrls : golfUrlList;
             default:
                 return defaultUrls; // defaultUrl을 항상 반환하여 string[] 보장
         }
@@ -120,7 +120,7 @@ export default function Page() {
 
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6">
                     <div className="mt-5 ml-20 flex flex-col items-start">

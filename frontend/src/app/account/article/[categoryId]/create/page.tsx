@@ -1,8 +1,8 @@
 'use client';
 
-import { deleteImageList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
+import { deleteImageList, getCenter, getCenterList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import { redirect, useParams } from "next/navigation";
@@ -33,6 +33,7 @@ export default function Page() {
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
+    const [centerList, setCenterList] = useState([] as any[]);
 
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
@@ -115,6 +116,11 @@ export default function Page() {
                     .then(r => {
                         setProfile(r);
                         setIsLoading(true);
+                        getCenterList()
+                        .then(r => {
+                            setCenterList(r);
+                        })
+                        .catch(e => console.log(e));
                     })
                     .catch(console.error);
             } else {
@@ -165,7 +171,7 @@ export default function Page() {
     };
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
                     <CategoryList userRole={user?.role}/>

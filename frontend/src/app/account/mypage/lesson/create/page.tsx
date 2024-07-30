@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { redirect } from "next/navigation";
-import { getCenterList, getProfile, getUser, postLesson, saveImage } from "@/app/API/UserAPI";
+import { deleteImageList, getCenterList, getProfile, getUser, postLesson, saveImage, saveImageList } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
@@ -58,38 +58,38 @@ export default function Page() {
         const lessonStartDateString = `${startDate}T${startTime}`;
         const lessonEndDateString = `${endDate}T${endTime}`;
         const now = dayjs();
-    
+
         // 시작일이 현재 날짜 이전인지 확인
         if (dayjs(startDate).isBefore(now, 'day')) {
             closeConfirm();
             showAlert('레슨 시작일은 현재 날짜 이후여야 합니다.');
             return;
         }
-    
+
         // 종료일이 시작일보다 이전인지 확인
         if (dayjs(endDate).isBefore(dayjs(startDate), 'day')) {
             closeConfirm();
             showAlert('레슨 종료일은 레슨 시작일과 같거나 그 이후여야 합니다.');
             return;
         }
-    
+
         const startTime24 = dayjs(startTime, 'HH:mm:ss');
         const endTime24 = dayjs(endTime, 'HH:mm:ss');
         const centerOpenTime24 = dayjs(centerOpenTime, 'HH:mm');
         const centerCloseTime24 = dayjs(centerCloseTime, 'HH:mm');
-    
+
         // 레슨 시간이 문화센터 운영 시간 내에 있는지 확인
         if (startTime24.isBefore(centerOpenTime24) || endTime24.isAfter(centerCloseTime24)) {
             closeConfirm();
             showAlert('레슨 시간은 문화센터 운영 시간 내에 있어야 합니다.');
             return;
         }
-    
+
         setLessonStartDate(lessonStartDateString);
         setLessonEndDate(lessonEndDateString);
     };
-    
-    
+
+
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -177,21 +177,50 @@ export default function Page() {
 
         input.addEventListener('change', async () => {
             const file = input.files?.[0];
+
             if (file) {
                 const formData = new FormData();
                 formData.append('file', file);
+
                 try {
-                    const { url } = await saveImage(formData);
-                    const editor = (quillInstance?.current as any).getEditor();
-                    const range = editor.getSelection();
-                    editor.insertEmbed(range.index, 'image', url);
-                    editor.setSelection(range.index + 1);
+                    // 서버에 이미지를 업로드하고 이미지 URL을 가져옵니다.
+                    const response = await saveImageList(formData);
+                    const imageUrl = response[0]?.value; // 서버 응답에서 이미지 URL을 가져옵니다.
+
+                    if (imageUrl) {
+                        const quillEditor = quillInstance.current?.getEditor();
+                        const range = quillEditor?.getSelection(true);
+
+                        if (range && quillEditor) {
+                            quillEditor.insertEmbed(range.index, 'image', imageUrl);
+                            quillEditor.setSelection(range.index + 1);
+                        }
+                    }
                 } catch (error) {
-                    console.error("Error uploading image:", error);
+                    console.error('Error uploading image:', error);
                 }
             }
         });
     };
+
+    const modules = useMemo(() => ({
+        toolbar: {
+            container: [
+                [{ 'header': '1' }, { 'header': '2' }],
+                [{ 'size': [] }],
+                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'align': [] }],
+                ['image']
+            ],
+            handlers: {
+                image: imageHandler
+            }
+        },
+        clipboard: {
+            matchVisual: false
+        }
+    }), []);
+
     const formats = [
         'header',
         'font',
@@ -206,26 +235,6 @@ export default function Page() {
         'align',
         'image',
     ];
-
-    const modules = useMemo(
-        () => ({
-            toolbar: {
-                container: [
-                    [{ header: '1' }, { header: '2' }],
-                    [{ size: [] }],
-                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                    [{ list: 'ordered' }, { list: 'bullet' }, { align: [] }],
-                    ['image'],
-                ],
-                handlers: { image: imageHandler },
-            },
-            clipboard: {
-                matchVisual: false,
-            },
-        }),
-        [],
-    );
-
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser()
@@ -254,6 +263,7 @@ export default function Page() {
         } else {
             redirect('/account/login');
         }
+        deleteImageList();
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
@@ -291,21 +301,13 @@ export default function Page() {
         return typeName;
     }
 
-    function Change(file: any) {
-        const formData = new FormData();
-        formData.append('file', file);
-        saveImage(formData)
-            .then(r => setUrl(r?.url))
-            .catch(e => console.log(e))
-    }
-
     function convertTo12HourFormat(time: string): string {
         const formattedTime = dayjs(time, 'HH:mm').format('A hh:mm');
         return formattedTime;
     }
 
     return (
-        <Profile user={user} profile={profile} isLoading={isLoading}>
+        <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className='flex flex-col'>
                 <label className='text-xl font-bold mb-9'><label className='text-xl text-secondary font-bold'>레슨</label> 등록</label>
                 <div className="w-[1300px] border-2 h-[640px] rounded-lg flex">
@@ -350,7 +352,7 @@ export default function Page() {
                         </div>
                     </div>
                     <div className="mr-5 mt-5 w-[50%] flex flex-col">
-                        {allErrors() !== '' ?<div className="badge badge-warning gap-2 w-[350px] p-3">
+                        {allErrors() !== '' ? <div className="badge badge-warning gap-2 w-[350px] p-3">
                             <span className="text-sm"><FontAwesomeIcon icon={faTriangleExclamation} /> {allErrors()}</span>
                         </div> : null}
                         <input

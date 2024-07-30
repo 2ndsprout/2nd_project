@@ -141,10 +141,6 @@ export const deleteProfile = async () => {
 }
 
 // Image
-export const deleteImage = async () => {
-    const response = await UserApi.delete('/api/image');
-    return response.data;
-}
 
 export const saveImage = async (data: any) => {
     const response = await UserApi.post('/api/image', data, {

@@ -1,6 +1,6 @@
 'use client';
-import { getProfile, getUser, getLesson, postLesson, postLessonRequest } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/mainLayout";
+import { getProfile, getUser, getLesson, postLesson, postLessonRequest, getCenterList } from "@/app/API/UserAPI";
+import Main from "@/app/Global/layout/MainLayout";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Calendar from "@/app/Global/component/Calendar";
@@ -23,6 +23,7 @@ export default function Page() {
     const [error, setError] = useState('');
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
+    const [centerList, setCenterList] = useState([] as any[]);
     const countTotalLesson = (lessonList: any[]): number => {
         return lessonList.reduce((total, lesson) => {
             return total + 1 + countTotalLesson(lessonList || []);
@@ -40,6 +41,11 @@ export default function Page() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
+                    })
+                    .catch(e => console.log(e));
+                getCenterList()
+                    .then(r => {
+                        setCenterList(r);
                     })
                     .catch(e => console.log(e));
                 getLesson(lessonId)
@@ -75,7 +81,7 @@ export default function Page() {
     }
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="ml-[300px] flex justify-center mt-[30px] mb-[20px] w-[1350px] h-full items-center bg-gray-700">
                 {targetLesson ? (
                     <div className="w-[1200px] h-full">

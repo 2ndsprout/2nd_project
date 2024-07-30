@@ -1,13 +1,14 @@
 'use client'
 
-import { getArticleList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
+import { getArticleList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
-import Main from "@/app/Global/layout/mainLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { get } from "http";
 
 interface Article {
     categoryId: number;
@@ -46,7 +47,7 @@ export default function ArticleListPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [totalElements, setTotalElements] = useState(0);
-    const [categories, setCategories] = useState<any[]>([]);
+    const [centerList, setCenterList] = useState([] as any[]);
     const [keyword, setKeyword] = useState('');
     const [sort, setSort] = useState<number>(0);
     const [isSearching, setIsSearching] = useState(false);
@@ -64,6 +65,9 @@ export default function ArticleListPage() {
                 getProfile()
                     .then(r => {
                         setProfile(r)
+                        getCenterList()
+                            .then(r => setCenterList(r))
+                            .catch(e => console.log(e));
                         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                     })
                     .catch(e => console.log(e));
@@ -130,10 +134,10 @@ export default function ArticleListPage() {
 
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="flex w-full h-full">
                 <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
-                    <CategoryList userRole={user?.role}/>
+                    <CategoryList userRole={user?.role} />
                 </aside>
                 <div className="flex-1 max-w-7xl p-10 ml-[400px]">
                     {error ? (

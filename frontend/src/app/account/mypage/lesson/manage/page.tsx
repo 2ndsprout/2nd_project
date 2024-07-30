@@ -109,7 +109,7 @@ export default function Page() {
   }
 
   return (
-    <Profile user={user} profile={profile} isLoading={isLoading}>
+    <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
       <div className='flex flex-col'>
         <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>레슨</label> 관리</label>
         <div className="mt-9 w-[1300px] border-2 h-[900px] rounded-lg">
