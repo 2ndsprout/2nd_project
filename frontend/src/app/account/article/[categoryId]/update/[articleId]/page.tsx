@@ -28,7 +28,6 @@ export default function EditPage() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
     const [preKey, setPreKey] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
