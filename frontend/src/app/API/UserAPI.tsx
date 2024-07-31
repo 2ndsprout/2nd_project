@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { getAPI } from './AxiosAPI';
 
 
@@ -54,7 +53,9 @@ interface RegisterProps {
     aptNumber: number,
     password: string,
     email: string,
-    role: number
+    role: number,
+    min: number,
+    max: number,
     h: number,
     w: number
 }

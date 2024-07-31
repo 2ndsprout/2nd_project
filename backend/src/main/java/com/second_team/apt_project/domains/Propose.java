@@ -30,6 +30,10 @@ public class Propose {
 
     private Integer w;
 
+    private Integer min;
+
+    private Integer max;
+
     private String password;
 
     private ProposeStatus proposeStatus;
@@ -39,10 +43,12 @@ public class Propose {
     private LocalDateTime modifyDate;
 
     @Builder
-    public Propose (String title, String roadAddress, String aptName, Integer h, Integer w, String password) {
+    public Propose (String title, String roadAddress, String aptName, Integer min, Integer max, Integer h, Integer w, String password) {
         this.title = title;
         this.roadAddress = roadAddress;
         this.aptName = aptName;
+        this.min = min;
+        this.max = max;
         this.h = h;
         this.w = w;
         this.password = password;

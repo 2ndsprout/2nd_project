@@ -27,6 +27,10 @@ public class QPropose extends EntityPathBase<Propose> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final NumberPath<Integer> max = createNumber("max", Integer.class);
+
+    public final NumberPath<Integer> min = createNumber("min", Integer.class);
+
     public final DateTimePath<java.time.LocalDateTime> modifyDate = createDateTime("modifyDate", java.time.LocalDateTime.class);
 
     public final StringPath password = createString("password");

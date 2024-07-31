@@ -30,8 +30,6 @@ public class DataInitializer implements CommandLineRunner {
         } else {
             apt = Apt.builder()
                     .aptName("admin")
-                    .y(1.0)
-                    .x(1.0)
                     .roadAddress("admin")
                     .build();
             this.aptRepository.save(apt);

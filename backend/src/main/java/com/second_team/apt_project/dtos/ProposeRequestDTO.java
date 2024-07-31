@@ -13,6 +13,10 @@ public class ProposeRequestDTO {
 
     private String aptName;
 
+    private Integer min;
+
+    private Integer max;
+
     private Integer h;
 
     private Integer w;

@@ -66,17 +66,3 @@ const DaumPostcode: React.FC<DaumPostcodeProps> = ({ onAddressChange }) => {
 };
 
 export default DaumPostcode;
-
-    // DaumPostcode에서 주소를 받는 함수
-    // const handleAddressChange = (address: IAddr) => {
-    //     setDaumAddr(address);
-    // };
-// <DaumPostcode onAddressChange={handleAddressChange} />
-//                             <div>
-//                                 {daumAddr && (
-//                                     <div>
-//                                         <p>주소: {daumAddr.address}</p>
-//                                         <p>우편번호: {daumAddr.zonecode}</p>
-//                                     </div>
-//                                 )}
-//                             </div>

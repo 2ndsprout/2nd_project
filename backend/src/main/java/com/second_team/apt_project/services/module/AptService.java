@@ -1,7 +1,6 @@
 package com.second_team.apt_project.services.module;
 
 
-import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.domains.Apt;
 import com.second_team.apt_project.repositories.AptRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +17,11 @@ public class AptService {
         return this.aptRepository.get(aptId).orElse(null);
     }
   
-    public Apt save(String roadAddress, String aptName, Double x, Double y) {
+    public Apt save(String roadAddress, String aptName) {
     
         return aptRepository.save(Apt.builder()
                 .roadAddress(roadAddress)
                 .aptName(aptName)
-                .x(x)
-                .y(y)
                 .build());
     }
 

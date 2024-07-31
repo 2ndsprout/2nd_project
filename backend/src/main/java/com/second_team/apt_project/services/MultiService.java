@@ -149,24 +149,38 @@ public class MultiService {
     }
 
     @Transactional
-    public List<UserResponseDTO> saveUserGroup(int aptNum, Long aptId, String username, int h, int w) {
+    public List<UserResponseDTO> saveUserGroup(int min, int max, Long aptId, String username, int h, int w) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
         Apt apt = aptService.get(aptId);
         List<UserResponseDTO> userResponseDTOList = new ArrayList<>();
+
         if (user.getRole() == UserRole.SECURITY || user.getRole() == UserRole.ADMIN) {
-            for (int i = 1; h >= i; i++)
-                for (int j = 1; w >= j; j++) {
-                    String jKey = String.valueOf(j);
-                    if (j < 10) jKey = "0" + jKey;
-                    String name = String.valueOf(aptNum) + String.valueOf(i) + jKey;
-                    SiteUser _user = userService.saveGroup(name, aptNum, apt);
-                    userResponseDTOList.add(UserResponseDTO.builder().username(_user.getUsername()).aptNum(_user.getAptNum()).aptResponseDTO(this.getAptResponseDTO(apt)).build());
+            for (int aptNum = min; aptNum <= max; aptNum++) {  // min부터 max까지 각 동에 대해 반복
+                for (int i = 1; i <= h; i++) {  // 층수에 대한 반복
+                    for (int j = 1; j <= w; j++) {  // 층당 세대수에 대한 반복
+                        String jKey = String.valueOf(j);
+                        if (j < 10) jKey = "0" + jKey;  // 세대수가 한자리일 때 0을 붙임
+
+                        String name = aptNum + String.valueOf(i) + jKey;  // 아파트 번호 생성
+                        SiteUser _user = userService.saveGroup(name, aptNum, apt);  // 사용자 그룹 저장
+                        userResponseDTOList.add(
+                                UserResponseDTO.builder()
+                                        .username(_user.getUsername())
+                                        .aptNum(_user.getAptNum())
+                                        .aptResponseDTO(this.getAptResponseDTO(apt))
+                                        .build()
+                        );
+                    }
                 }
+            }
             return userResponseDTOList;
-        } else throw new IllegalArgumentException("권한 불일치");
+        } else {
+            throw new IllegalArgumentException("권한 불일치");
+        }
     }
+
 
     @Transactional
     public Page<UserResponseDTO> getUserList(int page, Long aptId, String username) {
@@ -269,16 +283,16 @@ public class MultiService {
                 _fileSystem.ifPresent(fileSystem -> imageListResponseDTOS.add(ImageListResponseDTO.builder().key(fileSystem.getK()).value(fileSystem.getV()).build()));
             }
         }
-        return AptResponseDTO.builder().aptId(apt.getId()).aptName(apt.getAptName()).roadAddress(apt.getRoadAddress()).x(apt.getX()).y(apt.getY()).urlList(imageListResponseDTOS).build();
+        return AptResponseDTO.builder().aptId(apt.getId()).aptName(apt.getAptName()).roadAddress(apt.getRoadAddress()).urlList(imageListResponseDTOS).build();
     }
 
     @Transactional
-    public AptResponseDTO saveApt(String roadAddress, String aptName, Double x, Double y, String username) {
+    public AptResponseDTO saveApt(String roadAddress, String aptName, String username) {
         SiteUser user = userService.get(username);
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
         if (user.getRole() != UserRole.ADMIN) throw new IllegalArgumentException("권한 불일치");
-        Apt apt = aptService.save(roadAddress, aptName, x, y);
+        Apt apt = aptService.save(roadAddress, aptName);
         if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         return this.getAptResponseDTO(apt);
     }
@@ -1829,7 +1843,7 @@ public class MultiService {
         Propose propose = this.proposeService.get(proposeId);
         if (user != null && user.getRole() != UserRole.ADMIN) {
             throw new IllegalArgumentException("NOT AUTH");
-        } else if (user == null && !this.proposeService.isMatch(password, propose.getPassword())) {
+        } else if (user == null && !this.proposeService.isMatchPropose(password, propose.getPassword())) {
             throw new IllegalArgumentException("NOT AUTH");
         }
         return this.proposeResponseDTO(propose);
@@ -1845,7 +1859,7 @@ public class MultiService {
         Propose _propose = this.proposeService.get(proposeRequestDTO.getId());
         if (user != null && user.getRole() != UserRole.ADMIN) {
             throw new IllegalArgumentException("NOT AUTH");
-        } else if (user == null && !this.proposeService.isMatch(proposeRequestDTO.getPassword(), _propose.getPassword())) {
+        } else if (user == null && !this.proposeService.isMatchPropose(proposeRequestDTO.getPassword(), _propose.getPassword())) {
             throw new IllegalArgumentException("NOT AUTH");
         }
         Propose propose = this.proposeService.update(_propose, proposeRequestDTO);
@@ -1862,7 +1876,7 @@ public class MultiService {
         Propose propose = this.proposeService.get(id);
         if (user != null && user.getRole() != UserRole.ADMIN) {
             throw new IllegalArgumentException("NOT AUTH");
-        } else if (user == null && !this.proposeService.isMatch(password, propose.getPassword())) {
+        } else if (user == null && !this.proposeService.isMatchPropose(password, propose.getPassword())) {
             throw new IllegalArgumentException("NOT AUTH");
         }
         this.proposeService.delete(propose);
@@ -1874,6 +1888,8 @@ public class MultiService {
                 .w(propose.getW())
                 .h(propose.getH())
                 .aptName(propose.getAptName())
+                .min(propose.getMin())
+                .max(propose.getMax())
                 .createDate(this.dateTimeTransfer(propose.getCreateDate()))
                 .modifyDate(this.dateTimeTransfer(propose.getModifyDate()))
                 .id(propose.getId())

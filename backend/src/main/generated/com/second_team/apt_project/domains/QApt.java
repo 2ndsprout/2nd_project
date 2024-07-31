@@ -25,10 +25,6 @@ public class QApt extends EntityPathBase<Apt> {
 
     public final StringPath roadAddress = createString("roadAddress");
 
-    public final NumberPath<Double> x = createNumber("x", Double.class);
-
-    public final NumberPath<Double> y = createNumber("y", Double.class);
-
     public QApt(String variable) {
         super(Apt.class, forVariable(variable));
     }

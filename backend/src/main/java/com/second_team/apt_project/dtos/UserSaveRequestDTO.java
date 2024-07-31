@@ -8,6 +8,8 @@ public class UserSaveRequestDTO {
     private String name;
     private Long aptId;
     private int aptNum;
+    private int min;
+    private int max;
     private String password;
     private String newPassword1;
     private String newPassword2;

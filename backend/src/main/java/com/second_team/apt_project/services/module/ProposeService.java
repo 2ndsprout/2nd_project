@@ -24,6 +24,8 @@ public class ProposeService {
                 .title(proposeRequestDTO.getTitle())
                 .roadAddress(proposeRequestDTO.getRoadAddress())
                 .aptName(proposeRequestDTO.getAptName())
+                .min(proposeRequestDTO.getMin())
+                .max(proposeRequestDTO.getMax())
                 .password(proposeRequestDTO.getPassword())
                 .h(proposeRequestDTO.getH())
                 .w(proposeRequestDTO.getW())
@@ -39,6 +41,8 @@ public class ProposeService {
         propose.setTitle(proposeRequestDTO.getTitle());
         propose.setRoadAddress(proposeRequestDTO.getRoadAddress());
         propose.setAptName(proposeRequestDTO.getAptName());
+        propose.setMin(proposeRequestDTO.getMin());
+        propose.setMax(proposeRequestDTO.getMax());
         propose.setPassword(proposeRequestDTO.getPassword());
         propose.setModifyDate(LocalDateTime.now());
         propose.setProposeStatus(ProposeStatus.values()[proposeRequestDTO.getProposeStatus()]);
@@ -55,7 +59,7 @@ public class ProposeService {
         return this.proposeRepository.findById(id).orElse(null);
     }
 
-    public boolean isMatch(String password1, String password2) {
+    public boolean isMatchPropose(String password1, String password2) {
         return passwordEncoder.matches(password1, password2);
     }
 }
