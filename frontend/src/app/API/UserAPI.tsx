@@ -247,6 +247,7 @@ interface getArticleList {
 
 export const getArticleList = async ({ categoryId, page, aptId }: getArticleList) => {
     const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': categoryId, 'Page': page, 'AptId': aptId } });
+
     return response.data;
 }
 

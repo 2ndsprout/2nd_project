@@ -56,7 +56,7 @@ const DaumPostcode: React.FC<DaumPostcodeProps> = ({ onAddressChange }) => {
             <Head>
                 <title>Daum Postcode</title>
             </Head>
-            <button onClick={openPostcode} className="p-2 bg-blue-500 text-white rounded">주소 검색</button>
+            <button onClick={openPostcode} className="p-2 bg-blue-500 text-white rounded text-sm">주소 검색</button>
             <div hidden>
                 {addr.address && <p>주소: {addr.address}</p>}
                 {addr.zonecode && <p>우편번호: {addr.zonecode}</p>}
