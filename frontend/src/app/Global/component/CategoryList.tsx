@@ -71,7 +71,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, cat
         <p className="text-red-500">{error}</p>
       ) : (
         <ul>
-          {categories.map((category) => (
+          {categories.slice(0, 3).map((category) => (
             <li key={category.id} className="mb-2">
               <Link href={`/account/article/${category.id}`} className={getLinkClass(category.id)}>
                 {category.name}
