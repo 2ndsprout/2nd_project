@@ -182,10 +182,10 @@ export default function Page() {
                 const formData = new FormData();
                 formData.append('file', file as any);
                 const imgUrl = (await saveImageList(formData));
-                
+
                 const editor = (quillInstance?.current as any).getEditor();
                 const range = editor.getSelection();
-                editor.insertEmbed(range.index, 'image', imgUrl[imgUrl.length-1].value);
+                editor.insertEmbed(range.index, 'image', imgUrl[imgUrl.length - 1].value);
                 editor.setSelection(range.index + 1);
             } catch (error) {
                 console.log(error);
@@ -253,7 +253,8 @@ export default function Page() {
         } else {
             redirect('/account/login');
         }
-        deleteImageList();
+        deleteImageList()
+            .catch(e => console.log('임시 이미지 없음'));
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {

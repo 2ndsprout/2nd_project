@@ -2,6 +2,7 @@ package com.second_team.apt_project.domains;
 
 import com.second_team.apt_project.enums.ProposeStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,7 @@ public class Propose {
 
     private String title;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 100, unique = true)
     private String roadAddress;
 
     private String aptName;
@@ -29,11 +30,7 @@ public class Propose {
 
     private Integer w;
 
-    private Double x;
-
-    private Double y;
-
-    private Integer password;
+    private String password;
 
     private ProposeStatus proposeStatus;
 
@@ -41,4 +38,15 @@ public class Propose {
 
     private LocalDateTime modifyDate;
 
+    @Builder
+    public Propose (String title, String roadAddress, String aptName, Integer h, Integer w, String password) {
+        this.title = title;
+        this.roadAddress = roadAddress;
+        this.aptName = aptName;
+        this.h = h;
+        this.w = w;
+        this.password = password;
+        this.createDate = LocalDateTime.now();
+        this.proposeStatus = ProposeStatus.PENDING;
+    }
 }

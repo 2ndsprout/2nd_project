@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { redirect, useParams } from "next/navigation";
-import { getCenterList, getLesson, getProfile, getUser, saveImageList, updateLesson } from "@/app/API/UserAPI";
+import { deleteImageList, getCenterList, getLesson, getProfile, getUser, saveImageList, updateLesson } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
@@ -261,6 +261,8 @@ export default function Page() {
         } else {
             redirect('/account/login');
         }
+        deleteImageList()
+        .catch(e => console.log('임시 이미지 없음'));
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {

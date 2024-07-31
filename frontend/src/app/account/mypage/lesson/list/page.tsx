@@ -213,7 +213,6 @@ export default function Page() {
                                 )}
                             </div>
                         </div>
-                        <a href="/account/mypage/lesson/create">레슨 생성</a>
                     </div>
                 </div>
             </div>

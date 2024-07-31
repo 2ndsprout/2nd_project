@@ -2,7 +2,7 @@
 
 import '@fortawesome/fontawesome-svg-core/styles.css'
 import { getProfile, getProfileList, getUser, postProfile, saveProfileImage, updateUser, updateUserPassword } from "@/app/API/UserAPI";
-import DropDown, { Direcion } from "@/app/Global/component/DropDown";
+import DropDown, { Direction } from "@/app/Global/component/DropDown";
 import Modal from "@/app/Global/component/Modal";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import AlertModal from '@/app/Global/component/AlertModal';
 import ConfirmModal from '@/app/Global/component/ConfirmModal';
 import useConfirm from '@/app/Global/hook/useConfirm';
 import useAlert from '@/app/Global/hook/useAlert';
+import { profile } from 'console';
 
 export default function Page() {
     const [user, setUser] = useState(null as any);
@@ -156,8 +157,13 @@ export default function Page() {
                 console.log("profile selected!");
                 window.location.href = '/';
             })
+                // if (user.role === 'ADMIN') {
+                //     window.location.href = '/account/admin';
+                // }else {
+                //     window.location.href = '/';
+                // }})
             .catch(e => console.log(e));
-            closeConfirm();
+        closeConfirm();
     }
 
 
@@ -165,7 +171,7 @@ export default function Page() {
         if (profileList.length < 6) {
             postProfile({ name: name, url: url })
                 .then(() => window.location.href = '/account/profile')
-                .catch(e => { console.log(e), closeConfirm(), showAlert('이미 있는 프로필 이름입니다.')});
+                .catch(e => { console.log(e), closeConfirm(), showAlert('이미 있는 프로필 이름입니다.') });
 
         } else {
             closeConfirm();
@@ -193,24 +199,20 @@ export default function Page() {
                         <FontAwesomeIcon icon={faBars} />프로필 설정
                     </button>
                     <div>
-                        <DropDown open={openDropDown} onClose={() => setOpenDropDown(false)} background="main" button="profileSettings" className="mt-[10px]" defaultDriection={Direcion.DOWN} height={200} width={180} x={-3} y={30}>
+                        <DropDown open={openDropDown} onClose={() => setOpenDropDown(false)} background="main" button="profileSettings" className="mt-[10px]" defaultDirection={Direction.DOWN} height={200} width={180} x={-3} y={30}>
                             <button className="mt-0 btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(1)}>
                                 <FontAwesomeIcon icon={faGear} />계정 설정
                             </button>
                             <button className="mt-[5px] btn btn-active btn-secondary text-lg text-black" onClick={() => openModal(2)}>
                                 <FontAwesomeIcon icon={faUserPlus} size="xs" />프로필 추가
                             </button>
-                            <button
-                                onClick={() => {
-                                    if (user) {
-                                        finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', () => handleLogout());
-                                    }
-                                }}
+                            {!!user ? <button
+                                onClick={() => finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', () => handleLogout())}
                                 className="mt-[5px] btn btn-active btn-secondary text-lg text-black"
                             >
                                 <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" />
-                                {user ? '로그아웃' : ''}
-                            </button>
+                                로그아웃
+                            </button> : null}
                         </DropDown>
                     </div>
                 </div>
@@ -288,14 +290,14 @@ export default function Page() {
                 </div>
                 <div className="mt-0 flex flex-col items-center">
                     <label className='text-xs font-bold text-red-500 pb-5'>{error}</label>
-                    <input id='name' type="text" defaultValue={name} onChange={e =>  {if (second) setSecond(false); setName(e.target.value)}} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
+                    <input id='name' type="text" defaultValue={name} onChange={e => { if (second) setSecond(false); setName(e.target.value) }} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
                         onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
                         onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
                     <button className='btn btn-xl btn-accent mt-10 text-black' disabled={second || !!error} onClick={() => finalConfirm(name, '프로필을 생성합니다.', '생성', Regist)}>프로필 등록</button>
                 </div>
             </Modal>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
-            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert}/>
+            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />
         </>
     );
 }
