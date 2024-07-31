@@ -4,7 +4,6 @@ import com.second_team.apt_project.domains.Article;
 import com.second_team.apt_project.enums.Sorts;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
