@@ -776,7 +776,6 @@ public class MultiService {
                     articleTagService.save(article, tag);
                 tagResponseDTOList.add(tagResponseDTO(tag));
             }
-
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         _multiKey.ifPresent(multiKey -> this.updateArticleContent(article, multiKey));
 
@@ -915,8 +914,17 @@ public class MultiService {
 
     private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList) {
         String profileUrl = this.profileUrl(article.getProfile().getUser().getUsername(), article.getProfile().getId());
+        Optional<MultiKey> _multiKey = multiKeyService.get(article.getId().toString());
+        List<String> urlList = new ArrayList<>();
+        if (_multiKey.isPresent()) {
+            for (String keyName : _multiKey.get().getVs()) {
+                Optional<FileSystem> _fileSystem = fileSystemService.get(keyName);
+                _fileSystem.ifPresent(fileSystem -> urlList.add(fileSystem.getV()));
+            }
+        }
 
-        return ArticleResponseDTO.builder().articleId(article.getId()).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getUser().getUsername()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).build();
+        return ArticleResponseDTO.builder()//
+                .articleId(article.getId()).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getUser().getUsername()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).urlList(urlList).build();
     }
 
     private void updateArticleContent(Article article, MultiKey multiKey) {
@@ -1252,7 +1260,7 @@ public class MultiService {
     }
 
     @Transactional
-    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, int type, LocalDateTime endDate, LocalDateTime startDate, List<String> key) {
+    public CenterResponseDTO updateCenter(String username, Long profileId, Long id, int type, LocalDateTime endDate, LocalDateTime startDate) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
@@ -1263,17 +1271,7 @@ public class MultiService {
             throw new IllegalArgumentException("권한 불일치");
         cultureCenterService.update(cultureCenter, type, endDate, startDate);
         Optional<MultiKey> _newMultiKey = multiKeyService.get(ImageKey.TEMP.getKey(username + "." + profile.getId()));
-        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.CENTER.getKey(cultureCenter.getId().toString()));
-        if (_oldMulti.isPresent()) if (key != null) {
-            for (String k : key) {
-                Optional<FileSystem> _fileSystem = fileSystemService.get(k);
-                _fileSystem.ifPresent(fileSystem -> {
-                    fileSystemService.delete(fileSystem);
-                    _oldMulti.get().getVs().remove(key);
-                    deleteFile(_fileSystem.get());
-                });
-            }
-        }
+
         if (_newMultiKey.isPresent()) {
             String newFile = "/api/center" + "/" + cultureCenter.getId() + "/";
             for (String values : _newMultiKey.get().getVs()) {
@@ -1364,11 +1362,12 @@ public class MultiService {
             throw new DataNotFoundException("센터 객체가 없음");
         Lesson lesson = lessonService.save(cultureCenter, profile, name, content, startDate, endDate);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
-        _multiKey.ifPresent(multiKey -> this.updateLessonContent(lesson, multiKey));
+        if (_multiKey.isPresent())
+            lesson = this.updateLessonContent(lesson, _multiKey.get());
         return this.lessonResponseDTO(lesson);
     }
 
-    private void updateLessonContent(Lesson lesson, MultiKey multiKey) {
+    private Lesson updateLessonContent(Lesson lesson, MultiKey multiKey) {
         String content = lesson.getContent();
         for (String keyName : multiKey.getVs()) {
             Optional<MultiKey> _articleMulti = multiKeyService.get(ImageKey.LESSON.getKey(lesson.getId().toString()));
@@ -1387,7 +1386,7 @@ public class MultiService {
             }
         }
         multiKeyService.delete(multiKey);
-        lessonService.updateContent(lesson, content);
+        return lessonService.updateContent(lesson, content);
     }
 
 
@@ -1398,6 +1397,16 @@ public class MultiService {
         Optional<FileSystem> _fileSystem = fileSystemService.get(ImageKey.USER.getKey(lesson.getProfile().getUser().getUsername() + "." + lesson.getProfile().getId()));
         String profileUrl = null;
         if (_fileSystem.isPresent()) profileUrl = _fileSystem.get().getV();
+        Optional<MultiKey> _lessonKey = multiKeyService.get(ImageKey.CENTER.getKey(lesson.getId().toString()));
+        List<String> key = new ArrayList<>();
+        if (_lessonKey.isPresent()) {
+            for (String keyName : _lessonKey.get().getVs()) {
+                Optional<FileSystem> _lessonFileUrl = fileSystemService.get(keyName);
+                _lessonFileUrl.ifPresent(fileSystem -> key.add(fileSystem.getK()));
+
+            }
+        }
+
         return LessonResponseDTO.builder() //
                 .id(lesson.getId()) //
                 .centerResponseDTO(this.centerResponseDTO(lesson.getCultureCenter(), centerMulti)) //
@@ -1464,11 +1473,26 @@ public class MultiService {
             throw new DataNotFoundException("레슨 객체 없음");
         if (!lesson.getProfile().equals(profile))
             throw new IllegalArgumentException("레슨 강사 아님");
+//        Optional<MultiKey> _oldMulti = multiKeyService.get(ImageKey.LESSON.getKey(lesson.getId().toString()));
+//        if (_oldMulti.isPresent()) {
+//            for (String k : key) {
+//                Optional<FileSystem> _fileSystem = fileSystemService.get(k);
+//                _fileSystem.ifPresent(fileSystem -> {
+//                    fileSystemService.delete(fileSystem);
+//                    _oldMulti.get().getVs().remove(key);
+//                    deleteFile(_fileSystem.get());
+//                });
+//            }
+//            multiKeyService.delete(_oldMulti.get());
+//        }
 
-        Lesson newLesson = lessonService.update(lesson, name, content, startDate, endDate);
+
+        Lesson newlesson = lessonService.update(lesson, name, content, startDate, endDate);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId()));
-        _multiKey.ifPresent(multiKey -> this.updateLessonContent(newLesson, multiKey));
-        return this.lessonResponseDTO(newLesson);
+        if (_multiKey.isPresent())
+            newlesson = this.updateLessonContent(newlesson, _multiKey.get());
+
+        return this.lessonResponseDTO(newlesson);
     }
 
     @Transactional
@@ -1606,7 +1630,7 @@ public class MultiService {
         this.userCheck(user, profile);
         LessonUser lessonUser = lessonUserService.findById(lessonUserId);
         if (lessonUser == null) throw new DataNotFoundException("레슨신청 객체 없음");
-        if (!lessonUser.getProfile().equals(profile)) throw new IllegalArgumentException("신청유저가 아님");
+        if (!(lessonUser.getProfile().equals(profile) || lessonUser.getLesson().getProfile().equals(profile)) && user.getRole() == UserRole.USER) throw new IllegalArgumentException("권한 없음");
         lessonUserService.delete(lessonUser);
     }
 

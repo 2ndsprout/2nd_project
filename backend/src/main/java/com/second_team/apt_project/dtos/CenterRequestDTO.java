@@ -13,5 +13,4 @@ public class CenterRequestDTO {
     private int type;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private List<String> key;
 }

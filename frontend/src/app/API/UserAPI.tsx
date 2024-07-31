@@ -527,8 +527,8 @@ export const getLessonRequestList = async () => {
     return response.data;
 }
 
-export const getLessonRequestListByStaff = async () => {
-    const response = await UserApi.get('/api/lesson/staff/list');
+export const getLessonRequestListByStaff = async (type : number, id:number) => {
+    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: {'LessonId':id, 'Type': type } });
     return response.data;
 }
 
