@@ -174,7 +174,6 @@ export default function Page() {
                 const formData = new FormData();
                 formData.append('file', file as any);
                 const imgUrl = (await saveImageList(formData));
-
                 const editor = (quillInstance?.current as any).getEditor();
                 const range = editor.getSelection();
                 editor.insertEmbed(range.index, 'image', imgUrl[imgUrl.length - 1].value);

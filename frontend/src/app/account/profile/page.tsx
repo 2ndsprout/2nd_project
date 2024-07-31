@@ -34,6 +34,7 @@ export default function Page() {
     const [second, setSecond] = useState(true);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
+    const [isLoading, setIsLoading] = useState(false);
 
 
     useEffect(() => {
@@ -43,7 +44,10 @@ export default function Page() {
                     setUser(r);
                     setEmail(r.email);
                     getProfileList()
-                        .then(r => setProfileList(r))
+                        .then(r => {
+                            setProfileList(r)
+                            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                        })
                         .catch(e => console.log(e));
                 })
                 .catch(e => console.log(e));
@@ -157,11 +161,11 @@ export default function Page() {
                 console.log("profile selected!");
                 window.location.href = '/';
             })
-                // if (user.role === 'ADMIN') {
-                //     window.location.href = '/account/admin';
-                // }else {
-                //     window.location.href = '/';
-                // }})
+            // if (user.role === 'ADMIN') {
+            //     window.location.href = '/account/admin';
+            // }else {
+            //     window.location.href = '/';
+            // }})
             .catch(e => console.log(e));
         closeConfirm();
     }
@@ -194,6 +198,7 @@ export default function Page() {
     return (
         <>
             <div className="bg-black flex flex-col items-center h-[953px] w-[1900px] relative" id="main">
+                <div className={"absolute bg-black w-full min-h-screen z-[1000]" + (isLoading ? ' hidden' : '')} />
                 <div className="flex justify-end w-full mt-[15px] mr-[50px]">
                     <button id="profileSettings" className="btn btn-active btn-primary w-[180px] text-lg text-black" onClick={() => setOpenDropDown(!openDropDown)}>
                         <FontAwesomeIcon icon={faBars} />프로필 설정

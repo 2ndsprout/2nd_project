@@ -63,7 +63,7 @@ export default function Page() {
                     <button id='submit' className='btn btn-active btn-secondary text-white text-lg w-[100px] h-[100px] ml-[10px] flex items-center justify-center' onClick={() => Sumbit()}>로그인</button>
                 </div>
                 <div className='flex justify-evenly w-[396px] mt-[12px]'>
-                    <a>관리자 문의</a>
+                    <a href='/propose'>서비스 신청</a>
                     <a>비밀번호 찾기</a>
                 </div>
                 <label className='text-gray-400 text-sm mt-[50px]'>Copyright © 2024 Honeydanji Co.,Ltd. All Rights Reserved.</label>
