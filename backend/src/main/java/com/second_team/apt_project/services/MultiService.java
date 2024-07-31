@@ -55,7 +55,7 @@ public class MultiService {
     private final ChatRoomService chatRoomService;
     private final ChatRoomUserService chatRoomUserService;
     private final ChatMessageService chatMessageService;
-
+    private final ProposeService proposeService;
     /**
      * Auth
      */
@@ -1753,5 +1753,89 @@ public class MultiService {
 
     }
 
+    /**
+     * Propose
+     * */
+
+    @Transactional
+    public ProposeResponseDTO savePropose (ProposeRequestDTO proposeRequestDTO) {
+        Propose propose = this.proposeService.save(proposeRequestDTO);
+        return this.proposeResponseDTO(propose);
+    }
+
+    @Transactional
+    public Page<ProposeResponseDTO> getProposePage(int page) {
+        Pageable pageable = PageRequest.of(page, 15);
+        Page<Propose> proposePage = this.proposeService.getList(pageable);
+        if (proposePage == null)
+            throw new DataNotFoundException("신청 페이지 객체 없음");
+        List<ProposeResponseDTO> proposeResponseDTOS = new ArrayList<>();
+        for (Propose propose : proposePage)
+            proposeResponseDTOS.add(this.proposeResponseDTO(propose));
+
+        return new PageImpl<>(proposeResponseDTOS, pageable, proposePage.getTotalElements());
+    }
+
+    @Transactional
+    public ProposeResponseDTO getPropose(String username, Long proposeId, String password) {
+        SiteUser user = null;
+        if (username != null) {
+            user = this.userService.get(username);
+        }
+        Propose propose = this.proposeService.get(proposeId);
+        if (user != null && user.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("NOT AUTH");
+        } else if (user == null && !this.proposeService.isMatch(password, propose.getPassword())) {
+            throw new IllegalArgumentException("NOT AUTH");
+        }
+        return this.proposeResponseDTO(propose);
+    }
+
+
+    @Transactional
+    public ProposeResponseDTO updatePropose (String username, ProposeRequestDTO proposeRequestDTO) {
+        SiteUser user = null;
+        if (username != null) {
+            user = this.userService.get(username);
+        }
+        Propose _propose = this.proposeService.get(proposeRequestDTO.getId());
+        if (user != null && user.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("NOT AUTH");
+        } else if (user == null && !this.proposeService.isMatch(proposeRequestDTO.getPassword(), _propose.getPassword())) {
+            throw new IllegalArgumentException("NOT AUTH");
+        }
+        Propose propose = this.proposeService.update(_propose, proposeRequestDTO);
+
+        return this.proposeResponseDTO(propose);
+    }
+
+    @Transactional
+    public void deletePropose (String username, Long id, String password) {
+        SiteUser user = null;
+        if (username != null) {
+            user = this.userService.get(username);
+        }
+        Propose propose = this.proposeService.get(id);
+        if (user != null && user.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("NOT AUTH");
+        } else if (user == null && !this.proposeService.isMatch(password, propose.getPassword())) {
+            throw new IllegalArgumentException("NOT AUTH");
+        }
+        this.proposeService.delete(propose);
+    }
+
+    private ProposeResponseDTO proposeResponseDTO (Propose propose) {
+        return ProposeResponseDTO.builder()
+                .proposeStatus(propose.getProposeStatus().getStatus())
+                .w(propose.getW())
+                .h(propose.getH())
+                .aptName(propose.getAptName())
+                .createDate(this.dateTimeTransfer(propose.getCreateDate()))
+                .modifyDate(this.dateTimeTransfer(propose.getModifyDate()))
+                .id(propose.getId())
+                .roadAddress(propose.getRoadAddress())
+                .title(propose.getTitle())
+                .build();
+    }
 
 }

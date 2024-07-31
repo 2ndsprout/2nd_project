@@ -3,9 +3,7 @@
 import React, { useEffect, useState } from "react";
 import DropDown, { Direction } from "../component/DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
-import { getCenterList } from "@/app/API/UserAPI";
-import Link from "next/link";
+import { faArrowsSpin, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
 
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -65,18 +63,13 @@ interface PageInterface {
   className?: string;
   user: any;
   profile: any;
-  centerList: any[];
-  keyword?: string;
   isLoading: boolean;
 }
 
-export default function Main(props: Readonly<PageInterface>) {
+export default function Admin(props: Readonly<PageInterface>) {
 
-  const { className, user, profile, centerList } = props;
+  const { className, user, profile } = props;
 
-  const [centerHover, setCenterHover] = useState(false);
-  const [boardHover, setBoardHover] = useState(false);
-  const [manageHover, setManageHover] = useState(false);
   const [userHoverInterval, setUserHoverInterval] = useState<any>(null);
   const [userHover, setUserHover] = useState(false);
 
@@ -92,24 +85,6 @@ export default function Main(props: Readonly<PageInterface>) {
     setUserHoverInterval(interval);
   }
 
-  const getDefaultHeight = () => {
-    if (centerList?.length === 1) {
-      return 35;
-    }
-    if (centerList?.length === 2) {
-      return 75;
-    }
-    if (centerList?.length === 3) {
-      return 100;
-    }
-    if (centerList?.length === 4) {
-      return 130;
-    }
-    return 0; // 기본 높이
-  };
-
-  const defaultHeight = getDefaultHeight();
-
   return (
 
     <main id='main' className={'bg-black h-full w-[1903px] flex flex-col relative ' + className}>
@@ -117,70 +92,23 @@ export default function Main(props: Readonly<PageInterface>) {
       <header className='fixed rounded-b-xl bg-gray-700 flex w-[1903px] items-center h-[80px] z-[950]'>
         <div className="navbar items-center">
           <div className="navbar-start">
-            <a href="/">
+            <a href="/account/admin">
               <img src="/user.png" alt="logo" className="mt-1 w-[36px] h-[36px] ml-10" />
               <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
             </a>
           </div>
           <div className="navbar-center justify-between w-[800px]">
-            <a id="center" href="/account/culture_center/" className="btn btn-ghost text-xl hover:text-secondary"
-              onMouseEnter={() => openHover(setCenterHover)}
-              onMouseLeave={() => closeHover(setCenterHover)}>
-              문화센터
+            <a id="center" href="/account/culture_center/" className="btn btn-ghost text-xl hover:text-secondary">
+              서비스 신청현황
             </a>
-            <a id="board" href="/account/article/1" className="btn btn-ghost text-xl hover:text-secondary"
-              onMouseEnter={() => openHover(setBoardHover)}
-              onMouseLeave={() => closeHover(setBoardHover)}>
-              게시판
+            <a id="board" href="/account/article/1" className="btn btn-ghost text-xl hover:text-secondary">
+              아파트 관리
             </a>
-            <a id="manage" href="/account/FAQ/" className="btn btn-ghost text-xl hover:text-secondary"
-              onMouseEnter={() => openHover(setManageHover)}
-              onMouseLeave={() => closeHover(setManageHover)}>
-              관리사무소
+            <a id="manage" href="/account/FAQ/" className="btn btn-ghost text-xl hover:text-secondary">
+              유저 관리
             </a>
           </div>
-
-          <DropDown open={centerHover} onClose={() => !setCenterHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='center' defaultDirection={Direction.DOWN} height={defaultHeight} width={180} y={14} x={-30}>
-            <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
-              onMouseEnter={() => openHover(setCenterHover)}
-              onMouseLeave={() => closeHover(setCenterHover)}>
-              {centerList?.map((center) =>
-                <div key={center.id} >
-                  <a href={`/account/culture_center/${center.id}`} className='hover:text-secondary text-sm'>
-                    {center?.type === 'GYM' ? '헬스장' : ''
-                      || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
-                        || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''
-                          || center?.type === 'LIBRARY' ? '도서관' : ''}
-                  </a>
-                </div>
-              )}
-            </div>
-          </DropDown>
-          <DropDown open={boardHover} onClose={() => !setBoardHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='board' defaultDirection={Direction.DOWN} height={100} width={180} y={14} x={-38}>
-            <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
-              onMouseEnter={() => openHover(setBoardHover)}
-              onMouseLeave={() => closeHover(setBoardHover)}>
-              <a href='/account/article/1' className='hover:text-secondary text-sm'>공지사항</a>
-              <a href='/account/article/2' className='hover:text-secondary text-sm'>자유게시판</a>
-              {user?.role !== 'USER' ? <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a> : null}
-            </div>
-          </DropDown>
-          <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDirection={Direction.DOWN} height={100} width={180} y={14} x={-20}>
-            <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
-              onMouseEnter={() => openHover(setManageHover)}
-              onMouseLeave={() => closeHover(setManageHover)}>
-              <a href='/account/FAQ/' className='hover:text-secondary text-sm'>FAQ</a>
-              <a href='/' className='hover:text-secondary text-sm'>건의사항</a>
-              {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>1:1 문의</a> : null}
-            </div>
-          </DropDown>
           <div className="navbar-end">
-            <div className='flex items-center border-2 border-gray-300 rounded-full'>
-              <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key === 'Enter') document.getElementById('search')?.click() }}></input>
-            </div>
-            <button id='search' onClick={() => { const value = (document.getElementById('keyword') as HTMLInputElement)?.value; location.href = '/search?keyword=' + (value ? value : '') }}>
-              <FontAwesomeIcon icon={faMagnifyingGlass} className='rounded-full mr-3 p-2' size="xl" />
-            </button>
             <button id="user"
               onMouseEnter={() => openHover(setUserHover)}
               onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">
