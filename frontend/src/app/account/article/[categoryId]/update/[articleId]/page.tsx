@@ -28,7 +28,6 @@ export default function EditPage() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
     const [preKey, setPreKey] = useState('');
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
@@ -36,7 +35,6 @@ export default function EditPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
     const [localImages, setLocalImages] = useState<File[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [centerList, setCenterList] = useState([] as any[]);
     const [showEditConfirm, setShowEditConfirm] = useState(false);
     const [hasEditPermission, setHasEditPermission] = useState(false);

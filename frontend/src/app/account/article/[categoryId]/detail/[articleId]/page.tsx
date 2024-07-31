@@ -66,9 +66,6 @@ export default function ArticleDetail() {
                             })
                             .catch(e => console.log(e));
                         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
-                        // getSearch({ Page: props.page, Keyword: encodeURIComponent(props.keyword)})
-                        // .then(r => setSearch(r))
-                        // .catch(e => console.log
                     })
                     .catch(e => console.log(e));
             else

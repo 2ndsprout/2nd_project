@@ -57,8 +57,8 @@ public class LessonService {
         return lessonRepository.findByProfileAndCenter(profileId, cultureCenterId);
     }
 
-    public void updateContent(Lesson lesson, String content) {
+    public Lesson updateContent(Lesson lesson, String content) {
         lesson.setContent(content);
-        lessonRepository.save(lesson);
+        return lessonRepository.save(lesson);
     }
 }

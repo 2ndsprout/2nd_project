@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
-import { deleteProfile, getCenterList, getProfile, getStaffLessonList, getUser, saveImage, saveProfileImage, updateProfile } from "@/app/API/UserAPI";
+import { deleteProfile, getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import { checkInput } from "@/app/Global/component/Method";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
@@ -10,11 +10,14 @@ import AlertModal from "@/app/Global/component/AlertModal";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import useAlert from "@/app/Global/hook/useAlert";
 import Pagination from "@/app/Global/component/Pagination";
+import Modal from "@/app/Global/component/Modal";
+
 
 interface Center {
   id: number;
   type: string;
 }
+
 
 export default function Page() {
   const Router = useRouter();
@@ -29,7 +32,14 @@ export default function Page() {
   const { alertState, showAlert, closeAlert } = useAlert();
   const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
-  const [selectedCenter, setSelectedCenter] = useState<Center | null>(null);
+  const [selectedCenter, setSelectedCenter] = useState('');
+  const [centerId, setCenterId] = useState(0);
+  const [center, setCenter] = useState<Center | null>(null);
+  const [lessonUser, setLessonUser] = useState([] as any[]);
+  const [centerError, setCenterError] = useState('문화센터를 설정해주세요.');
+  const [isModalOpen, setISModalOpen] = useState(-1);
+  const [typeNum, setTypeNum] = useState<any>(null);
+  const [lessonId, setLessonId] = useState<any>(null);
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
@@ -58,15 +68,15 @@ export default function Page() {
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 
-  useEffect(() => {
-    //   centerList?.forEach(center => {
-    //     fetchLessonList(center?.id, center?.type);
-    //   });
-    // }, [centerList]);
-    if (selectedCenter) {
-      fetchLessonList(selectedCenter.id, selectedCenter.type);
-    }
-  }, [selectedCenter]);
+  // useEffect(() => {
+  //   centerList?.forEach(center => {
+  //     fetchLessonList(center?.id, center?.type);
+  //   });
+  // }, [centerList]);
+  //   if (selectedCenter) {
+  //     fetchLessonList(selectedCenter.id, selectedCenter.type);
+  //   }
+  // }, [selectedCenter]);
 
   const fetchLessonList = (centerId: number, centerType: string) => {
     getStaffLessonList(centerId)
@@ -94,63 +104,102 @@ export default function Page() {
       })
       .catch((e) => console.log(e));
   };
+  function openModal(type: number, id: number, lessonType: number) {
+    setISModalOpen(type);
+    getLessonRequestListByStaff(lessonType, id)
+      .then((r) => {
+        setLessonUser(r);
+        setTypeNum(lessonType);
+        setLessonId(id);
+      })
+  }
 
-  const handleRowClick = (lessonId: number) => {
-    // Router.push(`/account/lesson/${lessonId}`);
-  };
 
-  const handleButtonClick = (center: Center) => {
-    setSelectedCenter(center);
-  };
+  function updateModal(id: number, lessonId: number, type: number) {
+    updateLessonRequest({ id, lessonId, type })
+      .then(() => {
+        if (center && typeNum !== null) {
+          getLessonRequestListByStaff(typeNum, lessonId)
+            .then(r => {
+              setLessonUser(r);
+              alert('요청이 승인되었습니다.');
+            })
+            .catch(e => console.log(e));
+        }
+      })
+      .catch(e => console.log(e));
+  }
 
-  function getCenterData(type: string) {
+  function deleteModal(LessonUserId: number) {
+    deleteLessonRequest(LessonUserId)
+      .then(() => {
+        if (center && typeNum !== null) {
+          getLessonRequestListByStaff(typeNum, lessonId)
+            .then(r => {
+              setLessonUser(r);
+              alert('요청이 거절되었습니다.');
+            })
+            .catch(e => console.log(e));
+        }
+      })
+      .catch(e => console.log(e));
+  }
+
+
+  function closeModal() {
+    setISModalOpen(-1);
+  }
+
+  function typeTransfer(type: string) {
+    let typeName: string | null;
 
     switch (type) {
       case 'GYM':
-        return lessons;
+        typeName = '헬스장';
+        break;
       case 'SWIMMING_POOL':
-        return lessons;
+        typeName = '수영장';
+        break;
       case 'SCREEN_GOLF':
-        return lessons;
+        typeName = '스크린 골프장';
+        break;
       case 'LIBRARY':
-        return lessons;
+        typeName = '도서관';
+        break;
       default:
-        return null;
+        typeName = '문화센터가 존재하지 않습니다.';
     }
+    return typeName;
   }
+
+
+
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setSelectedCenter(value);
+    setCenterId(Number(value));
+
+    if (value === '') {
+      setCenterError('문화 센터를 선택해주세요.');
+    } else {
+      setCenterError('');
+      const selectedCenter = centerList.find(center => center.id === Number(value));
+      if (selectedCenter) {
+        setCenter(selectedCenter);
+        fetchLessonList(selectedCenter.id, selectedCenter.type);
+      }
+    }
+  };
 
   return (
     <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
       <div className='flex flex-col'>
         <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>레슨</label> 관리</label>
-        <div className="mt-9 w-[1300px] border-2 h-[900px] rounded-lg">
-          <div className="flex flex-col justify-center justify-between p-10">
-            <div className="dropdown mb-3">
-              <div tabIndex={0} role="button" className="bg-gray-700 py-[3px] pl-2 w-[200px] flex flex-row">
-                센터를 선택해주세요
-                <svg
-                  width="12px"
-                  height="12px"
-                  className="flex inline-block h-[10px] w-[30px] fill-current opacity-60 ml-[9px] mt-[8px]"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 2048 2048">
-                  <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
-                </svg>
-              </div>
-              <ul tabIndex={0} className="dropdown-content bg-gray-700 z-[1] w-[200px] p-2 shadow-2xl">
-                {centerList?.map(center => (
-                  <div key={center.id}>
-                     <button onClick={() => handleButtonClick(center)}>
-                      {center?.type === 'GYM' && '헬스장'}
-                      {center?.type === 'SWIMMING_POOL' && '수영장'}
-                      {center?.type === 'SCREEN_GOLF' && '스크린 골프장'}
-                      {center?.type === 'LIBRARY' && '도서관'}
-                    </button>
-                  </div>
-                ))}
-              </ul>
-              {/* <select
-                className="mt-5 font-bold text-white select select-bordered w-full max-w-xs"
+        <div className="mt-9 w-[1300px] border-2 h-[700px] rounded-lg">
+          <div className="flex flex-col p-9 justify-center items-center justify-between">
+            <div className="flex w-[1000px]">
+              <select
+                className="flex mb-[30px] font-bold text-white select select-bordered w-full max-w-xs"
                 value={selectedCenter}
                 onChange={handleSelectChange}  // handleChange 함수를 호출합니다.
               >
@@ -166,23 +215,43 @@ export default function Page() {
                     {typeTransfer(center.type)}
                   </option>
                 ))}
-              </select> */}
+              </select>
             </div>
-            <div>
+            <div className="h-[500px] w-[1000px] overflow-y-scroll">
               {lessons.map((lesson) => (
-                <div key={lesson?.id} className='flex items-center justify-between border-b-2 p-4'>
-                  <div className='flex items-center'>
-                    <div className='ml-4'>
-                      <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{lesson?.name}</div>
+                <div key={lesson?.id} className='flex items-center justify-between border-b-2 h-[50px]'>
+                  <a href={`/account/lesson/${lesson.id}`}>
+                    <div className='flex items-center w-full h-full'>
+                      <div className='ml-4 w-full h-full' >
+                        <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{lesson?.name}</div>
+                      </div>
                     </div>
+                  </a>
+                  <div className="w-[300px] justify-end flex">
+                    <button className='text-sm mr-[30px] font-bold text-orange-300 hover:text-orange-500' onClick={() => openModal(1, lesson.id, 0)}>신청 관리</button>
+                    <button className='text-sm mr-[30px] font-bold text-red-300 hover:text-red-500' onClick={() => openModal(1, lesson.id, 2)}>취소 관리</button>
                   </div>
-                  <button className='text-sm font-bold text-primary hover:text-secondary' onClick={() => handleRowClick(lesson?.id)}>수정</button>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
+      <Modal open={isModalOpen === 1} onClose={() => setISModalOpen(-1)} className='modal-box w-[600px] h-[700px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
+        <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => closeModal()}> ✕ </button>
+        <div className="flex flex-col w-[450px] h-[500px]">
+          {lessonUser.map((lessonUser) => (
+            <div key={lessonUser?.id} className='w-[450px] h-[50px] flex flex-row border-b border-gray-500  items-center pb-3 pl-3 mt-[10px]'>
+              <img className="w-[50px] h-[50px]" src={lessonUser.profileResponseDTO?.url ? lessonUser.profileResponseDTO.url : '/user.png'} alt="profile"></img>
+              <div className="w-[250px] text-black text-lg ml-[20px]">{lessonUser.profileResponseDTO.name}</div>
+              <div className="w-[200px] flex justify-end items-center flex-row pr-[30px]">
+                <button className='text-sm w-[50px] font-bold text-blue-300 hover:text-blue-500' onClick={() => updateModal(lessonUser.id, lessonUser.lessonResponseDTO.id, (typeNum + 1))}>승인</button>
+                <button className='text-sm w-[50px] font-bold text-red-300 hover:text-red-500' onClick={() => deleteModal(lessonUser.id)}>거절</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal>
       <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
       <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />
     </Profile >

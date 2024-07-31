@@ -75,7 +75,7 @@ public class CultureCenterController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                CenterResponseDTO responseDTO = multiService.updateCenter(username, profileId,requestDTO.getId(), requestDTO.getType(), requestDTO.getEndDate(), requestDTO.getStartDate(), requestDTO.getKey());
+                CenterResponseDTO responseDTO = multiService.updateCenter(username, profileId,requestDTO.getId(), requestDTO.getType(), requestDTO.getEndDate(), requestDTO.getStartDate());
                 return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {

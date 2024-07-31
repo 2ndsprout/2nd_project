@@ -246,7 +246,8 @@ interface getArticleList {
 }
 
 export const getArticleList = async ({ categoryId, page, aptId }: getArticleList) => {
-    const response = await UserApi.get('/api/article/list', { headers: {'AptId': aptId, 'CategoryId': categoryId, 'Page': page }});
+    const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': categoryId, 'Page': page, 'AptId': aptId } });
+
     return response.data;
 }
 
@@ -296,9 +297,10 @@ interface SearchArticleParams {
     keyword: string;
     sort: number;
     categoryId?: number;
+    aptId?: number;
 }
 
-export const searchArticles = async ({ page, keyword, sort, categoryId }: SearchArticleParams) => {
+export const searchArticles = async ({ page, keyword, sort, categoryId, aptId }: SearchArticleParams) => {
     try {
         const headers: { [key: string]: string } = {
             'Page': page.toString(),
@@ -308,6 +310,10 @@ export const searchArticles = async ({ page, keyword, sort, categoryId }: Search
 
         if (categoryId !== undefined) {
             headers['CategoryId'] = categoryId.toString();
+        }
+
+        if (aptId !== undefined) {
+            headers['AptId'] = aptId.toString();
         }
 
         const response = await UserApi.get('/api/article/search', { headers });
@@ -528,8 +534,8 @@ export const getLessonRequestList = async () => {
     return response.data;
 }
 
-export const getLessonRequestListByStaff = async () => {
-    const response = await UserApi.get('/api/lesson/staff/list');
+export const getLessonRequestListByStaff = async (type : number, id:number) => {
+    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: {'LessonId':id, 'Type': type } });
     return response.data;
 }
 
