@@ -18,19 +18,14 @@ public class ProposeController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> savePropose(@RequestHeader("Authorization") String accessToken,
-                                         @RequestBody ProposeRequestDTO requestDto) {
-        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
+    public ResponseEntity<?> savePropose(@RequestBody ProposeRequestDTO requestDto) {
+
         try {
-            if (tokenRecord.isOK()) {
-                String username = tokenRecord.username();
-                ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto);
-                return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
-            }
+            ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto);
+            return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return tokenRecord.getResponseEntity();
     }
 
     @GetMapping("/list")
@@ -38,16 +33,12 @@ public class ProposeController {
                                           @RequestHeader(value = "Page", defaultValue = "0") int page) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-            if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 Page<ProposeResponseDTO> proposeResponseDTOS = this.multiService.getProposePage(page);
                 return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTOS);
-            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return tokenRecord.getResponseEntity();
-
     }
 
     @GetMapping
@@ -56,15 +47,12 @@ public class ProposeController {
                                          @RequestHeader("ProposeId") Long proposeId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-            if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ProposeResponseDTO proposeResponseDTO = this.multiService.getPropose(username, proposeId, password);
                 return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
-            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return tokenRecord.getResponseEntity();
     }
 
     @DeleteMapping
@@ -73,15 +61,12 @@ public class ProposeController {
                                             @RequestHeader("ProposeId") Long proposeId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-            if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 this.multiService.deletePropose(username, proposeId, password);
                 return ResponseEntity.status(HttpStatus.OK).body("삭제 완료");
-            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return tokenRecord.getResponseEntity();
     }
 
     @PutMapping
@@ -89,15 +74,12 @@ public class ProposeController {
                                             @RequestBody ProposeRequestDTO requestDto) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-            if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 ProposeResponseDTO proposeResponseDTO = this.multiService.updatePropose(username, requestDto);
                 return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
-            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return tokenRecord.getResponseEntity();
     }
 
 }

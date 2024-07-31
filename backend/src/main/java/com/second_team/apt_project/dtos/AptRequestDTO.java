@@ -15,7 +15,5 @@ public class AptRequestDTO {
     private Long aptId;
     private String roadAddress; // 도로명주소
     private String aptName; // 아파트 이름
-    private Double x; // 위도
-    private Double y; // 경도
     private List<String> key;
 }

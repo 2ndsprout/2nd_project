@@ -129,14 +129,14 @@ export default function Admin(props: Readonly<PageInterface>) {
                     </div>
                 </header>
             ) : (
-                <div className="w-full h-[56px] flex justify-center items-center mt-3 mb-3 z-[950]">
+                <div className="fixed z-[950] bg-black w-full h-[56px] flex justify-center items-center mb-3 z-[950]">
                     <a href="/propose" className="flex items-center">
                         <img src="/user.png" alt="logo" className="w-[48px] h-[48px]" />
                         <span className="ml-2 text-white">Honey Danji</span>
                     </a>
                 </div>
             )}
-            <div className="flex mt-[56px]">
+            <div className="flex mt-[70px]">
                 {props.children}
             </div>
             <ScrollToTopButton />

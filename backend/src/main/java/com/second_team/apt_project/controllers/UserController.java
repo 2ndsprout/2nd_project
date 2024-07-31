@@ -46,7 +46,7 @@ public class UserController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<UserResponseDTO> userResponseDTOList = multiService.saveUserGroup(requestDTO.getAptNum(), requestDTO.getAptId(), username, requestDTO.getH(), requestDTO.getW());
+                List<UserResponseDTO> userResponseDTOList = multiService.saveUserGroup(requestDTO.getMin(), requestDTO.getMax(), requestDTO.getAptId(), username, requestDTO.getH(), requestDTO.getW());
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
