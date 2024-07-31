@@ -482,24 +482,29 @@ public class MultiService {
 
     @Transactional
     public void deleteImageList(String username, Long profileId) {
-        SiteUser user = userService.get(username);
-        Profile profile = profileService.findById(profileId);
-        this.userCheck(user, profile);
-        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
-        String path = AptProjectApplication.getOsType().getLoc();
-        if (_multiKey.isPresent())
-            for (String value : _multiKey.get().getVs()) {
-                Optional<FileSystem> _fileSystem = fileSystemService.get(value);
-                if (_fileSystem.isPresent()) {
-                    File file = new File(path + _fileSystem.get().getV());
-                    if (file.exists()) {
-                        if (file.getParentFile().list().length == 0) this.deleteFolder(file.getParentFile());
-                        else file.delete();
+        try {
+            SiteUser user = userService.get(username);
+            Profile profile = profileService.findById(profileId);
+            this.userCheck(user, profile);
+            Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
+            String path = AptProjectApplication.getOsType().getLoc();
+            if (_multiKey.isPresent()) {
+                for (String value : _multiKey.get().getVs()) {
+                    Optional<FileSystem> _fileSystem = fileSystemService.get(value);
+                    if (_fileSystem.isPresent()) {
+                        File file = new File(path + _fileSystem.get().getV());
+                        if (file.exists()) {
+                            if (file.getParentFile().list().length == 0) this.deleteFolder(file.getParentFile());
+                            else file.delete();
+                        }
+                        fileSystemService.delete(_fileSystem.get());
                     }
-                    fileSystemService.delete(_fileSystem.get());
                 }
+                multiKeyService.delete(_multiKey.get());
             }
-        multiKeyService.delete(_multiKey.get());
+        } catch (Exception ex) {
+            throw new RuntimeException("이미지 삭제 중 오류 발생: " + ex.getMessage(), ex);
+        }
     }
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { deleteImageList, getCenter, getCenterList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
+import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -105,7 +105,7 @@ export default function Page() {
             try {
                 await deleteImageList();
             } catch (error) {
-                console.error('삭제할 이미지없음(문제없음):', error);
+                console.error('이미지 삭제 도중 오류:', error);
             }
         };
 
@@ -115,12 +115,12 @@ export default function Page() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
-                        setIsLoading(true);
                         getCenterList()
-                        .then(r => {
-                            setCenterList(r);
-                        })
-                        .catch(e => console.log(e));
+                            .then(r => {
+                                setCenterList(r);
+                            })
+                            .catch(e => console.log(e));
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                     })
                     .catch(console.error);
             } else {
@@ -151,6 +151,15 @@ export default function Page() {
     
         try {
             const content = quillInstance.current?.getEditor().root.innerHTML || '';
+
+            // 이미지 URL 추출
+            const imgRegex = /<img.*?src="(.*?)"/g;
+            const urlList = [];
+            let match;
+            while ((match = imgRegex.exec(content)) !== null) {
+                urlList.push(match[1]);
+            }
+
             const requestData = {
                 title,
                 content,
@@ -158,7 +167,7 @@ export default function Page() {
                 tagName: tags.map(tag => tag.name),
                 articleTagId: deletedTagIds,
                 topActive: false,
-                images: uploadedImages.map(img => img.v)
+                urlList: urlList
             };
     
             await postArticle(requestData);
@@ -171,11 +180,8 @@ export default function Page() {
     };
 
     return (
-
-        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
-
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList} >
             <div className="flex flex-1 w-full">
-
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
                     <CategoryList userRole={user?.role}/>

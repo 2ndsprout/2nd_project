@@ -60,11 +60,16 @@ export default function ArticleListPage() {
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            getUser().then(r => {
+                setUser(r)
+                console.log("사용자 데이터 : " , r);
+            })
+            .catch(e => console.log(e));
             if (PROFILE_ID)
                 getProfile()
                     .then(r => {
                         setProfile(r)
+                        console.log("프로필 데이터 : " , r);
                         getCenterList()
                             .then(r => setCenterList(r))
                             .catch(e => console.log(e));
