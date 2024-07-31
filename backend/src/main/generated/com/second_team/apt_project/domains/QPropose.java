@@ -29,7 +29,7 @@ public class QPropose extends EntityPathBase<Propose> {
 
     public final DateTimePath<java.time.LocalDateTime> modifyDate = createDateTime("modifyDate", java.time.LocalDateTime.class);
 
-    public final NumberPath<Integer> password = createNumber("password", Integer.class);
+    public final StringPath password = createString("password");
 
     public final EnumPath<com.second_team.apt_project.enums.ProposeStatus> proposeStatus = createEnum("proposeStatus", com.second_team.apt_project.enums.ProposeStatus.class);
 
@@ -38,10 +38,6 @@ public class QPropose extends EntityPathBase<Propose> {
     public final StringPath title = createString("title");
 
     public final NumberPath<Integer> w = createNumber("w", Integer.class);
-
-    public final NumberPath<Double> x = createNumber("x", Double.class);
-
-    public final NumberPath<Double> y = createNumber("y", Double.class);
 
     public QPropose(String variable) {
         super(Propose.class, forVariable(variable));
