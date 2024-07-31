@@ -242,10 +242,11 @@ export const getCategory = async (data: number) => {
 interface getArticleList {
     categoryId: number;
     page?: number;
+    aptId?: number;
 }
 
-export const getArticleList = async ({ categoryId, page }: getArticleList) => {
-    const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': categoryId, 'Page': page } });
+export const getArticleList = async ({ categoryId, page, aptId }: getArticleList) => {
+    const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': categoryId, 'Page': page, 'AptId': aptId } });
     return response.data;
 }
 
@@ -295,9 +296,10 @@ interface SearchArticleParams {
     keyword: string;
     sort: number;
     categoryId?: number;
+    aptId?: number;
 }
 
-export const searchArticles = async ({ page, keyword, sort, categoryId }: SearchArticleParams) => {
+export const searchArticles = async ({ page, keyword, sort, categoryId, aptId }: SearchArticleParams) => {
     try {
         const headers: { [key: string]: string } = {
             'Page': page.toString(),
@@ -307,6 +309,10 @@ export const searchArticles = async ({ page, keyword, sort, categoryId }: Search
 
         if (categoryId !== undefined) {
             headers['CategoryId'] = categoryId.toString();
+        }
+
+        if (aptId !== undefined) {
+            headers['AptId'] = aptId.toString();
         }
 
         const response = await UserApi.get('/api/article/search', { headers });

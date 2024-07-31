@@ -1,6 +1,6 @@
 'use client'
 
-import { getArticleList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
+import { getArticleList, getAptList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
@@ -8,7 +8,6 @@ import Main from "@/app/Global/layout/MainLayout";
 import Link from "next/link";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { get } from "http";
 
 interface Article {
     categoryId: number;
@@ -35,6 +34,11 @@ interface ArticlePage {
     number: number;
 }
 
+interface AptInfo {
+    aptId: number;
+    aptName: string;
+}
+
 export default function ArticleListPage() {
     const [articleList, setArticleList] = useState<Article[]>([]);
     const { categoryId } = useParams();
@@ -51,6 +55,9 @@ export default function ArticleListPage() {
     const [keyword, setKeyword] = useState('');
     const [sort, setSort] = useState<number>(0);
     const [isSearching, setIsSearching] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [aptList, setAptList] = useState<AptInfo[]>([]);
+    const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
 
     const countTotalComments = (commentList: any[]): number => {
         return commentList.reduce((total, comment) => {
@@ -61,21 +68,29 @@ export default function ArticleListPage() {
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser().then(r => {
-                setUser(r)
-                console.log("사용자 데이터 : " , r);
-            })
-            .catch(e => console.log(e));
+                setUser(r);
+                console.log("사용자 데이터 : ", r);
+                setIsAdmin(r.role === "ADMIN");
+                setSelectedAptId(r.aptResponseDTO.aptId);
+                
+                if (r.role === "ADMIN") {
+                    getAptList().then(aptData => {
+                        setAptList(aptData);
+                    }).catch(e => console.error("아파트 목록 가져오기 실패:", e));
+                }
+            }).catch(e => console.error("사용자 정보 가져오기 실패:", e));
+
             if (PROFILE_ID)
                 getProfile()
                     .then(r => {
-                        setProfile(r)
-                        console.log("프로필 데이터 : " , r);
+                        setProfile(r);
+                        console.log("프로필 데이터 : ", r);
                         getCenterList()
                             .then(r => setCenterList(r))
-                            .catch(e => console.log(e));
+                            .catch(e => console.error("센터 목록 가져오기 실패:", e));
                         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                     })
-                    .catch(e => console.log(e));
+                    .catch(e => console.error("프로필 정보 가져오기 실패:", e));
             else
                 redirect('/account/profile');
         }
@@ -91,12 +106,14 @@ export default function ArticleListPage() {
                     page: currentPage - 1,
                     keyword: keyword.trim(),
                     sort,
-                    categoryId: Number(categoryId)
+                    categoryId: Number(categoryId),
+                    aptId: selectedAptId || undefined
                 });
             } else {
                 data = await getArticleList({
                     page: currentPage - 1,
-                    categoryId: Number(categoryId)
+                    categoryId: Number(categoryId),
+                    aptId: selectedAptId || undefined
                 });
             }
 
@@ -118,11 +135,13 @@ export default function ArticleListPage() {
     };
 
     useEffect(() => {
-        fetchArticles(isSearching);
-    }, [categoryId, currentPage, isSearching]);
+        if (selectedAptId) {
+            fetchArticles(isSearching);
+        }
+    }, [categoryId, currentPage, isSearching, selectedAptId]);
 
     const handlePageChange = (newPage: number) => {
-        setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
+        setCurrentPage(Math.max(1, newPage));
     };
 
     const handleSearch = () => {
@@ -137,6 +156,9 @@ export default function ArticleListPage() {
         setCurrentPage(1);
     };
 
+    const handleAptChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedAptId(Number(event.target.value));
+    };
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
@@ -147,6 +169,27 @@ export default function ArticleListPage() {
                             <CategoryList userRole={user?.role} />
                         </aside>
                         <div className="flex-1 max-w-7xl p-10 ml-[400px]">
+                            {isAdmin && (
+                                <div className="mb-6">
+                                    <select 
+                                        value={selectedAptId || ''}
+                                        onChange={handleAptChange}
+                                        className="p-2 bg-gray-700 rounded text-white"
+                                    >
+                                        {aptList.map(apt => (
+                                            <option key={apt.aptId} value={apt.aptId}>
+                                                {apt.aptName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                            <h2 className="text-2xl font-bold mb-6">
+                                {isAdmin 
+                                    ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
+                                    : `${user?.aptResponseDTO?.aptName || ''} 게시판`
+                                }
+                            </h2>
                             {error ? (
                                 <p className="text-red-500">{error}</p>
                             ) : articleList.length === 0 ? (
