@@ -36,7 +36,6 @@ export default function EditPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
     const [localImages, setLocalImages] = useState<File[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [centerList, setCenterList] = useState([] as any[]);
     const [showEditConfirm, setShowEditConfirm] = useState(false);
     const [hasEditPermission, setHasEditPermission] = useState(false);
