@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
-import { getMyLessonList, getProfile, getUser, updateLessonRequest, deleteLessonRequest } from "@/app/API/UserAPI";
+import { getMyLessonList, getProfile, getUser, updateLessonRequest, deleteLessonRequest, getCenterList } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
 
@@ -22,6 +22,7 @@ export default function Page() {
     const [cancellingLessons, setCancellingLessons] = useState([] as any[]);
     const [cancelledLessons, setCancelledLessons] = useState([] as any[]);
     const [isLoading, setIsLoading] = useState(false);
+    const [centerList, setCenterList] = useState([] as any[]);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
@@ -37,6 +38,11 @@ export default function Page() {
             if (PROFILE_ID) {
                 getProfile()
                     .then(r => {
+                        getCenterList()
+                            .then(r => {
+                                setCenterList(r);
+                            })
+                            .catch(e => console.log(e));
                         setProfile(r);
                         getMyLessonList()
                             .then(r => {
@@ -116,7 +122,7 @@ export default function Page() {
     }
 
     return (
-        <Profile user={user} profile={profile} isLoading={isLoading}>
+        <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className='flex flex-col'>
                 <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>내 레슨</label> 목록</label>
                 <div className="mt-9 p-10 flex flex-col w-[1300px] border-2 h-[1000px] rounded-lg">

@@ -51,8 +51,6 @@ const Calendar: React.FC<CalendarProps> = ({ lessons, height, width, padding = '
         });
     }, [lessons]);
 
-    console.log('Formatted Lessons:', formattedLessons);
-
     const handleEventClick = (info: EventClickArg) => {
         const eventId = info.event.id;
         router.push(`/account/lesson/${eventId}`);
