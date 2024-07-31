@@ -80,12 +80,13 @@ public class ArticleController {
     public ResponseEntity<?> articleList(@RequestHeader("Authorization") String accessToken,
                                          @RequestHeader("PROFILE_ID") Long profileId,
                                          @RequestHeader(value = "Page", defaultValue = "0") int page,
-                                         @RequestHeader("CategoryId") Long categoryId) {
+                                         @RequestHeader("CategoryId") Long categoryId,
+                                         @RequestHeader("AptId") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, page, profileId, categoryId);
+                Page<ArticleResponseDTO> articleResponseDTOList = this.multiService.articleList(username, aptId, page, profileId, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
@@ -97,12 +98,13 @@ public class ArticleController {
     @GetMapping("/topActive")
     public ResponseEntity<?> topActive(@RequestHeader("Authorization") String accessToken,
                                        @RequestHeader("PROFILE_ID") Long profileId,
-                                       @RequestHeader("CategoryId") Long categoryId) {
+                                       @RequestHeader("CategoryId") Long categoryId,
+                                       @RequestHeader("AptId") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<ArticleResponseDTO> articleResponseDTOList = this.multiService.topActive(username, profileId, categoryId);
+                List<ArticleResponseDTO> articleResponseDTOList = this.multiService.topActive(username, aptId, profileId, categoryId);
                 return ResponseEntity.status(HttpStatus.OK).body(articleResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {

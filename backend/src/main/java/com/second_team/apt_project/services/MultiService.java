@@ -802,28 +802,48 @@ public class MultiService {
 
 
     @Transactional
-    public List<ArticleResponseDTO> topActive(String username, Long profileId, Long categoryId) {
+    public List<ArticleResponseDTO> topActive(String username, Long aptId, Long profileId, Long categoryId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Boolean topActive = true;
-        List<Article> articleList = articleService.topActive(user.getApt().getId(), categoryId, topActive);
+        List<Article> articleList;
+        if (user.getRole() == UserRole.ADMIN) {
+            articleList = articleService.topActive(aptId, categoryId, topActive);
+        }
+        else {
+            articleList = articleService.topActive(user.getApt().getId(), categoryId, topActive);
+        }
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
-            ArticleResponseDTO articleResponseDTO = ArticleResponseDTO.builder().articleId(article.getId()).topActive(article.getTopActive()).title(article.getTitle()).content(article.getContent()).categoryName(article.getCategory().getName()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).build();
+            ArticleResponseDTO articleResponseDTO = ArticleResponseDTO.builder()
+                    .articleId(article.getId())
+                    .topActive(article.getTopActive())
+                    .title(article.getTitle())
+                    .content(article.getContent())
+                    .categoryName(article.getCategory().getName())
+                    .createDate(this.dateTimeTransfer(article.getCreateDate()))
+                    .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
+                    .build();
             articleResponseDTOList.add(articleResponseDTO);
         }
         return articleResponseDTOList;
     }
 
     @Transactional
-    public Page<ArticleResponseDTO> articleList(String username, int page, Long profileId, Long categoryId) {
+    public Page<ArticleResponseDTO> articleList(String username, Long aptId, int page, Long profileId, Long categoryId) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Pageable pageable = PageRequest.of(page, 15);
         Boolean topActive = false;
-        Page<Article> articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId, topActive);
+        Page<Article> articleList;
+        if (user.getRole() == UserRole.ADMIN) {
+            articleList = articleService.getArticleList(pageable, aptId, categoryId, topActive);
+        }
+        else {
+            articleList = articleService.getArticleList(pageable, user.getApt().getId(), categoryId, topActive);
+        }
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
             List<ArticleTag> articleTagList = articleTagService.getArticle(article.getId());
