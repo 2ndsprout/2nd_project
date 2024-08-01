@@ -167,15 +167,15 @@ button:hover .ql-fill,
 .ql-toolbar button,
 .ql-toolbar select,
 .ql-picker-label {
-  color: #000 !important; 
+  color: #000 !important;
 }
 
 .ql-toolbar .ql-stroke {
   fill: none;
-  stroke: #000 !important; 
+  stroke: #000 !important;
 }
 
 .ql-toolbar .ql-fill {
-  fill: #000 !important; 
+  fill: #000 !important;
   stroke: none;
 }

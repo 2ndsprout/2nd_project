@@ -57,7 +57,7 @@ export default function ArticleListPage() {
     const [isSearching, setIsSearching] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [aptList, setAptList] = useState<AptInfo[]>([]);
-    const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
+    const [selectedAptId, setSelectedAptId] = useState(0);
 
     const countTotalComments = (commentList: any[]): number => {
         return commentList.reduce((total, comment) => {
@@ -110,11 +110,11 @@ export default function ArticleListPage() {
                     aptId: selectedAptId || undefined
                 });
             } else {
-                data = await getArticleList({
-                    page: currentPage - 1,
-                    categoryId: Number(categoryId),
-                    aptId: selectedAptId || undefined
-                });
+                data = await getArticleList(
+                    Number(categoryId),
+                    selectedAptId,
+                    currentPage - 1
+                );
             }
 
             const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
