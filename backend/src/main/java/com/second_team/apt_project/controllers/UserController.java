@@ -104,7 +104,7 @@ public class UserController {
 
     @GetMapping("/list")
     public ResponseEntity<?> userList(@RequestHeader("Authorization") String accessToken,
-                                      @RequestHeader("Page") int page,
+                                      @RequestHeader(value = "Page", defaultValue = "0") int page,
                                       @RequestHeader("AptId") Long aptId,
                                       @RequestHeader("PROFILE_ID") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);

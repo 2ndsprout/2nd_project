@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
-import { deleteProfile, getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff } from "@/app/API/UserAPI";
+import { getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
-import { checkInput } from "@/app/Global/component/Method";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
 import AlertModal from "@/app/Global/component/AlertModal";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import useAlert from "@/app/Global/hook/useAlert";
-import Pagination from "@/app/Global/component/Pagination";
 import Modal from "@/app/Global/component/Modal";
 
 
@@ -68,15 +66,6 @@ export default function Page() {
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 
-  // useEffect(() => {
-  //   centerList?.forEach(center => {
-  //     fetchLessonList(center?.id, center?.type);
-  //   });
-  // }, [centerList]);
-  //   if (selectedCenter) {
-  //     fetchLessonList(selectedCenter.id, selectedCenter.type);
-  //   }
-  // }, [selectedCenter]);
 
   const fetchLessonList = (centerId: number, centerType: string) => {
     getStaffLessonList(centerId)
