@@ -1,7 +1,7 @@
 'use client'
 
 
-import { deleteArticle, getArticle, getCenterList, getProfile, getUser } from '@/app/API/UserAPI';
+import { deleteArticle, getArticle, getCenterList, getProfile, getUser, getTag } from '@/app/API/UserAPI';
 import { getDateTimeFormat } from '@/app/Global/component/Method';
 import Main from "@/app/Global/layout/MainLayout";
 import DOMPurify from 'dompurify';
@@ -65,7 +65,7 @@ export default function ArticleDetail() {
                                 setCenterList(r);
                             })
                             .catch(e => console.log(e));
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
                     })
                     .catch(e => console.log(e));
             else
@@ -102,15 +102,31 @@ export default function ArticleDetail() {
             try {
                 if (articleId) {
                     const fetchedArticle = await getArticle(Number(articleId));
-                    setArticle(fetchedArticle);
+                    if (fetchedArticle) {
+                        const tagPromises = fetchedArticle.tagResponseDTOList.map((tag: Tag) => getTag(tag.id));
+                        const tagDetails = await Promise.all(tagPromises);
+                        setArticle((prev: Article | null): Article => {
+                            if (prev === null) {
+                                return {
+                                    ...fetchedArticle,
+                                    tagResponseDTOList: tagDetails
+                                };
+                            }
+                            return {
+                                ...prev,
+                                ...fetchedArticle,
+                                tagResponseDTOList: tagDetails
+                            };
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching article:', error);
             }
         };
-
+    
         fetchArticle();
-    }, [articleId, user]);
+    }, [articleId]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

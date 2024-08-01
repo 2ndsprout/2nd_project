@@ -1,6 +1,6 @@
 'use client';
 
-import { getArticle, getCenterList, getProfile, getUser, saveImageList, updateArticle, deleteImageList } from '@/app/API/UserAPI';
+import { getArticle, getCenterList, getProfile, getUser, saveImageList, updateArticle, deleteImageList, postTag } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -36,6 +36,7 @@ export default function EditPage() {
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
     const [localImages, setLocalImages] = useState<File[]>([]);
     const [centerList, setCenterList] = useState([] as any[]);
+    const [isLoading, setIsLoading] = useState(false);
     const [showEditConfirm, setShowEditConfirm] = useState(false);
     const [hasEditPermission, setHasEditPermission] = useState(false);
     const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
@@ -270,29 +271,44 @@ export default function EditPage() {
             const updatedContent = quillInstance.current?.getEditor().root.innerHTML || '';
             const sanitizedContent = DOMPurify.sanitize(updatedContent);
 
+            const tagNames = tags.map(tag => tag.name);
+
+    
+            // // 모든 태그의 이름을 포함
+            // const allTagNames = tags.map(tag => tag.name);
+    
             const requestData = {
                 articleId: Number(articleId),
                 title,
                 content: sanitizedContent,
                 categoryId: Number(categoryId),
-                tagName: tags.map(tag => tag.name),
-                articleTagId: deletedTagIds,
+                tagName: tagNames, // 모든 태그 이름 포함
+                articleTagId: deletedTagIds, // 삭제된 태그 ID
                 topActive: false,
                 images: uploadedImages.map(img => img.v)
             };
     
+            console.log('Sending request data:', requestData); // 요청 데이터 로깅
+    
             await updateArticle(requestData);
-            await deleteImageList(); // 게시물 수정 후 임시 이미지 삭제
+            await deleteImageList();
             router.push(`/account/article/${categoryId}/detail/${articleId}`);
-        } catch (error:any) {
+        } catch (error: any) {
             console.error('게시물 수정 중 오류:', error);
-            if(error.response && error.response.status === 403) {
-                setError('수정 권한이 없습니다. 관리자나 작성자만 수정 할 수 있습니다.');
-                setRedirectCountdown(3);
+            if (error.response) {
+                console.error('Error response:', error.response.data);
+                console.error('Error status:', error.response.status);
+            }
+            if (error.response && error.response.status === 403) {
+                setError('수정중에 오류가 발생했습니다. 관리자에게 문의 해주세요.');
             } else {
                 setError('게시물 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');    
             }
         }
+    };
+
+    const handleTagChange = (newTags: Tag[]) => {
+        setTags(newTags);
     };
 
     if (!hasEditPermission) {
@@ -348,7 +364,12 @@ export default function EditPage() {
                                 </div>
                             </div>
                             <div className="mt-10">
-                                <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
+                            <TagInput 
+                                tags={tags} 
+                                setTags={handleTagChange}
+                                deletedTagIds={deletedTagIds}
+                                setDeletedTagIds={setDeletedTagIds}
+                            />
                             </div>
                         </div>
                         <div className="flex justify-end gap-4 mt-6">

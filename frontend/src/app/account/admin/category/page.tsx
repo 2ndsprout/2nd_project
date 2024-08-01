@@ -84,7 +84,7 @@ const CreateCategory: React.FC = () => {
       const categoryData = await getCategoryList();
       const categoriesWithCounts = await Promise.all(
         categoryData.map(async (category: Category) => {
-          const articleData = await getArticleList({ page: 0, categoryId: category.id });
+          const articleData = await getArticleList( category.id, 1, 0);    // (1 === aptId) 게시물목록처럼 apt리스트 선택사항으로 변경예정
           return { ...category, articleCount: articleData.totalElements };
         })
       );
