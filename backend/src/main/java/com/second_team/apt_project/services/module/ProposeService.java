@@ -26,7 +26,7 @@ public class ProposeService {
                 .aptName(proposeRequestDTO.getAptName())
                 .min(proposeRequestDTO.getMin())
                 .max(proposeRequestDTO.getMax())
-                .password(proposeRequestDTO.getPassword())
+                .password(passwordEncoder.encode(proposeRequestDTO.getPassword()))
                 .h(proposeRequestDTO.getH())
                 .w(proposeRequestDTO.getW())
                 .build();
@@ -43,7 +43,7 @@ public class ProposeService {
         propose.setAptName(proposeRequestDTO.getAptName());
         propose.setMin(proposeRequestDTO.getMin());
         propose.setMax(proposeRequestDTO.getMax());
-        propose.setPassword(proposeRequestDTO.getPassword());
+        propose.setPassword(passwordEncoder.encode(proposeRequestDTO.getPassword()));
         propose.setModifyDate(LocalDateTime.now());
         propose.setProposeStatus(ProposeStatus.values()[proposeRequestDTO.getProposeStatus()]);
         propose.setH(proposeRequestDTO.getH());

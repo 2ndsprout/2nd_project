@@ -18,8 +18,9 @@ public class ProposeController {
     private final MultiService multiService;
 
     @PostMapping
-    public ResponseEntity<?> savePropose(@RequestBody ProposeRequestDTO requestDto) {
-
+    public ResponseEntity<?> savePropose(@RequestHeader("Authorization") String accessToken,
+                                         @RequestBody ProposeRequestDTO requestDto) {
+        TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto);
             return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
@@ -81,5 +82,4 @@ public class ProposeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
 }
