@@ -29,7 +29,7 @@ public class UserController {
                 String username = tokenRecord.username();
                 UserResponseDTO userResponseDTO = multiService.saveUser(requestDTO.getName(),
                         requestDTO.getPassword(), requestDTO.getEmail(), requestDTO.getAptNum(),
-                        requestDTO.getRole(), requestDTO.getAptId(), username);
+                        requestDTO.getRole(), requestDTO.getAptId(), username, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
@@ -46,7 +46,7 @@ public class UserController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<UserResponseDTO> userResponseDTOList = multiService.saveUserGroup(requestDTO.getMin(), requestDTO.getMax(), requestDTO.getAptId(), username, requestDTO.getH(), requestDTO.getW());
+                List<UserResponseDTO> userResponseDTOList = multiService.saveUserGroup(requestDTO.getMin(), requestDTO.getMax(), requestDTO.getAptId(), username, requestDTO.getH(), requestDTO.getW(), profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         }  catch (IllegalArgumentException | DataNotFoundException ex) {
@@ -87,12 +87,13 @@ public class UserController {
 
     @GetMapping("/detail")
     public ResponseEntity<?> userDetail(@RequestHeader("Authorization") String accessToken,
-                                        @RequestHeader("Username") String userId) {
+                                        @RequestHeader("Username") String userId,
+                                        @RequestHeader("PROFILE_ID") Long profileId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                UserResponseDTO userResponseDTO = multiService.getUserDetail(userId, username);
+                UserResponseDTO userResponseDTO = multiService.getUserDetail(userId, username, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTO);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
@@ -110,7 +111,7 @@ public class UserController {
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                Page<UserResponseDTO> userResponseDTOList = multiService.getUserList(page, aptId, username);
+                Page<UserResponseDTO> userResponseDTOList = multiService.getUserList(page, aptId, username, profileId);
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
