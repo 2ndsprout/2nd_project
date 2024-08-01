@@ -176,8 +176,11 @@ export default function Page() {
         setISModalOpen(type);
     }
 
-    const handleModalClose = () => {
-        setISModalOpen(-2);
+    const handleModalClose = (type: number) => {
+        if(canShow){
+            setCanShow(false);
+        }
+        setISModalOpen(type);
         setUpdate(false);
     };
 
@@ -227,6 +230,7 @@ export default function Page() {
     }
 
     function onAdmin(id: number) {
+        setUpdate(false);
         getPropose(id, '')
             .then(r => {
                 console.log(r);
@@ -277,7 +281,6 @@ export default function Page() {
             max: max,
             h: h,
             w: w,
-            password: password,
             proposeStatus: proposeStatusCode // 숫자 코드로 변환된 상태
         })
             .then(r => {
@@ -294,7 +297,13 @@ export default function Page() {
             });
     }
 
-    function handleAdmin(id: number) {
+    function postApt() {
+        closeConfirm();
+        setUpdate(false);
+        setISModalOpen(3)
+    }
+
+    function updateStatus(id: number) {
 
         let alert = '';
 
@@ -348,8 +357,8 @@ export default function Page() {
                                 <th className="w-[800px]">아파트 이름</th>
                                 <th className="w-[500px]">제목</th>
                                 {listChanger == 1 ? <th className="w-[500px]">신청 일자</th> :
-                                listChanger == 2 ? <th className="w-[500px]">승인 일자</th> :
-                                listChanger == 3 ? <th className="w-[500px]">반려 일자</th> : <div/>}
+                                    listChanger == 2 ? <th className="w-[500px]">승인 일자</th> :
+                                        listChanger == 3 ? <th className="w-[500px]">반려 일자</th> : <div />}
                             </tr>
                         </thead>
                         <tbody>
@@ -360,10 +369,10 @@ export default function Page() {
                                     onClick={() => { user?.role !== 'ADMIN' ? onPassword(propose.id) : onAdmin(propose.id) }}
                                 >
                                     <td>{filteredListCount - proposeIndex}</td>
-                                    <td>{propose.aptName}</td>
+                                    <td className="font-bold">{propose.aptName}</td>
                                     <td>{user?.role !== 'ADMIN' ? (<FontAwesomeIcon icon={faLock} className="mr-3" />) : null}{propose.title}</td>
                                     {listChanger == 1 ? <td className="text-sm">{getDateTimeFormat(propose.createDate)}</td> :
-                                    <td className="text-sm">{getDateTimeFormat(propose.modifyDate)}</td>}
+                                        <td className="text-sm">{getDateTimeFormat(propose.modifyDate)}</td>}
                                 </tr>
                             ))}
                         </tbody>
@@ -371,11 +380,11 @@ export default function Page() {
                 </div>
                 <a href="/propose/create" className="mb-5 ml-[1200px] w-[150px] btn btn-success">서비스 신청</a>
             </div>
-            <Modal open={isModalOpen === 1} onClose={() => setISModalOpen(-1)} className='modal-box w-[400px] h-[200px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
-                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => openModal(-1)}> ✕ </button>
+            <Modal open={isModalOpen === 1} onClose={() => handleModalClose(-1)} className='rounded-3xl w-[400px] h-[200px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
+                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-1)}> ✕ </button>
                 <div className="flex flex-col items-center gap-3">
                     <input type={canShow ? 'text' : 'password'} className='w-[300px] mt-3 input input-bordered input-md text-black'
-                        onChange={e => setPassword(e.target.value)} placeholder='비밀번호'
+                        onChange={e => {setPassword(e.target.value); console.log(e.target.value)}} placeholder='비밀번호'
                     />
                     <div className="flex mt-2">
                         <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
@@ -386,53 +395,53 @@ export default function Page() {
             </Modal>
             <Modal
                 open={isModalOpen === 2}
-                onClose={() => handleModalClose()}
-                className='modal-box w-[800px] h-[600px] flex flex-col justify-center items-center'
+                onClose={() => handleModalClose(-2)}
+                className='rounded-3xl w-[700px] h-[600px] flex flex-col justify-center items-center'
                 escClose={true}
                 outlineClose={true}
             >
                 <button
                     className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer"
-                    onClick={() => handleModalClose()}
+                    onClick={() => handleModalClose(-2)}
                 >
                     ✕
                 </button>
-                <div className="flex flex-col w-full gap-3">
+                <div className="flex flex-col w-full gap-1 mt-8">
                     <div className="text-black flex w-full">
-                        <div className="flex w-full ml-8">
+                        <div className="flex w-full ml-16">
                             <div className="flex">
                                 <div className="flex flex-col w-[150px] h-full">
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>제목</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>아파트 이름</label>
-                                    {!update ? <label className='text-xl font-bold text-secondary mb-1 h-[70px] content-center'>도로명 주소</label> : <><label className='text-xl font-bold text-secondary mb-1 h-[70px] content-center'><DaumPostcode onAddressChange={handleAddressChange} /></label></>}
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>아파트 동 번호</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>총 층수</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>층당 세대 수</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>승인 상태</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>작성 일시</label>
-                                    {modifyDate !== null && listChanger == 1 ? <label className='text-xl font-bold text-secondary h-[50px] content-center'>수정 일시</label> : <div />}
-                                    {modifyDate !== null && listChanger == 2 ? <label className='text-xl font-bold text-secondary h-[50px] content-center'>승인 일시</label> : <div />}
-                                    {modifyDate !== null && listChanger == 3 ? <label className='text-xl font-bold text-secondary h-[50px] content-center'>반려 일시</label> : <div />}
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>제목</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>아파트 이름</label>
+                                    {!update ? <label className='text-xl font-bold text-secondary mb-1 h-[55px] content-center'>도로명 주소</label> : <><label className='text-xl font-bold text-secondary mb-1 h-[55px] content-center'><DaumPostcode onAddressChange={handleAddressChange} /></label></>}
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>아파트 동 번호</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>총 층수</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>층당 세대 수</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>승인 상태</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>작성 일시</label>
+                                    {modifyDate !== null && listChanger == 1 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>수정 일시</label> : <div />}
+                                    {modifyDate !== null && listChanger == 2 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>승인 일시</label> : <div />}
+                                    {modifyDate !== null && listChanger == 3 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>반려 일시</label> : <div />}
                                 </div>
                                 <div className="flex flex-col w-[10px] h-full">
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary mb-1 h-[70px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label>
-                                    {modifyDate !== null ? <label className='text-xl font-bold text-secondary h-[50px] content-center'>:</label> : <div className="h-[50px]" />}
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    {modifyDate !== null ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label> : <div className="h-[55px]" />}
                                 </div>
                             </div>
 
-                            <div className="flex flex-col w-[300px] h-full">
+                            <div className="flex flex-col w-[400px] h-full">
                                 <input
                                     type="text"
                                     defaultValue={title}
                                     disabled={!update}
-                                    className={`ml-3 font-bold bg-white h-[50px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                    className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
                                     onChange={e => { if (first) setFirst(false); setTitle(e.target.value); validateInput('title', (e.target as HTMLInputElement).value); }}
                                     onFocus={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if (e.target.value === '') setTitleError('제목을 입력해주세요.') }}
                                     onKeyUp={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setTitleError('제목을 입력해주세요.') }}
@@ -442,28 +451,28 @@ export default function Page() {
                                     type="text"
                                     defaultValue={aptName}
                                     disabled={!update}
-                                    className={`ml-3 font-bold bg-white h-[50px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                    className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
                                     onChange={e => { if (first) setFirst(false); setAptName(e.target.value); validateInput('aptName', (e.target as HTMLInputElement).value); }}
                                     onFocus={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if (e.target.value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
                                     onKeyUp={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
                                 />
                                 <div className="flex items-center">
                                     {update ? (
-                                        <div className="w-[600px] h-[70px]">
+                                        <div className="w-[600px] h-[55px]">
                                             {daumAddr !== null ? <>{daumAddr && (
                                                 <div>
-                                                    <div className="border-2 bg-white text-black text-lg font-bold rounded-lg w-full h-[70px] flex items-center p-2.5">
+                                                    <div className="ml-3 bg-white text-black text-lg font-bold rounded-lg w-full h-[55px] flex items-center">
                                                         {daumAddr.address}
                                                     </div>
                                                 </div>
-                                            )}</> : <div className="border-2 bg-white text-black text-lg font-bold rounded-lg w-full h-[70px] flex items-center p-2.5">{roadAddress}</div>}
+                                            )}</> : <div className="ml-3 bg-white text-black text-lg font-bold rounded-lg w-full h-[55px] flex items-center">{roadAddress}</div>}
                                         </div>
                                     ) : (
-                                        <textarea
+                                        <input
+                                            type="text"
                                             defaultValue={roadAddress}
                                             disabled={!update}
-                                            className={`border-2 bg-white text-black text-lg font-bold rounded-lg w-full flex items-center p-2.5 h-[70px] resize-none  ${!update ? 'text-gray-500' : ''}`}
-                                            rows={3}
+                                            className={`ml-3 bg-white text-black text-lg font-bold rounded-lg w-full flex items-center h-[55px]  ${!update ? 'text-gray-500' : ''}`}
                                         />
                                     )}
 
@@ -473,7 +482,7 @@ export default function Page() {
                                         type="text"
                                         defaultValue={min}
                                         disabled={!update}
-                                        className={`ml-3 font-bold bg-white h-[50px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center ${!update ? 'text-gray-500' : ''}`}
                                         onChange={e => { if (first) setFirst(false); setMin(Number(e.target.value)); validateInput('min', (e.target as HTMLInputElement).value); }}
                                         onFocus={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if (e.target.value === '') setMinError('시작 동 번호를 입력해주세요.') }}
                                         onKeyUp={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMinError('시작 동 번호를 입력해주세요.') }}
@@ -483,7 +492,7 @@ export default function Page() {
                                         type="text"
                                         defaultValue={max}
                                         disabled={!update}
-                                        className={`ml-3 font-bold bg-white h-[50px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
                                         onChange={e => { if (first) setFirst(false); setMax(Number(e.target.value)); validateInput('max', (e.target as HTMLInputElement).value); }}
                                         onFocus={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if (e.target.value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
                                         onKeyUp={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
@@ -493,7 +502,7 @@ export default function Page() {
                                     type="text"
                                     defaultValue={h}
                                     disabled={!update}
-                                    className={`ml-3 font-bold bg-white h-[50px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                    className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
                                     onChange={e => { if (first) setFirst(false); setH(Number(e.target.value)); validateInput('h', (e.target as HTMLInputElement).value); }}
                                     onFocus={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if (e.target.value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
                                     onKeyUp={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
@@ -502,58 +511,76 @@ export default function Page() {
                                     type="text"
                                     defaultValue={w}
                                     disabled={!update}
-                                    className={`ml-3 font-bold bg-white h-[50px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                    className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
                                     onChange={e => { if (first) setFirst(false); setW(Number(e.target.value)); validateInput('w', (e.target as HTMLInputElement).value); }}
                                     onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWError('층당 세대수를 입력해주세요.') }}
                                     onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWError('층당 세대수를 입력해주세요.') }}
                                 />
-                                <div className="ml-3 font-bold bg-white h-[50px] text-xl w-full content-center">
+                                <div className="ml-3 font-bold bg-white h-[55px] text-xl w-full content-center">
                                     {proposeStatus}
                                 </div>
-                                <div className="ml-3 font-bold bg-white h-[50px] text-xl w-full content-center">
+                                <div className="ml-3 font-bold bg-white h-[55px] text-xl w-full content-center">
                                     {getDateTimeFormat(createDate)}
                                 </div>
-                                {modifyDate !== null ? <div className="ml-3 font-bold bg-white h-[50px] text-xl w-full content-center">
+                                {modifyDate !== null ? <div className="ml-3 font-bold bg-white h-[55px] text-xl w-full content-center">
                                     {getDateTimeFormat(modifyDate)}
-                                </div> : <div className="h-[50px]" />}
+                                </div> : <div className="h-[55px]" />}
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-3 ml-auto mr-5">
+                    <div className="flex gap-3 ml-auto mr-5 mb-3">
                         {!update ? <button
-                            className='btn btn-xl btn-info mt-3 text-black'
+                            className='btn btn-xl btn-info text-black'
                             onClick={() => setUpdate(true)}
                         >
                             수정
                         </button> : <button
-                            className='btn btn-xl btn-info mt-3 text-black'
+                            className='btn btn-xl btn-info text-black'
                             disabled={first || !!allErrors()}
                             onClick={() => { finalConfirm(aptName, '내용 수정을 완료하시겠습니까?', '완료', handleUpdate); setUpdate(false); }}
                         >
                             수정 완료
                         </button>}
-                        <button
-                            className='btn btn-xl btn-error mt-3 text-black'
+                        {!update ? <button
+                            className='btn btn-xl btn-error text-black'
                             onClick={() => setISModalOpen(-2)}
                         >
                             삭제
-                        </button>
-                        {user?.role === 'ADMIN' ? (<button
-                            className='btn btn-xl btn-accent mt-3 text-black'
-                            onClick={() => { finalConfirm(aptName, '승인 하시겠습니까?', '승인', () => handleAdmin(1)); setUpdate(false); }}
+                        </button> : <button
+                            className='btn btn-xl btn-error text-black'
+                            onClick={() => setUpdate(false)}
+                        >
+                            수정 취소
+                        </button>}
+                        {user?.role === 'ADMIN' && !update && listChanger !== 2 ? (<button
+                            className='btn btn-xl btn-success text-black'
+                            onClick={() => { finalConfirm(aptName, '승인 하시겠습니까?', '승인', postApt) }}
                         >
                             승인
                         </button>) : null}
-                        {user?.role === 'ADMIN' ? (<button
-                            className='btn btn-xl btn-accent mt-3 text-black'
-                            onClick={() => { finalConfirm(aptName, '반려 하시겠습니까?', '반려', () => handleAdmin(2)); setUpdate(false); }}
+                        {user?.role === 'ADMIN' && !update && listChanger !== 3 ? (<button
+                            className='btn btn-xl btn-accent text-black'
+                            onClick={() => { finalConfirm(aptName, '반려 하시겠습니까?', '반려', () => onAdmin(2)) }}
                         >
                             반려
                         </button>) : null}
                     </div>
                 </div>
             </Modal>
-
+            <Modal open={isModalOpen === 3} onClose={() => handleModalClose(-3)} className='rounded-3xl w-[400px] h-[200px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
+                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-3)}> ✕ </button>
+                <div className="flex flex-col items-center gap-3">
+                    <input type='text' className='w-[300px] mt-3 input input-bordered input-md text-black'
+                        onChange={e => setAptName(e.target.value)} placeholder='아파트명'
+                        value={aptName}
+                    />
+                    <div className="flex mt-2">
+                        <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
+                        <input className="ml-5 bg-white" type='checkbox' onClick={() => setCanShow(!canShow)} />
+                    </div>
+                    <button className='btn btn-xl btn-accent mt-3 text-black' onClick={openPropose}>확인</button>
+                </div>
+            </Modal>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
             <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />
         </Admin>
