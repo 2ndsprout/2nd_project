@@ -167,13 +167,13 @@ export default function Page() {
             .then(() => {
                 closeConfirm();
                 console.log("profile selected!");
-                window.location.href = '/';
-            })
-            // if (user.role === 'ADMIN') {
-            //     window.location.href = '/account/admin';
-            // }else {
             //     window.location.href = '/';
-            // }})
+            // })
+            if (user.role === 'ADMIN') {
+                window.location.href = '/account/admin';
+            }else {
+                window.location.href = '/';
+            }})
             .catch(e => console.log(e));
         closeConfirm();
     }

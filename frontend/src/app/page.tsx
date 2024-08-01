@@ -29,6 +29,9 @@ export default function Page() {
     if (ACCESS_TOKEN) {
       getUser()
         .then(r => {
+          if (r.role === 'ADMIN') {
+            Router.push('/account/admin');
+          }
           setUser(r);
           console.log(r);
           setUrlList(r.aptResponseDTO.urlList);
@@ -53,7 +56,6 @@ export default function Page() {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
                 });
-                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 300);
               })
               .catch(e => console.log(e));
           })
@@ -70,10 +72,11 @@ export default function Page() {
     categories?.slice(0, 3).forEach(category => {
       fetchArticleList(category?.id);
     });
+    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
   }, [categories]);
 
   const fetchArticleList = (categoryId: number) => {
-    getArticleList({ 'categoryId': categoryId, 'page': 0 })
+    getArticleList(categoryId)
       .then((r) => {
         switch (categoryId) {
           case 1:
