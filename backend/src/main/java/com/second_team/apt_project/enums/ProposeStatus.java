@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ProposeStatus {
 
-    PENDING("대기중"), APPROVED("승인완료"), CANCELLED("취소완료")
+    PENDING("대기중"), APPROVED("승인완료"), CANCELLING("반려중")
     //
     ;
     private final String status;

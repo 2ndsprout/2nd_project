@@ -184,7 +184,7 @@ export default function Page() {
                             <span className="text-secondary">꿀 단지</span> 신청 양식
                         </div>
                         <div className="text-center mr-[300px]">
-                            <span className="w-[300px] text-sm text-red-500">{allErrors()}</span>
+                            <span className="w-[300px] h-[50px] text-sm text-red-500">{allErrors()}</span>
                         </div>
                         <div className="flex flex-col gap-12 items-start">
                             <div className="w-full flex items-center">
