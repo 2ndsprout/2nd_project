@@ -54,7 +54,7 @@ interface proposeProps {
     max: number,
     h: number,
     w: number
-    password: string,
+    password?: string,
     proposeStatus?: number
 }
 

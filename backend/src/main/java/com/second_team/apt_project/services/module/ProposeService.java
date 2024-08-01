@@ -43,7 +43,6 @@ public class ProposeService {
         propose.setAptName(proposeRequestDTO.getAptName());
         propose.setMin(proposeRequestDTO.getMin());
         propose.setMax(proposeRequestDTO.getMax());
-        propose.setPassword(passwordEncoder.encode(proposeRequestDTO.getPassword()));
         propose.setModifyDate(LocalDateTime.now());
         propose.setProposeStatus(ProposeStatus.values()[proposeRequestDTO.getProposeStatus()]);
         propose.setH(proposeRequestDTO.getH());
