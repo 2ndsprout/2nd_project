@@ -26,7 +26,7 @@ public class ProposeService {
                 .aptName(aptName)//
                 .min(min)//
                 .max(max)//
-                .password(password)//
+                .password(passwordEncoder.encode(password))//
                 .h(h)//
                 .w(w)//
                 .build();

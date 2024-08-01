@@ -95,7 +95,7 @@ export default function Admin(props: Readonly<PageInterface>) {
                             </a>
                         </div>
                         <div className="navbar-center justify-between w-[800px]">
-                            <a id="center" href="/account/culture_center/" className="btn btn-ghost text-xl hover:text-secondary">
+                            <a id="center" href="/propose/" className="btn btn-ghost text-xl hover:text-secondary">
                                 서비스 신청현황
                             </a>
                             <a id="board" href="/account/article/1" className="btn btn-ghost text-xl hover:text-secondary">
@@ -115,10 +115,6 @@ export default function Admin(props: Readonly<PageInterface>) {
                                 <div
                                     onMouseEnter={() => openHover(setUserHover)}
                                     onMouseLeave={() => closeHover(setUserHover)}>
-                                    <a className="mt-0 btn btn-active btn-secondary text-lg text-black w-[180px]" href="/account/mypage">
-                                        <FontAwesomeIcon icon={faUser} />
-                                        내 정보
-                                    </a>
                                     <a className="mt-1 btn btn-active btn-secondary text-lg text-black w-[180px]" href="/account/profile">
                                         <FontAwesomeIcon icon={faArrowsSpin} />
                                         프로필 변경

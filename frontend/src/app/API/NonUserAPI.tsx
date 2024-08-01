@@ -46,6 +46,7 @@ const refreshAccessToken = async () => {
 }
 
 interface proposeProps {
+    id?: number,
     title: string,
     roadAddress: string,
     aptName: string,
@@ -54,7 +55,7 @@ interface proposeProps {
     h: number,
     w: number
     password: string,
-    proposeStatus: number
+    proposeStatus?: number
 }
 
 export const postPropose = async (data: proposeProps) => {
@@ -69,5 +70,10 @@ export const getProposeList = async (data?: number) => {
 
 export const getPropose = async (id: number, password?: string) => {
     const response = await NonUserApi.get('api/propose', {headers: {'ProposeId': id, 'Password': password}});
+    return response.data;
+}
+
+export const updatePropose = async (data: proposeProps) => {
+    const response = await NonUserApi.put('/api/propose', data);
     return response.data;
 }
