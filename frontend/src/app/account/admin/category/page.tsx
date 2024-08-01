@@ -84,7 +84,7 @@ const CreateCategory: React.FC = () => {
       const categoryData = await getCategoryList();
       const categoriesWithCounts = await Promise.all(
         categoryData.map(async (category: Category) => {
-          const articleData = await getArticleList({ page: 0, categoryId: category.id });
+          const articleData = await getArticleList( category.id, 0, 1);
           return { ...category, articleCount: articleData.totalElements };
         })
       );

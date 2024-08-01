@@ -240,15 +240,9 @@ export const getCategory = async (data: number) => {
 }
 
 // Article
-interface getArticleList {
-    categoryId: number;
-    page?: number;
-    aptId?: number;
-}
 
-export const getArticleList = async ({ categoryId, page, aptId }: getArticleList) => {
+export const getArticleList = async (categoryId: number, page?: number, aptId?: number) => {
     const response = await UserApi.get('/api/article/list', { headers: { 'CategoryId': categoryId, 'Page': page, 'AptId': aptId } });
-
     return response.data;
 }
 

@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { getUser, getProfile} from '@/app/API/UserAPI';
 import { redirect } from 'next/navigation';
+import { postTag, getTag } from '@/app/API/UserAPI';
 
 interface Tag {
     id: number;
     name: string;
+    articleTagId?: number;
 }
 
 interface TagInputProps {
@@ -40,20 +42,23 @@ const TagInput: React.FC<TagInputProps> = ({ tags, setTags, deletedTagIds, setDe
         console.log('Deleted tag IDs:', deletedTagIds);
     }, [tags, deletedTagIds]);
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter' && input.trim() !== '') {
             const newTag = input.trim();
             if (!tags.some(tag => tag.name === newTag)) {
-                // 새 태그에 임시 ID 0 할당
-                setTags([...tags, { id: 0, name: newTag }]);
+                setTags([...tags, { id: 0, name: newTag}]);
                 setInput('');
+                // setTags([...tags, { id: 0, name: newTag }]);
+                // setInput('');
             }
             event.preventDefault();
         }
     };
 
     const handleDeleteTag = (tagToDelete: Tag) => {
-        setTags(tags.filter(tag => tag.id !== tagToDelete.id));
+        const updatedTags = tags.filter(tag => tag.id !== tagToDelete.id);
+        setTags(updatedTags);
+        
         if (tagToDelete.id !== 0) {
             setDeletedTagIds([...deletedTagIds, tagToDelete.id]);
         }
@@ -68,7 +73,7 @@ const TagInput: React.FC<TagInputProps> = ({ tags, setTags, deletedTagIds, setDe
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="태그를 입력해주세요..."
-                className="border p-2 rounded text-black mr-5"
+                className="border p-2 rounded text-white mr-5"
             />
             <div className="mt-2">
                 {tags.map((tag, index) => (

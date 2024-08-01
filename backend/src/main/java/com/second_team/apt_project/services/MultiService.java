@@ -501,7 +501,7 @@ public class MultiService {
         this.userCheck(user, profile);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
-        if (_multiKey.isPresent())
+        if (_multiKey.isPresent()) {
             for (String value : _multiKey.get().getVs()) {
                 Optional<FileSystem> _fileSystem = fileSystemService.get(value);
                 if (_fileSystem.isPresent()) {
@@ -513,7 +513,8 @@ public class MultiService {
                     fileSystemService.delete(_fileSystem.get());
                 }
             }
-        multiKeyService.delete(_multiKey.get());
+            multiKeyService.delete(_multiKey.get());
+        }
     }
 
 
