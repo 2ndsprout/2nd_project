@@ -19,16 +19,16 @@ public class ProposeService {
     private final ProposeRepository proposeRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public Propose save (ProposeRequestDTO proposeRequestDTO) {
+    public Propose save (String title, String roadAddress, String aptName, Integer max, Integer min, String password, Integer h, Integer w) {
         Propose propose = Propose.builder()
-                .title(proposeRequestDTO.getTitle())
-                .roadAddress(proposeRequestDTO.getRoadAddress())
-                .aptName(proposeRequestDTO.getAptName())
-                .min(proposeRequestDTO.getMin())
-                .max(proposeRequestDTO.getMax())
-                .password(proposeRequestDTO.getPassword())
-                .h(proposeRequestDTO.getH())
-                .w(proposeRequestDTO.getW())
+                .title(title)//
+                .roadAddress(roadAddress)//
+                .aptName(aptName)//
+                .min(min)//
+                .max(max)//
+                .password(password)//
+                .h(h)//
+                .w(w)//
                 .build();
         return this.proposeRepository.save(propose);
     }

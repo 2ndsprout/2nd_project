@@ -1816,8 +1816,8 @@ public class MultiService {
      * */
 
     @Transactional
-    public ProposeResponseDTO savePropose (ProposeRequestDTO proposeRequestDTO) {
-        Propose propose = this.proposeService.save(proposeRequestDTO);
+    public ProposeResponseDTO savePropose (String title, String roadAddress, String aptName, Integer max, Integer min, String password, Integer h, Integer w) {
+        Propose propose = this.proposeService.save(title, roadAddress, aptName, max, min, password, h, w);
         return this.proposeResponseDTO(propose);
     }
 
