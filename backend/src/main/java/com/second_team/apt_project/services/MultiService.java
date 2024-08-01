@@ -141,8 +141,9 @@ public class MultiService {
         if (user == null)
             throw new DataNotFoundException("유저 객체 없음");
         Apt apt = aptService.get(aptId);
-        if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SECURITY)
-            throw new IllegalArgumentException("권한 불일치");
+        if (user.getRole() != UserRole.ADMIN)
+            if (!user.getApt().equals(apt) && user.getRole() != UserRole.SECURITY)
+                throw new IllegalArgumentException("권한 불일치");
         if (email != null) userService.userEmailCheck(email);
         SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
         return this.getUserResponseDTO(siteUser);
@@ -235,10 +236,17 @@ public class MultiService {
     }
 
     @Transactional
-    public void deleteUser(String username) {
+    public void deleteUser(String username, Long profileId, String deleteUsername) {
         SiteUser user = userService.get(username);
-        if (!user.getUsername().equals(username)) throw new IllegalArgumentException("로그인 유저와 불일치");
-        this.deleteUsers(user);
+        Profile profile = profileService.findById(profileId);
+        this.userCheck(user, profile);
+        SiteUser deleteUser = userService.get(deleteUsername);
+        if (deleteUser == null)
+            throw new DataNotFoundException("타겟 유저 없음");
+        if (user.getRole() != UserRole.ADMIN)
+            if (!(user.getRole().equals(UserRole.SECURITY) && user.getApt().equals(deleteUser.getApt())))
+                throw new IllegalArgumentException("수정 권한 없음");
+        this.deleteUsers(deleteUser);
     }
 
     private void deleteUsers(SiteUser user) {
@@ -487,7 +495,7 @@ public class MultiService {
         this.userCheck(user, profile);
         Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.TEMP.getKey(user.getUsername() + "." + profile.getId().toString()));
         String path = AptProjectApplication.getOsType().getLoc();
-        if (_multiKey.isPresent())
+        if (_multiKey.isPresent()) {
             for (String value : _multiKey.get().getVs()) {
                 Optional<FileSystem> _fileSystem = fileSystemService.get(value);
                 if (_fileSystem.isPresent()) {
@@ -499,7 +507,8 @@ public class MultiService {
                     fileSystemService.delete(_fileSystem.get());
                 }
             }
-        multiKeyService.delete(_multiKey.get());
+            multiKeyService.delete(_multiKey.get());
+        }
     }
 
 
@@ -610,16 +619,13 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
 
-
         this.deleteProfiles(user, profile);
-
-
     }
 
     private void deleteProfiles(SiteUser user, Profile profile) {
         List<Article> articleList = articleService.findByArticle(profile.getId());
         for (Article article : articleList)
-            this.deleteArticle(user.getUsername(), profile.getId(), article.getId());
+            this.deleteArticle(article.getId());
         List<Comment> commentList = commentService.findByProfile(profile.getId());
         for (Comment comment : commentList)
             this.deleteComment(user.getUsername(), profile.getId(), comment.getId());
@@ -845,10 +851,18 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Article article = articleService.findById(articleId);
+        if (!article.getProfile().equals(profile)) {
+            throw new IllegalArgumentException("작성자의 프로필이 일치하지 않습니다");
+        }
+
+        this.deleteArticle(article.getId());
+    }
+
+    @Transactional
+    private void deleteArticle(Long articleId) {
+        Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
-        if (!article.getProfile().equals(profile))
-            throw new IllegalArgumentException("작성자의 프로필이 일치하지 않습니다");
         List<Comment> commentList = commentService.findByArticle(article.getId());
         for (Comment comment : commentList)
             deleteChildren(comment);
@@ -881,7 +895,6 @@ public class MultiService {
             multiKeyService.delete(_multiKey.get());
         }
         articleService.deleteArticle(article);
-
     }
 
     @Transactional
