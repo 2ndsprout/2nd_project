@@ -30,6 +30,7 @@ export default function SideList(props: sideListProps) {
             <div className="flex flex-col border-x-2 border-b-2 border-gray-400 py-2 px-4 w-full rounded-b-lg">
                 <label className="font-bold mb-3"></label>
                 <a href="/account/chatList" className="text-sm text-gray-500 hover:underline">내 채팅 목록</a>
+                {user?.role !== "USER" && user?.role !== "STAFF" && <a href="/account/mypage/user" className="text-sm text-gray-500 hover:underline">유저 관리</a>}
             </div>
         </div>
     );

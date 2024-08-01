@@ -142,6 +142,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Apt apt = aptService.get(aptId);
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         if (user.getRole() != UserRole.ADMIN)
             if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
                 throw new IllegalArgumentException("권한 불일치");
@@ -156,6 +157,7 @@ public class MultiService {
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
         Apt apt = aptService.get(aptId);
+        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
         if (user.getRole() != UserRole.ADMIN)
             if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
                 throw new IllegalArgumentException("권한 불일치");
