@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
-import { getProfile, getUser, getArticleList, getCategoryList } from "@/app/API/UserAPI";
-import Main from "@/app/Global/layout/MainLayout";
+import { getProfile, getUser, getArticleList, getCategoryList, getCenterList } from "@/app/API/UserAPI";
 import Pagination from "@/app/Global/component/Pagination";
+import Main from "@/app/Global/layout/MainLayout";
 
 interface Article {
     categoryId: number;
@@ -44,6 +44,8 @@ export default function Page() {
     const [totalPages, setTotalPages] = useState(1);
     const [error, setError] = useState('');
     const [categoryId, setCategoryId] = useState<any>(null);
+    const [centerList, setCenterList] = useState([] as any[]);
+    const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
 
 
     useEffect(() => {
@@ -51,22 +53,26 @@ export default function Page() {
             getUser()
                 .then(r => {
                     setUser(r);
+                    setSelectedAptId(r.aptResponseDTO.aptId);
                 })
                 .catch(e => console.log(e));
-
             if (PROFILE_ID) {
                 getProfile()
                     .then(r => {
+                        getCenterList()
+                        .then(r => {
+                            setCenterList(r);
+                        })
+                        .catch(e => console.log(e));
                         setProfile(r);
                         getCategoryList()
                             .then(r => {
                                 setCategories(r);
                                 r.forEach((r: any) => {
                                     if (r?.name === 'FAQ') {
-                                        setCategoryId(r.id);
-                                        getArticleList({ 'categoryId': r?.id })
+                                        getArticleList(r.id) // 테트트 때멘 아파트 아이디 넣고  FAQ는 SECURITY 담당이니 추후에 APTID 는 빼야함
                                             .then(r => {
-                                                console.log(r);
+                                                console.log('dd', r.content);
                                                 setArticleList(r?.content);
                                             })
                                             .catch(e => console.log(e));
@@ -98,27 +104,27 @@ export default function Page() {
         });
     };
 
-    const fetchArticles = async () => {
-        try {
-            let data: ArticlePage;
+    // const fetchArticles = async () => {
+    //     try {
+    //         let data: ArticlePage;
 
-            data = await getArticleList({
-                page: currentPage - 1,
-                categoryId: Number(categoryId)
-            });
+    //         data = await getArticleList({
+    //             page: currentPage - 1,
+    //             categoryId: Number(categoryId)
+    //         });
 
-            setArticleList(data.content);
-            setTotalPages(Math.max(1, data.totalPages));
-            setCurrentPage(data.number + 1);
-        } catch (error) {
-            console.error('Error fetching articles:', error);
-            setError('게시물을 불러오는데 실패했습니다.');
-        }
-    };
+    //         setArticleList(data.content);
+    //         setTotalPages(Math.max(1, data.totalPages));
+    //         setCurrentPage(data.number + 1);
+    //     } catch (error) {
+    //         console.error('Error fetching articles:', error);
+    //         setError('게시물을 불러오는데 실패했습니다.');
+    //     }
+    // };
 
-    useEffect(() => {
-        fetchArticles();
-    }, [categoryId, currentPage]);
+    // useEffect(() => {
+    //     fetchArticles();
+    // }, [categoryId, currentPage]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
@@ -126,7 +132,7 @@ export default function Page() {
 
 
     return (
-        <Main user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="bg-black w-full min-h-screen text-white flex">
                 <aside className="w-1/6 p-6">
                     <div className="mt-5 ml-20 flex flex-col items-start">
