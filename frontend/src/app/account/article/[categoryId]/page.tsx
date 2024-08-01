@@ -57,7 +57,7 @@ export default function ArticleListPage() {
     const [isSearching, setIsSearching] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [aptList, setAptList] = useState<AptInfo[]>([]);
-    const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
+    const [selectedAptId, setSelectedAptId] = useState(0);
 
     const countTotalComments = (commentList: any[]): number => {
         return commentList.reduce((total, comment) => {
@@ -112,9 +112,9 @@ export default function ArticleListPage() {
             } else {
                 data = await getArticleList(
                     Number(categoryId),
-                    currentPage - 1,
-                    selectedAptId || undefined
-                );
+                    selectedAptId || undefined,
+                    currentPage - 1
+                ); // UserAPI의 getArticleList Header순서에 맞춰야함
             }
 
             const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {

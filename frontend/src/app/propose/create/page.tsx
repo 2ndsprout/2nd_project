@@ -5,11 +5,9 @@ import { getUser } from "@/app/API/UserAPI";
 import DaumPostcode from "@/app/Global/component/Address";
 import AlertModal from "@/app/Global/component/AlertModal";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
-import { checkInput } from "@/app/Global/component/Method";
 import useAlert from "@/app/Global/hook/useAlert";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import Admin from "@/app/Global/layout/AdminLayout";
-import { error } from "console";
 import { useEffect, useState } from "react";
 
 interface IAddr {
@@ -76,7 +74,7 @@ export default function Page() {
             onInvalid(error); // error 메시지를 전달합니다.
         }
     }
-    
+
     const validateInput = (fieldName: string, value: string) => {
         switch (fieldName) {
             case 'title':
@@ -127,7 +125,7 @@ export default function Page() {
             case 'password':
                 checkInput(
                     value,
-                    /^[0-9a-zA-Z]{4,}$/, 
+                    /^[0-9a-zA-Z]{4,}$/,
                     () => setPasswordError(''),
                     (e) => setPasswordError(e),
                     '비밀번호는 최소 4자 이상이어야 합니다.'

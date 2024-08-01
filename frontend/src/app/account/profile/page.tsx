@@ -36,6 +36,14 @@ export default function Page() {
     const { alertState, showAlert, closeAlert } = useAlert();
     const [isLoading, setIsLoading] = useState(false);
 
+    const passwordErrors = () => {
+        if (oldPasswordError) return oldPasswordError;
+        if (newPassword1Error) return newPassword1Error;
+        if (newPassword2Error) return newPassword2Error;
+        return '';
+    };
+
+
 
     useEffect(() => {
         if (ACCESS_TOKEN)
@@ -187,13 +195,6 @@ export default function Page() {
         localStorage.clear();
         window.location.reload();
     }
-
-    const passwordErrors = () => {
-        if (oldPasswordError) return oldPasswordError;
-        if (newPassword1Error) return newPassword1Error;
-        if (newPassword2Error) return newPassword2Error;
-        return '';
-    };
 
     return (
         <>
