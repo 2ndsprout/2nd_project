@@ -21,62 +21,63 @@ public class ProposeController {
     public ResponseEntity<?> savePropose(@RequestBody ProposeRequestDTO requestDto) {
 
         try {
-            ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto);
+            ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto.getTitle(), requestDto.getRoadAddress(), requestDto.getAptName(),//
+                    requestDto.getMax(), requestDto.getMin(), requestDto.getPassword(), requestDto.getH(), requestDto.getW());
             return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> proposeList (@RequestHeader("Authorization") String accessToken,
-                                          @RequestHeader(value = "Page", defaultValue = "0") int page) {
+    public ResponseEntity<?> proposeList(@RequestHeader("Authorization") String accessToken,
+                                         @RequestHeader(value = "Page", defaultValue = "0") int page) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-                String username = tokenRecord.username();
-                Page<ProposeResponseDTO> proposeResponseDTOS = this.multiService.getProposePage(page);
-                return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTOS);
+            String username = tokenRecord.username();
+            Page<ProposeResponseDTO> proposeResponseDTOS = this.multiService.getProposePage(page);
+            return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTOS);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
     @GetMapping
-    public ResponseEntity<?> getPropose (@RequestHeader("Authorization") String accessToken,
-                                         @RequestHeader("Password") String password,
-                                         @RequestHeader("ProposeId") Long proposeId) {
+    public ResponseEntity<?> getPropose(@RequestHeader("Authorization") String accessToken,
+                                        @RequestHeader("Password") String password,
+                                        @RequestHeader("ProposeId") Long proposeId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-                String username = tokenRecord.username();
-                ProposeResponseDTO proposeResponseDTO = this.multiService.getPropose(username, proposeId, password);
-                return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
+            String username = tokenRecord.username();
+            ProposeResponseDTO proposeResponseDTO = this.multiService.getPropose(username, proposeId, password);
+            return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deletePropose (@RequestHeader("Authorization") String accessToken,
-                                            @RequestHeader("Password") String password,
-                                            @RequestHeader("ProposeId") Long proposeId) {
+    public ResponseEntity<?> deletePropose(@RequestHeader("Authorization") String accessToken,
+                                           @RequestHeader("Password") String password,
+                                           @RequestHeader("ProposeId") Long proposeId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-                String username = tokenRecord.username();
-                this.multiService.deletePropose(username, proposeId, password);
-                return ResponseEntity.status(HttpStatus.OK).body("삭제 완료");
+            String username = tokenRecord.username();
+            this.multiService.deletePropose(username, proposeId, password);
+            return ResponseEntity.status(HttpStatus.OK).body("삭제 완료");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 
     @PutMapping
-    public ResponseEntity<?> updatePropose (@RequestHeader("Authorization") String accessToken,
-                                            @RequestBody ProposeRequestDTO requestDto) {
+    public ResponseEntity<?> updatePropose(@RequestHeader("Authorization") String accessToken,
+                                           @RequestBody ProposeRequestDTO requestDto) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-                String username = tokenRecord.username();
-                ProposeResponseDTO proposeResponseDTO = this.multiService.updatePropose(username, requestDto);
-                return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
+            String username = tokenRecord.username();
+            ProposeResponseDTO proposeResponseDTO = this.multiService.updatePropose(username, requestDto);
+            return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
