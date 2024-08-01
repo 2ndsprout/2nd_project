@@ -136,12 +136,12 @@ public class UserController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String accessToken) {
+    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String accessToken, @RequestHeader("PROFILE_ID") Long profileId, @RequestHeader("DeleteUsername") String deleteUsername) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                multiService.deleteUser(username);
+                multiService.deleteUser(username, profileId, deleteUsername);
                 return ResponseEntity.status(HttpStatus.OK).body("문제 없음");
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {
