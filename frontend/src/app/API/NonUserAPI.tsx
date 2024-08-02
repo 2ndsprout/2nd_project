@@ -63,8 +63,8 @@ export const postPropose = async (data: proposeProps) => {
     return response.data;
 }
 
-export const getProposeList = async (data?: number) => {
-    const response = await NonUserApi.get('/api/propose/list', {headers: {'page': data}});
+export const getProposeList = async (status: number, data?: number) => {
+    const response = await NonUserApi.get('/api/propose/list', {headers: {'Page': data, 'Status': status}});
     return response.data;
 }
 

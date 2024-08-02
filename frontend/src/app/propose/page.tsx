@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { getUser } from "../API/UserAPI";
+import { getApt, getUser, postApt } from "../API/UserAPI";
 import Admin from "../Global/layout/AdminLayout";
-import { getPropose, getProposeList, updatePropose } from "../API/NonUserAPI";
+import { getPropose, getProposeList, postPropose, updatePropose } from "../API/NonUserAPI";
 import { checkInput, getDateTimeFormat } from "../Global/component/Method";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
@@ -13,6 +13,7 @@ import Modal from "../Global/component/Modal";
 import ConfirmModal from "../Global/component/ConfirmModal";
 import AlertModal from "../Global/component/AlertModal";
 import DaumPostcode from "../Global/component/Address";
+import Pagination from "../Global/component/Pagination";
 interface IAddr {
     address: string;
 }
@@ -22,7 +23,6 @@ export default function Page() {
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setISModalOpen] = useState(-1);
     const [proposeList, setProposeList] = useState([] as any[]);
-    const [proposeTotalElements, setProposeTotalElements] = useState(null as any);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
     const [canShow, setCanShow] = useState(false);
@@ -50,7 +50,14 @@ export default function Page() {
     const [proposeStatus, setProposeStatus] = useState('');
     const [createDate, setCreateDate] = useState('');
     const [modifyDate, setModifyDate] = useState('');
-    const [listChanger, setListChanger] = useState(1);
+    const [aptId, setAptId] = useState(0);
+    const [apt, setApt] = useState(null as any);
+    const [status, setsatus] = useState(0);
+    const [TotalElements, setTotalElements] = useState(null as any);
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
+
 
     const handleAddressChange = (address: IAddr) => {
         setRoadAddress(address.address);
@@ -163,43 +170,70 @@ export default function Page() {
                     setUser(r);
                 })
                 .catch(e => console.log(e));
-        getProposeList()
+        getProposeList(status, page)
             .then(r => {
-                setProposeTotalElements(r.totalElements);
+                setTotalElements(r.totalElements);
                 setProposeList(r.content);
             })
         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
     }, [ACCESS_TOKEN]);
 
+    const fetchArticles = async () => {
+        try {
+            await getProposeList(status, currentPage - 1)
+                .then(r => {
+                    setProposeList(r.content);
+                    setTotalPages(Math.max(1, r.totalPages));
+                    setCurrentPage(r.number + 1);
+
+                });
+
+        } catch (e) {
+            console.error('Error fetching articles:', e);
+        }
+    };
+
+    useEffect(() => {
+        fetchArticles();
+    }, [status, currentPage]);
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
+    };
 
     function openModal(type: number) {
         setISModalOpen(type);
     }
 
     const handleModalClose = (type: number) => {
-        if(canShow){
+        if (canShow) {
             setCanShow(false);
         }
         setISModalOpen(type);
         setUpdate(false);
     };
 
-    const getFilteredProposeList = () => {
-        switch (listChanger) {
-            case 1:
-                return proposeList.filter(propose => propose.proposeStatus === '대기중');
-            case 2:
-                return proposeList.filter(propose => propose.proposeStatus === '승인완료');
-            case 3:
-                return proposeList.filter(propose => propose.proposeStatus === '반려중');
-            default:
-                return [];
-        }
-    };
+    function handlePostApt() {
+        updateStatus(1);
+        openModal(-3);
+        postApt({ id: 0, aptName: aptName, roadAddress: roadAddress })
+            .then(r => {
+                setApt(r);
+                setAptName(r.aptName);
+                setRoadAddress(r.roadAddress);
+                setAptId(r.id);
+                closeConfirm();
+                // showAlert('아파트가 생성되었습니다.', '/account/admin/apt');
+                setISModalOpen(4);
+            })
+            .catch(e => {
+                console.log(e);
+                closeConfirm();
+                showAlert('아파트 생성 중 오류가 발생했습니다.');
+            });
 
-    const filteredList = getFilteredProposeList();
+    }
 
-    const filteredListCount = filteredList.length;
 
     function openPropose() {
         getPropose(proposeId, password)
@@ -281,6 +315,7 @@ export default function Page() {
             max: max,
             h: h,
             w: w,
+            password: password,
             proposeStatus: proposeStatusCode // 숫자 코드로 변환된 상태
         })
             .then(r => {
@@ -297,7 +332,7 @@ export default function Page() {
             });
     }
 
-    function postApt() {
+    function openPostApt() {
         closeConfirm();
         setUpdate(false);
         setISModalOpen(3)
@@ -339,52 +374,106 @@ export default function Page() {
             });
     }
 
+    function handleStatusChange(status: number) {
+        setCurrentPage(1);
+        setsatus(status);
+        getProposeList(status)
+            .then(r => {
+                setTotalElements(r.totalElements);
+                setProposeList(r.content);
+            })
+            .catch(e => console.log(e));
+    }
+
+    function submit() {
+        handleModalClose(-4);
+        postPropose({
+            title: title,
+            roadAddress: roadAddress,
+            aptName: aptName,
+            min: min,
+            max: max,
+            h: h,
+            w: w,
+            password: password,
+            proposeStatus: 0
+        })
+            .then(() => window.location.href = '/propose')
+            .catch(e => {
+                console.log(e),
+                    closeConfirm(),
+                    showAlert('이미 등록된 아파트 단지 입니다.')
+            });
+    }
+
+    function handlePostPropose() {
+        setISModalOpen(4);
+        setTitle('');
+        setRoadAddress('');
+        setAptName('');
+        setMin(0);
+        setMax(0);
+        setH(0);
+        setW(0);
+        setPassword('');
+        setProposeStatus('');
+    }
 
 
     return (
         <Admin user={user} isLoading={isLoading} className="flex">
             <div className="flex flex-col ml-14 mt-14 gap-10">
-                <button onClick={() => setListChanger(1)} className={`btn bg-black border-gray-700 ${listChanger == 1 ? 'text-secondary bg-gray-700' : ''}`}>승인 대기중인 목록</button>
-                <button onClick={() => setListChanger(2)} className={`btn bg-black border-gray-700 ${listChanger == 2 ? 'text-secondary bg-gray-700' : ''}`}>승인 완료 목록</button>
-                <button onClick={() => setListChanger(3)} className={`btn bg-black border-gray-700 ${listChanger == 3 ? 'text-secondary bg-gray-700' : ''}`}>반려중인 목록</button>
+                <button onClick={() => handleStatusChange(0)} className={`btn bg-black border-gray-700 ${status == 0 ? 'text-secondary bg-gray-700' : ''}`}>승인 대기중인 목록</button>
+                <button onClick={() => handleStatusChange(1)} className={`btn bg-black border-gray-700 ${status == 1 ? 'text-secondary bg-gray-700' : ''}`}>승인 완료 목록</button>
+                <button onClick={() => handleStatusChange(2)} className={`btn bg-black border-gray-700 ${status == 2 ? 'text-secondary bg-gray-700' : ''}`}>반려중인 목록</button>
+                <button onClick={() => handlePostPropose()} className="w-[150px] btn btn-success">서비스 신청</button>
             </div>
-            <div className="mt-[30px] ml-[50px] border-2 w-[1400px] h-[800px] rounded-lg bg-gray-700 border-gray-700 flex flex-col items-center justify-center">
+            <div className="mt-[30px] ml-[50px] border-2 w-[1400px] h-[800px] rounded-lg bg-gray-700 border-gray-700 flex flex-col">
                 <div className="overflow-x-auto h-[750px]">
-                    <table className="table table-lg w-[1200px] flex mt-5">
+                    <table className="table table-lg w-[1200px] mt-10 mx-auto">
                         <thead>
                             <tr className="text-center">
-                                <th>번호</th>
-                                <th className="w-[800px]">아파트 이름</th>
-                                <th className="w-[500px]">제목</th>
-                                {listChanger == 1 ? <th className="w-[500px]">신청 일자</th> :
-                                    listChanger == 2 ? <th className="w-[500px]">승인 일자</th> :
-                                        listChanger == 3 ? <th className="w-[500px]">반려 일자</th> : <div />}
+                                <th className="text-sm w-[50px] text-secondary">번호</th>
+                                <th className="text-sm w-[500px] text-secondary">아파트 이름</th>
+                                <th className="text-sm w-[800px] text-secondary">제목</th>
+                                {status == 0 ? <th className="text-sm w-[500px] text-secondary">신청 일자</th> :
+                                    status == 1 ? <th className="text-sm w-[500px] text-secondary">승인 일자</th> :
+                                        status == 2 ? <th className="text-sm w-[500px] text-secondary">반려 일자</th> : <div />}
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredList.map((propose, proposeIndex) => (
+                            {proposeList.map((propose, proposeIndex) => (
                                 <tr
                                     key={propose.id}
                                     className="hover:text-secondary text-center hover:cursor-pointer"
                                     onClick={() => { user?.role !== 'ADMIN' ? onPassword(propose.id) : onAdmin(propose.id) }}
                                 >
-                                    <td>{filteredListCount - proposeIndex}</td>
-                                    <td className="font-bold">{propose.aptName}</td>
-                                    <td>{user?.role !== 'ADMIN' ? (<FontAwesomeIcon icon={faLock} className="mr-3" />) : null}{propose.title}</td>
-                                    {listChanger == 1 ? <td className="text-sm">{getDateTimeFormat(propose.createDate)}</td> :
+                                    <td>{TotalElements - proposeIndex}</td>
+                                    <td className="font-bold truncate w-[500px]">{propose.aptName}</td>
+                                    <td className="truncate w-[800px]">{user?.role !== 'ADMIN' ? (<FontAwesomeIcon icon={faLock} className="mr-3" />) : null}{propose.title}</td>
+                                    {status == 0 ? <td className="text-sm w-[500px]">{getDateTimeFormat(propose.createDate)}</td> :
                                         <td className="text-sm">{getDateTimeFormat(propose.modifyDate)}</td>}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                <a href="/propose/create" className="mb-5 ml-[1200px] w-[150px] btn btn-success">서비스 신청</a>
+                <div className="flex w-full justify-between items-center mt-auto px-5 pb-5">
+                    <div className="flex-grow flex justify-center">
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </div>
+                </div>
             </div>
+
             <Modal open={isModalOpen === 1} onClose={() => handleModalClose(-1)} className='rounded-3xl w-[400px] h-[200px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
                 <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-1)}> ✕ </button>
                 <div className="flex flex-col items-center gap-3">
                     <input type={canShow ? 'text' : 'password'} className='w-[300px] mt-3 input input-bordered input-md text-black'
-                        onChange={e => {setPassword(e.target.value); console.log(e.target.value)}} placeholder='비밀번호'
+                        onChange={e => { setPassword(e.target.value); console.log(e.target.value) }} placeholder='비밀번호'
                     />
                     <div className="flex mt-2">
                         <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
@@ -419,9 +508,9 @@ export default function Page() {
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>층당 세대 수</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>승인 상태</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>작성 일시</label>
-                                    {modifyDate !== null && listChanger == 1 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>수정 일시</label> : <div />}
-                                    {modifyDate !== null && listChanger == 2 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>승인 일시</label> : <div />}
-                                    {modifyDate !== null && listChanger == 3 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>반려 일시</label> : <div />}
+                                    {modifyDate !== null && status == 0 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>수정 일시</label> : <div />}
+                                    {modifyDate !== null && status == 1 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>승인 일시</label> : <div />}
+                                    {modifyDate !== null && status == 2 ? <label className='text-xl font-bold text-secondary h-[55px] content-center'>반려 일시</label> : <div />}
                                 </div>
                                 <div className="flex flex-col w-[10px] h-full">
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
@@ -552,33 +641,156 @@ export default function Page() {
                         >
                             수정 취소
                         </button>}
-                        {user?.role === 'ADMIN' && !update && listChanger !== 2 ? (<button
-                            className='btn btn-xl btn-success text-black'
-                            onClick={() => { finalConfirm(aptName, '승인 하시겠습니까?', '승인', postApt) }}
-                        >
-                            승인
-                        </button>) : null}
-                        {user?.role === 'ADMIN' && !update && listChanger !== 3 ? (<button
-                            className='btn btn-xl btn-accent text-black'
-                            onClick={() => { finalConfirm(aptName, '반려 하시겠습니까?', '반려', () => onAdmin(2)) }}
-                        >
-                            반려
-                        </button>) : null}
+                        {user?.role === 'ADMIN' && !update && status == 0 ? (
+                            <>
+                                <button
+                                    className='btn btn-xl btn-success text-black'
+                                    onClick={() => { finalConfirm(aptName, '승인 하시겠습니까?', '승인', openPostApt) }}
+                                >
+                                    승인
+                                </button>
+                                <button
+                                    className='btn btn-xl btn-accent text-black'
+                                    onClick={() => { finalConfirm(aptName, '반려 하시겠습니까?', '반려', () => updateStatus(2)) }}
+                                >
+                                    반려
+                                </button>
+                            </>) : null}
                     </div>
                 </div>
             </Modal>
             <Modal open={isModalOpen === 3} onClose={() => handleModalClose(-3)} className='rounded-3xl w-[400px] h-[200px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
                 <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-3)}> ✕ </button>
-                <div className="flex flex-col items-center gap-3">
-                    <input type='text' className='w-[300px] mt-3 input input-bordered input-md text-black'
-                        onChange={e => setAptName(e.target.value)} placeholder='아파트명'
-                        value={aptName}
-                    />
-                    <div className="flex mt-2">
-                        <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
-                        <input className="ml-5 bg-white" type='checkbox' onClick={() => setCanShow(!canShow)} />
+                <div className="text-black flex flex-col items-center gap-3">
+                    <div>
+                        아파트 생성
                     </div>
-                    <button className='btn btn-xl btn-accent mt-3 text-black' onClick={openPropose}>확인</button>
+                    <div>
+                        {aptName}
+                    </div>
+                    <div>
+                        {roadAddress}
+                    </div>
+                    <button className='btn btn-xl btn-accent mt-3 text-black' onClick={handlePostApt}>확인</button>
+                </div>
+            </Modal>
+            <Modal
+                open={isModalOpen === 4}
+                onClose={() => handleModalClose(-4)}
+                className='rounded-3xl w-[700px] h-[600px] flex flex-col justify-center items-center'
+                escClose={true}
+                outlineClose={true}
+            >
+                <button
+                    className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer"
+                    onClick={() => handleModalClose(-4)}
+                >
+                    ✕
+                </button>
+                <div className="flex flex-col w-full gap- mt-8">
+                    <div className="text-black flex w-full">
+                        <div className="flex w-full ml-16">
+                            <div className="flex">
+                                <div className="flex flex-col w-[150px] h-full gap-2">
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>제목</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>아파트 이름</label>
+                                    <label className='text-xl font-bold text-secondary mb-1 h-[55px] content-center'><DaumPostcode onAddressChange={handleAddressChange} /></label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>아파트 동 번호</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>총 층수</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>층당 세대 수</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>비밀번호</label>
+                                </div>
+                                <div className="flex flex-col w-[10px] h-full gap-2">
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col w-[400px] h-full gap-2">
+                                <input
+                                    type="text"
+                                    className='ml-3 font-bold bg-white h-[55px] text-xl w-full content-center border-2 border-gray-500 rounded-xl'
+                                    onChange={e => { if (first) setFirst(false); setTitle(e.target.value); validateInput('title', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if (e.target.value === '') setTitleError('제목을 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setTitleError('제목을 입력해주세요.') }}
+                                />
+
+                                <input
+                                    type="text"
+                                    className='ml-3 font-bold bg-white h-[55px] text-xl w-full content-center border-2 border-gray-500 rounded-xl'
+                                    onChange={e => { if (first) setFirst(false); setAptName(e.target.value); validateInput('aptName', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if (e.target.value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
+                                />
+                                <div className="flex items-center">
+                                    <div className="w-[600px] h-[55px]">
+                                        {daumAddr && (
+                                            <div>
+                                                <div className="ml-3 bg-white text-black text-lg font-bold rounded-lg w-full h-[55px] flex items-center">
+                                                    {daumAddr.address}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex items-center mt-2 gap-2">
+                                    <input
+                                        type="text"
+                                        className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                        onChange={e => { if (first) setFirst(false); setMin(Number(e.target.value)); validateInput('min', (e.target as HTMLInputElement).value); }}
+                                        onFocus={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if (e.target.value === '') setMinError('시작 동 번호를 입력해주세요.') }}
+                                        onKeyUp={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMinError('시작 동 번호를 입력해주세요.') }}
+                                    />
+                                    <span className="mx-3 text-3xl font-bold">~</span>
+                                    <input
+                                        type="text"
+                                        className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                        onChange={e => { if (first) setFirst(false); setMax(Number(e.target.value)); validateInput('max', (e.target as HTMLInputElement).value); }}
+                                        onFocus={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if (e.target.value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
+                                        onKeyUp={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
+                                    />
+                                </div>
+                                <input
+                                    type="text"
+                                    className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                    onChange={e => { if (first) setFirst(false); setH(Number(e.target.value)); validateInput('h', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if (e.target.value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
+                                />
+                                <input
+                                    type="text"
+                                    className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                    onChange={e => { if (first) setFirst(false); setW(Number(e.target.value)); validateInput('w', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWError('층당 세대수를 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWError('층당 세대수를 입력해주세요.') }}
+                                />
+                                <input
+                                    type={canShow ? 'text' : 'password'}
+                                    className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                    onChange={e => { if (first) setFirst(false); setPassword(e.target.value); validateInput('w', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWError('층당 세대수를 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWError('층당 세대수를 입력해주세요.') }}
+                                />
+                                <div className="flex mt-2">
+                                    <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
+                                    <input className="ml-5 bg-white" type='checkbox' onClick={() => setCanShow(!canShow)} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex gap-3 ml-auto mr-5 mb-3">
+                        <button
+                            className='btn btn-xl btn-info text-black'
+                            onClick={() => submit()}
+                        >
+                            서비스 신청
+                        </button>
+                    </div>
                 </div>
             </Modal>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />

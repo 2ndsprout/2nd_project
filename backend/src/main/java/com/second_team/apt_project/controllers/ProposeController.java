@@ -32,11 +32,12 @@ public class ProposeController {
 
     @GetMapping("/list")
     public ResponseEntity<?> proposeList(@RequestHeader("Authorization") String accessToken,
-                                         @RequestHeader(value = "Page", defaultValue = "0") int page) {
+                                         @RequestHeader(value = "Page", defaultValue = "0") int page,
+                                         @RequestHeader(value = "Status", defaultValue = "0") int status) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             String username = tokenRecord.username();
-            Page<ProposeResponseDTO> proposeResponseDTOS = this.multiService.getProposePage(page);
+            Page<ProposeResponseDTO> proposeResponseDTOS = this.multiService.getProposePage(page, status);
             return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTOS);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
