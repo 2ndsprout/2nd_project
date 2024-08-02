@@ -104,8 +104,8 @@ export const updateUserPassword = async (data: UpdateProps) => {
     return response.data;
 }
 // 유저 삭제
-export const deleteUser = async () => {
-    await UserApi.delete('/api/user');
+export const deleteUser = async (data : string) => {
+    await UserApi.delete('/api/user', { headers: { 'DeleteUsername': data } });
 }
 // Profile
 interface ProfileProps {

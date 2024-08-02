@@ -1,6 +1,6 @@
 'use client'
 
-import { getAptList, getCenterList, getUserList } from '@/app/API/UserAPI';
+import { getAptList, getCenterList, getUserList, deleteUser } from '@/app/API/UserAPI';
 
 import { getProfile, getUser } from "@/app/API/UserAPI";
 import Pagination from '@/app/Global/component/Pagination';
@@ -20,7 +20,7 @@ export default function Page() {
     const [userList, setUserList] = useState([] as any[]);
     const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
     const [error, setError] = useState('');
-    const [selectedApt, setSelectedApt] = useState('');
+    const [selectedApt, setSelectedApt] = useState(null as any);
     const [aptError, setAptError] = useState('아파트를 설정해주세요.');
     const [apt, setApt] = useState<any>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +44,6 @@ export default function Page() {
                         getAptList()
                             .then(r => {
                                 setAptList(r);
-                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
                             })
                             .catch(e => console.log(e));
                         getCenterList()
@@ -59,9 +58,22 @@ export default function Page() {
         }
         else
             redirect('/account/login');
-    }, [ACCESS_TOKEN, PROFILE_ID]);
+    }, [ACCESS_TOKEN, PROFILE_ID, userList]);
 
+    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
 
+    useEffect(() => {
+        if (selectedApt) {
+            setIsLoading(true);
+            getUserList(selectedApt.aptId, currentPage)
+                .then(r => {
+                    setUserList(r.content);
+                    setTotalPages(r.totalPages);
+                })
+                .catch(e => console.log(e))
+                .finally(() => setIsLoading(false));
+        }
+    }, [selectedApt, currentPage]);
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -76,27 +88,52 @@ export default function Page() {
                 getUserList(selectedApt.aptId)
                     .then((r) => {
                         setUserList(r.content);
+                        setTotalPages(r.totalPages);
                     })
                     .catch(e => console.log(e));
             }
         }
     };
     const handlePageChange = (newPage: number) => {
-        setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
+        setCurrentPage(newPage);
+        // 페이지 변경 시 데이터 로드
+        if (selectedApt) {
+            getUserList(apt.aptId, newPage)
+                .then((r) => {
+                    setUserList(r.content);
+                    setTotalPages(r.totalPages); // 응답에서 totalPages 설정
+                })
+                .catch(e => console.log(e));
+        }
     };
+    function deleteUserButton(targetUsername: string) {
+        deleteUser(targetUsername)
+            .then(() => {
+                if (selectedApt) {
+                    getUserList(selectedApt.aptId, currentPage)
+                        .then((r) => {
+                            setUserList(r.content);
+                            setTotalPages(r.totalPages);
+                            alert('유저가 삭제되었습니다.');
+                        })
+                        .catch(e => console.log(e));
+                }
+            })
+            .catch(e => console.log(e));
+    }
 
     return (
         <Admin user={user} profile={profile} isLoading={isLoading}>
-            <div className="bg-black w-full text-white flex">
+            <div className="bg-black w-full text-white flex items-center justify-center">
                 <div className='flex w-full h-[800px] items-center justify-center mt-[30px]'>
-                    <div className='w-[1500px] h-[800px] bg-gray-700 rounded-lg'>
+                    <div className='w-[1500px] h-[800px] bg-gray-700 rounded-lg items-center justify-center flex flex-col'>
                         <div className='flex w-[1000px]'>
                             <select
                                 className="flex mb-[30px] font-bold text-white select select-bordered w-full max-w-xs"
                                 value={selectedApt}
                                 onChange={handleSelectChange}  // handleChange 함수를 호출합니다.
                             >
-                                <option className="text-black font-bold" value="" disabled>
+                                <option className="text-black font-bold" value="">
                                     아파트 목록
                                 </option>
                                 {aptList.map((apt) => (
@@ -112,22 +149,21 @@ export default function Page() {
                         </div>
                         <div className="h-[500px] w-[1000px]">
                             {userList.map((user) => (
-                                <div key={user?.id} className='flex items-center justify-between border-b-2 h-[50px]'>
+                                <div key={user.username} className='flex items-center justify-between border-b-2 h-[50px]'>
                                     <div className='flex items-center w-full h-full'>
                                         <div className='ml-4 w-full h-full' >
                                             <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{user.username}</div>
                                         </div>
                                     </div>
                                     <div className="w-[300px] justify-end flex">
-                                        {/* <button className='text-sm mr-[30px] font-bold text-orange-300 hover:text-orange-500' onClick={() => openModal(1, lesson.id, 0)}>신청 관리</button>
-                                        <button className='text-sm mr-[30px] font-bold text-red-300 hover:text-red-500' onClick={() => openModal(1, lesson.id, 2)}>취소 관리</button> */}
+                                        <button className='text-sm mr-[30px] font-bold text-orange-300 hover:text-orange-500' onClick={() => deleteUserButton(user.username)}>유저 삭제</button>
                                     </div>
                                 </div>
                             ))}
                             <div className="flex justify-center mt-6">
                                 <Pagination
                                     currentPage={currentPage}
-                                    totalPages={totalPages}
+                                    totalPages={totalPages - 1}
                                     onPageChange={handlePageChange}
                                 />
                             </div>

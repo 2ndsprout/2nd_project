@@ -60,20 +60,21 @@ export default function Page() {
                 getProfile()
                     .then(r => {
                         getCenterList()
-                        .then(r => {
-                            setCenterList(r);
-                        })
-                        .catch(e => console.log(e));
+                            .then(r => {
+                                setCenterList(r);
+                            })
+                            .catch(e => console.log(e));
                         setProfile(r);
                         getCategoryList()
                             .then(r => {
                                 setCategories(r);
                                 r.forEach((r: any) => {
                                     if (r?.name === 'FAQ') {
+                                        setCategoryId(r.id);
                                         getArticleList(r.id) // 테트트 때멘 아파트 아이디 넣고  FAQ는 SECURITY 담당이니 추후에 APTID 는 빼야함
                                             .then(r => {
-                                                console.log(r);
                                                 setArticleList(r?.content);
+                                                setTotalPages(r.totalPages);
                                             })
                                             .catch(e => console.log(e));
                                     }
@@ -104,33 +105,23 @@ export default function Page() {
         });
     };
 
-    const fetchArticles = async () => {
-        try {
-            let data: ArticlePage;
-
-            data = await getArticleList(
-                Number(categoryId),
-                user.aptId,
-                currentPage - 1
-            );
-            console.log('data',data);
-
-            setArticleList(data.content);
-            setTotalPages(Math.max(1, data.totalPages));
-            setCurrentPage(data.number + 1);
-        } catch (error) {
-            console.error('Error fetching articles:', error);
-            setError('게시물을 불러오는데 실패했습니다.');
-        }
-    };
-
-    // useEffect(() => {
-    //     fetchArticles();
-    // }, [categoryId, currentPage]);
-
     const handlePageChange = (newPage: number) => {
-        setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
+        setCurrentPage(newPage);
+
+        console.log('category', categoryId);
+        console.log('apt', categoryId);
+        console.log('current', currentPage);
+
+        getArticleList(categoryId, user.aptResponseDTO.aptId, newPage-1) // 테트트 때멘 아파트 아이디 넣고  FAQ는 SECURITY 담당이니 추후에 APTID 는 빼야함
+            .then(r => {
+                console.log(r);
+                setArticleList(r.content);
+                setTotalPages(r.totalPages);
+            })
+            .catch(e => console.log(e));
     };
+
+
 
 
     return (
