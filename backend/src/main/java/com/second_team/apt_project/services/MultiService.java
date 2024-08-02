@@ -862,7 +862,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Pageable pageable = PageRequest.of(page, 15);
+        Pageable pageable = PageRequest.of(page, 10);
         Boolean topActive = false;
         Page<Article> articleList;
         if (user.getRole() == UserRole.ADMIN) {
@@ -1843,9 +1843,9 @@ public class MultiService {
     }
 
     @Transactional
-    public Page<ProposeResponseDTO> getProposePage(int page) {
-        Pageable pageable = PageRequest.of(page, 15);
-        Page<Propose> proposePage = this.proposeService.getList(pageable);
+    public Page<ProposeResponseDTO> getProposePage(int page, int status) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Propose> proposePage = this.proposeService.getList(pageable, status);
         if (proposePage == null)
             throw new DataNotFoundException("신청 페이지 객체 없음");
         List<ProposeResponseDTO> proposeResponseDTOS = new ArrayList<>();

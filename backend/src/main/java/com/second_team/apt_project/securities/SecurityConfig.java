@@ -61,7 +61,6 @@ public class SecurityConfig {
 
     @Bean
     public PersistentTokenRepository tokenRepository() {
-        // JDBC 기반의 tokenRepository 구현체
         JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
         jdbcTokenRepository.setDataSource(dataSource); // dataSource 주입
         return jdbcTokenRepository;

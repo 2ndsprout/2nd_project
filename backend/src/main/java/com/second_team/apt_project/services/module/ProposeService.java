@@ -33,8 +33,8 @@ public class ProposeService {
         return this.proposeRepository.save(propose);
     }
 
-    public Page<Propose> getList (Pageable pageable) {
-        return this.proposeRepository.findList(pageable);
+    public Page<Propose> getList (Pageable pageable, int status) {
+        return this.proposeRepository.findList(pageable, status);
     }
 
     public Propose update (Propose propose, ProposeRequestDTO proposeRequestDTO) {

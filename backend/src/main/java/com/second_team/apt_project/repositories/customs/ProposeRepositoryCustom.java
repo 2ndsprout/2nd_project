@@ -5,5 +5,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProposeRepositoryCustom {
-    Page<Propose> findList(Pageable pageable);
+    Page<Propose> findList(Pageable pageable, int status);
 }
