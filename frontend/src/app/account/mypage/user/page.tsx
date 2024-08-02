@@ -22,11 +22,12 @@ export default function Page() {
                 .then(r => {
                     setUser(r);
                     getUserList(r.aptResponseDTO.aptId)
-                            .then(r => {
-                                setUserList(r.content);
-                                console.log("userList : ", r);
-                            })
-                            .catch(e => console.log(e));
+                        .then(r => {
+                            const filteredUserList = r.content.filter((user: any) => user.role !== 'ADMIN');
+                            setUserList(filteredUserList);
+                            console.log("userList : ", filteredUserList);
+                        })
+                        .catch(e => console.log(e));
                 })
                 .catch(e => console.log(e));
             if (PROFILE_ID) {
@@ -53,9 +54,13 @@ export default function Page() {
         <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className='flex flex-col'>
                 <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>유저</label> 관리</label>
-                <div className="mt-9 w-[1300px] border-2 h-[650px] rounded-lg">
+                <div className="mt-9 w-[1300px] border-2 h-[650px] rounded-lg overflow-scroll p-[40px]">
                     {userList.map((user, index) => (
-                        <p key={index} className="text-white">{user?.username}</p>
+                        <div key={index}>
+                            <div className="border-b-[1px]">
+                                <p className="text-white m-[15px]">{user?.username}</p>
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>
