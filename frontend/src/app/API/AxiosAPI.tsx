@@ -8,5 +8,5 @@ export function getAPI() {
             'Content-Type': 'application/json;charset=utf-8;',
         },
     });
-    return api;
+    return api; 
 }

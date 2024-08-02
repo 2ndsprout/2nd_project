@@ -196,8 +196,8 @@ public class MultiService {
         this.userCheck(user, profile);
         Apt apt = aptService.get(aptId);
         if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
-        Pageable pageable = PageRequest.of(page, 20);
-        Page<SiteUser> userList = userService.getUserList(pageable, apt.getId());
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<SiteUser> userList = userService.getUserList(pageable, aptId);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
         if (user.getRole() != UserRole.ADMIN)
             if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)

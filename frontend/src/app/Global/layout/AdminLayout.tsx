@@ -101,7 +101,7 @@ export default function Admin(props: Readonly<PageInterface>) {
                             <a id="board" href="/account/article/1" className="btn btn-ghost text-xl hover:text-secondary">
                                 아파트 관리
                             </a>
-                            <a id="manage" href="/account/FAQ/" className="btn btn-ghost text-xl hover:text-secondary">
+                            <a id="manage" href="/account/admin/user" className="btn btn-ghost text-xl hover:text-secondary">
                                 유저 관리
                             </a>
                         </div>

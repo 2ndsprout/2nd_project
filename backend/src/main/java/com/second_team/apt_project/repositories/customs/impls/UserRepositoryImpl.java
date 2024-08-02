@@ -29,7 +29,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         JPAQuery<SiteUser> query = jpaQueryFactory.selectFrom(qSiteUser)
                 .where(qSiteUser.apt.id.eq(aptId))
                 .orderBy(qSiteUser.role.asc())
-                .orderBy(qSiteUser.username.asc());
+                .orderBy(qSiteUser.username.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize());
 
         QueryResults<SiteUser> results = query.fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());

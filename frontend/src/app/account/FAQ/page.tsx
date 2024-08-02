@@ -72,7 +72,7 @@ export default function Page() {
                                     if (r?.name === 'FAQ') {
                                         getArticleList(r.id) // 테트트 때멘 아파트 아이디 넣고  FAQ는 SECURITY 담당이니 추후에 APTID 는 빼야함
                                             .then(r => {
-                                                console.log('dd', r.content);
+                                                console.log(r);
                                                 setArticleList(r?.content);
                                             })
                                             .catch(e => console.log(e));
@@ -104,23 +104,25 @@ export default function Page() {
         });
     };
 
-    // const fetchArticles = async () => {
-    //     try {
-    //         let data: ArticlePage;
+    const fetchArticles = async () => {
+        try {
+            let data: ArticlePage;
 
-    //         data = await getArticleList({
-    //             page: currentPage - 1,
-    //             categoryId: Number(categoryId)
-    //         });
+            data = await getArticleList(
+                Number(categoryId),
+                user.aptId,
+                currentPage - 1
+            );
+            console.log('data',data);
 
-    //         setArticleList(data.content);
-    //         setTotalPages(Math.max(1, data.totalPages));
-    //         setCurrentPage(data.number + 1);
-    //     } catch (error) {
-    //         console.error('Error fetching articles:', error);
-    //         setError('게시물을 불러오는데 실패했습니다.');
-    //     }
-    // };
+            setArticleList(data.content);
+            setTotalPages(Math.max(1, data.totalPages));
+            setCurrentPage(data.number + 1);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            setError('게시물을 불러오는데 실패했습니다.');
+        }
+    };
 
     // useEffect(() => {
     //     fetchArticles();
