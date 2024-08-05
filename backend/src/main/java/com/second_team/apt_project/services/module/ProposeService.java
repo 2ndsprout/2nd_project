@@ -26,15 +26,15 @@ public class ProposeService {
                 .aptName(aptName)//
                 .min(min)//
                 .max(max)//
-                .password(password)//
+                .password(passwordEncoder.encode(password))//
                 .h(h)//
                 .w(w)//
                 .build();
         return this.proposeRepository.save(propose);
     }
 
-    public Page<Propose> getList (Pageable pageable) {
-        return this.proposeRepository.findList(pageable);
+    public Page<Propose> getList (Pageable pageable, int status) {
+        return this.proposeRepository.findList(pageable, status);
     }
 
     public Propose update (Propose propose, ProposeRequestDTO proposeRequestDTO) {
@@ -43,7 +43,6 @@ public class ProposeService {
         propose.setAptName(proposeRequestDTO.getAptName());
         propose.setMin(proposeRequestDTO.getMin());
         propose.setMax(proposeRequestDTO.getMax());
-        propose.setPassword(passwordEncoder.encode(proposeRequestDTO.getPassword()));
         propose.setModifyDate(LocalDateTime.now());
         propose.setProposeStatus(ProposeStatus.values()[proposeRequestDTO.getProposeStatus()]);
         propose.setH(proposeRequestDTO.getH());

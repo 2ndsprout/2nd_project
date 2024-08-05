@@ -179,8 +179,6 @@ interface AptProps {
     id: number,
     roadAddress: string,
     aptName: string,
-    x: number,
-    y: number;
 }
 // 아파트 등록
 export const postApt = async (data: AptProps) => {

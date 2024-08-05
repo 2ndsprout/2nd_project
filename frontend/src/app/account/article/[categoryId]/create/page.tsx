@@ -1,6 +1,6 @@
 'use client';
 
-import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
+import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList, postTag } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -38,6 +38,49 @@ export default function Page() {
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
+
+    useEffect(() => {
+        const cleanupImages = async () => {
+            try {
+                await deleteImageList();
+            } catch (error) {
+                console.error('이미지 삭제 도중 오류:', error);
+            }
+        };
+
+        if (ACCESS_TOKEN) {
+            getUser().then(setUser).catch(console.error);
+            if (PROFILE_ID) {
+                getProfile()
+                    .then(r => {
+                        setProfile(r);
+                        getCenterList()
+                            .then(r => {
+                                setCenterList(r);
+                            })
+                            .catch(e => console.log(e));
+                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                    })
+                    .catch(console.error);
+            } else {
+                redirect('/account/profile');
+            }
+            cleanupImages();
+        } else {
+            redirect('/account/login');
+        }
+
+        const handleBeforeUnload = () => {
+            cleanupImages();
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            cleanupImages();
+        };
+    }, [ACCESS_TOKEN, PROFILE_ID]);
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -100,49 +143,6 @@ export default function Page() {
         [],
     );
 
-    useEffect(() => {
-        const cleanupImages = async () => {
-            try {
-                await deleteImageList();
-            } catch (error) {
-                console.error('이미지 삭제 도중 오류:', error);
-            }
-        };
-
-        if (ACCESS_TOKEN) {
-            getUser().then(setUser).catch(console.error);
-            if (PROFILE_ID) {
-                getProfile()
-                    .then(r => {
-                        setProfile(r);
-                        getCenterList()
-                            .then(r => {
-                                setCenterList(r);
-                            })
-                            .catch(e => console.log(e));
-                        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
-                    })
-                    .catch(console.error);
-            } else {
-                redirect('/account/profile');
-            }
-            cleanupImages();
-        } else {
-            redirect('/account/login');
-        }
-
-        const handleBeforeUnload = () => {
-            cleanupImages();
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            cleanupImages();
-        };
-    }, [ACCESS_TOKEN, PROFILE_ID]);
-
     const Submit = async () => {
         if (!title.trim() || !quillInstance.current?.getEditor().getText().trim()) {
             setError('제목과 내용을 모두 입력해주세요.');
@@ -160,11 +160,13 @@ export default function Page() {
                 urlList.push(match[1]);
             }
 
+            const tagNames = tags.map(tag => tag.name);
+
             const requestData = {
                 title,
                 content,
                 categoryId: Number(categoryId),
-                tagName: tags.map(tag => tag.name),
+                tagName: tagNames,
                 articleTagId: deletedTagIds,
                 topActive: false,
                 urlList: urlList

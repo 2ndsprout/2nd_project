@@ -69,7 +69,7 @@ export default function ArticleListPage() {
         if (ACCESS_TOKEN) {
             getUser().then(r => {
                 setUser(r);
-                console.log("사용자 데이터 : ", r);
+                console.log("사용자 데이터 : ", r); // 디버깅용
                 setIsAdmin(r.role === "ADMIN");
                 setSelectedAptId(r.aptResponseDTO.aptId);
                 
@@ -84,7 +84,7 @@ export default function ArticleListPage() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
-                        console.log("프로필 데이터 : ", r);
+                        console.log("프로필 데이터 : ", r); // 디버깅용
                         getCenterList()
                             .then(r => setCenterList(r))
                             .catch(e => console.error("센터 목록 가져오기 실패:", e));
@@ -112,9 +112,9 @@ export default function ArticleListPage() {
             } else {
                 data = await getArticleList(
                     Number(categoryId),
-                    selectedAptId,
+                    selectedAptId || undefined,
                     currentPage - 1
-                );
+                ); // UserAPI의 getArticleList Header순서에 맞춰야함
             }
 
             const articlesWithCommentCount = await Promise.all(data.content.map(async (article) => {
