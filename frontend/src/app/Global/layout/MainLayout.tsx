@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import DropDown, { Direction } from "../component/DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightToBracket, faArrowsSpin, faMagnifyingGlass, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
-import { getCenterList } from "@/app/API/UserAPI";
-import Link from "next/link";
+import { faArrowsSpin, faMagnifyingGlass, faRightFromBracket, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
+import useConfirm from "../hook/useConfirm";
+import ConfirmModal from "../component/ConfirmModal";
 
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -79,7 +79,12 @@ export default function Main(props: Readonly<PageInterface>) {
   const [manageHover, setManageHover] = useState(false);
   const [userHoverInterval, setUserHoverInterval] = useState<any>(null);
   const [userHover, setUserHover] = useState(false);
+  const { confirmState, finalConfirm, closeConfirm } = useConfirm();
 
+  function handleLogout() {
+    localStorage.clear();
+    window.location.reload();
+  }
 
   function openHover(setHover: React.Dispatch<React.SetStateAction<boolean>>) {
     if (userHoverInterval) clearInterval(userHoverInterval);
@@ -118,8 +123,8 @@ export default function Main(props: Readonly<PageInterface>) {
         <div className="navbar items-center">
           <div className="navbar-start">
             <a href="/">
-              <img src="/user.png" alt="logo" className="mt-1 w-[36px] h-[36px] ml-10" />
-              <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
+              <img src="/logo.png" alt="logo" className="mt-1 w-[64px] h-[64px] ml-10" />
+              {/* <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label> */}
             </a>
           </div>
           <div className="navbar-center justify-between w-[800px]">
@@ -198,6 +203,13 @@ export default function Main(props: Readonly<PageInterface>) {
                   <FontAwesomeIcon icon={faArrowsSpin} />
                   프로필 변경
                 </a>
+                {!!user ? <button
+                  onClick={() => finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', () => handleLogout())}
+                  className="mt-[5px] btn btn-active btn-secondary text-lg text-black w-[180px]"
+                >
+                  <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" />
+                  로그아웃
+                </button> : null}
               </div>
             </DropDown>
           </div>
@@ -219,6 +231,7 @@ export default function Main(props: Readonly<PageInterface>) {
         <label className='text-xs text-secondary'>Tel : <span className="text-white">042-369-5890</span></label>
         <label className='text-xs text-secondary'>사업자등록번호 : <span className="text-white">889-86-02332</span></label>
       </footer>
+      <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
     </main>
   );
 }

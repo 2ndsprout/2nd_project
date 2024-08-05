@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import DropDown, { Direction } from "../component/DropDown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsSpin, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsSpin, faRightFromBracket, faUpLong, faUser } from "@fortawesome/free-solid-svg-icons";
+import ConfirmModal from "../component/ConfirmModal";
+import useConfirm from "../hook/useConfirm";
 
 const ScrollToTopButton = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -67,7 +69,7 @@ interface PageInterface {
 export default function Admin(props: Readonly<PageInterface>) {
 
     const { className } = props;
-
+    const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const [userHoverInterval, setUserHoverInterval] = useState<any>(null);
     const [userHover, setUserHover] = useState(false);
 
@@ -81,6 +83,10 @@ export default function Admin(props: Readonly<PageInterface>) {
         const interval = setInterval(() => { setHover(false); if (userHoverInterval) clearInterval(userHoverInterval); }, delay);
         setUserHoverInterval(interval);
     }
+    function handleLogout() {
+        localStorage.clear();
+        window.location.reload();
+      }
 
     return (
         <main id='main' className={'bg-black h-full w-[1903px] flex flex-col relative ' + className}>
@@ -90,8 +96,8 @@ export default function Admin(props: Readonly<PageInterface>) {
                     <div className="navbar items-center">
                         <div className="navbar-start">
                             <a href="/account/admin">
-                                <img src="/user.png" alt="logo" className="mt-1 w-[36px] h-[36px] ml-10" />
-                                <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label>
+                                <img src="/logo.png" alt="logo" className="mt-1 w-[36px] h-[36px] ml-10" />
+                                {/* <label className="text-sm font-bold ml-4 hover:cursor-pointer">Honey Danji</label> */}
                             </a>
                         </div>
                         <div className="navbar-center justify-between w-[800px]">
@@ -119,12 +125,19 @@ export default function Admin(props: Readonly<PageInterface>) {
                                         <FontAwesomeIcon icon={faArrowsSpin} />
                                         프로필 변경
                                     </a>
+                                    <button
+                                        onClick={() => finalConfirm('로그아웃', '로그아웃 하시겠습니까?', '로그아웃', () => handleLogout())}
+                                        className="mt-[5px] btn btn-active btn-secondary text-lg text-black w-[180px]"
+                                    >
+                                        <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" />
+                                        로그아웃
+                                    </button>
                                 </div>
                             </DropDown>
                         </div>
                     </div>
                 </header>
-            ) :( 
+            ) : (
                 <div className="fixed z-[950] bg-black w-full h-[56px] flex justify-center items-center mb-3 z-[950]">
                     <a href="/propose" className="flex items-center">
                         <img src="/user.png" alt="logo" className="w-[48px] h-[48px]" />
@@ -148,6 +161,7 @@ export default function Admin(props: Readonly<PageInterface>) {
                 <label className='text-xs text-secondary'>Tel : <span className="text-white">042-369-5890</span></label>
                 <label className='text-xs text-secondary'>사업자등록번호 : <span className="text-white">889-86-02332</span></label>
             </footer>
+            <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
         </main>
     );
 }
