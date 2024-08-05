@@ -82,7 +82,7 @@ export default function Page() {
                             <div className="border-b-[1px] w-[900px] flex">
                                 <p className="font-bold m-[15px]">{user?.username}</p>
                                 <div className="flex w-full items-center justify-end">
-                                <button onClick={() => finalConfirm(user?.username, '해당 유저를 삭제하시겠습니까?', '취소', () => deleteTargetUser(user?.username))} className="btn btn-error text-xs btn-xs h-[28px]"><FontAwesomeIcon icon={faXmark} size="xs" />유저 삭제</button>
+                                <button onClick={() => finalConfirm(user?.username, '해당 유저를 삭제하시겠습니까?', '삭제', () => deleteTargetUser(user?.username))} className="btn btn-error text-xs btn-xs h-[28px]"><FontAwesomeIcon icon={faXmark} size="xs" />유저 삭제</button>
                                 </div>
                             </div>
                         </div>
