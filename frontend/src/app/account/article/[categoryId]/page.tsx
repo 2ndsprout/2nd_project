@@ -44,6 +44,12 @@ const extractPrice = (content: string) => {
     return priceMatch ? priceMatch[1] : null;
 };
 
+const extractFirstImageUrl = (content: string) => {
+    const imgRegex = /<img[^>]+src="([^">]+)"/;
+    const match = content.match(imgRegex);
+    return match ? match[1] : null;
+};
+
 export default function ArticleListPage() {
     const [articleList, setArticleList] = useState<Article[]>([]);
     const { categoryId } = useParams();
@@ -218,40 +224,42 @@ export default function ArticleListPage() {
                             <div className="grid grid-cols-3 gap-4">
                                 {articleList.map((article) => {
                                 const price = extractPrice(article.content);
+                                const imageUrl = extractFirstImageUrl(article.content);
                                 return (
-                                    <div key={article.articleId} className="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-                                        <div className="p-4">
-                                            <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
-                                                <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                                            </Link>
-                                            {price && <p className="text-yellow-500 font-bold">가격: {price}원</p>}
-                                            <div className="mt-2">
-                                                {article.content && (
-                                                    <div className="h-32 overflow-hidden">
-                                                        <div dangerouslySetInnerHTML={{ __html: article.content.replace(/\[PRICE\].*?\[\/PRICE\]/g, '') }} />
-                                                    </div>
+                                    <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} key={article.articleId}>
+                                        <div className="bg-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-[400px]">
+                                            <div className="h-72 overflow-hidden relative">
+                                                {imageUrl && (
+                                                    <img 
+                                                        src={imageUrl} 
+                                                        alt={article.title} 
+                                                        className="w-full h-full object-cover"
+                                                    />
                                                 )}
+                                                <div className="absolute top-2 right-2 flex space-x-2">
+                                                    {(article.commentCount ?? 0) > 0 && (
+                                                        <div className="bg-black bg-opacity-50 rounded-full p-2 flex items-center">
+                                                            <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
+                                                            <span className="text-white text-xs">{article.commentCount}</span>
+                                                        </div>
+                                                    )}
+                                                    {(article.loveCount ?? 0) > 0 && (
+                                                        <div className="bg-black bg-opacity-50 rounded-full p-2 flex items-center">
+                                                            <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 h-4 mr-1" />
+                                                            <span className="text-white text-xs">{article.loveCount}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between items-center mt-2">
-                                                <p className="text-sm text-gray-400">{article.profileResponseDTO.name}</p>
-                                                <p className="text-sm text-gray-400">{getDate(article.createDate)}</p>
-                                            </div>
-                                            <div className="flex items-center mt-2">
-                                                {(article.loveCount ?? 0) > 0 && (
-                                                    <div className="text-sm text-gray-400 flex items-center mr-4">
-                                                        <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 mr-1" />
-                                                        {article.loveCount}
-                                                    </div>
-                                                )}
-                                                {(article.commentCount ?? 0) > 0 && (
-                                                    <div className="text-sm text-gray-400 flex items-center">
-                                                        <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
-                                                        {article.commentCount}
-                                                    </div>
-                                                )}
+                                            <div className="p-4 flex flex-col flex-grow">
+                                                <h3 className="text-lg font-semibold mb-2 line-clamp-2">{article.title}</h3>
+                                                <div className="mt-auto flex justify-between items-end">
+                                                    {price && <p className="text-yellow-500 text-2xl font-semibold">{price}원</p>}
+                                                    <p className="text-sm text-gray-400">{getDate(article.createDate)}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 );
                             })}
                             </div>

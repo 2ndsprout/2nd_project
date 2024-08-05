@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import CommentList from '../../../comment/page';
-import Slider from '@/app/Global/component/Slider';
+import Slider from '@/app/Global/component/ArticleSlider';
 
 interface Tag {
     id: number;
@@ -298,65 +298,108 @@ export default function ArticleDetail() {
     };
 
     const content = (
-        <div className="flex w-full">
-            <aside className="w-1/6 p-6 flex flex-col items-center">
-                <div className="mt-5 flex flex-col items-center">
-                    <img src='/user.png' className='w-16 h-16 mb-2 rounded-full' alt="프로필" />
-                    <div className="mt-2 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
-                </div>
-            </aside>
-            <div className="w-4/6 p-10 flex flex-col">
-            <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
-                <div className="text-end mb-2">{article && getDateTimeFormat(article.createDate)}</div>
-                <div className="bg-gray-800 flex flex-col min-h-[600px] p-6 rounded-lg shadow-lg">
-                    {renderContent()}
-                    <div className="mt-4">
-                        <ul className="flex flex-wrap">
-                            {article?.tagResponseDTOList.map(tag => (
-                                <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 inline-block">
-                                    #{tag.name}
-                                </li>
-                            ))}
-                        </ul>
+        <div className="flex flex-col w-full">
+            {isUsedItemsCategory ? (
+                <>
+                    <div className="w-full p-6">
+                        <h1 className="text-3xl font-bold mb-4 text-center">{article.title}</h1>
+                        <p className="text-sm text-gray-400 mb-6 text-right">{getDateTimeFormat(article.createDate)}</p>
                     </div>
-                </div>
-                <div className="mt-6">
-                    <CommentList articleId={Number(articleId)} />
-                </div>
-            </div>
-            <aside className="w-1/6 p-6 flex flex-col items-start">
-                {hasEditPermission && (
-                    <div className="relative" id="dropdown">
-                        <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
-                            <span className="text-white">⁝</span>
-                        </button>
-                        {dropdownOpen && (
-                            <div className="absolute mt-2 bg-gray-800 rounded shadow-lg overflow-hidden">
-                                <div className="flex flex-col w-20">
-                                    <Link 
-                                        href={`/account/article/${categoryId}/update/${article.articleId}`} 
-                                        className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
-                                    >
-                                        수정
-                                    </Link>
-                                    <button 
-                                        onClick={handleDelete} 
-                                        className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
-                                    >
-                                        삭제
-                                    </button>
-                                </div>
+                    <div className="flex w-full">
+                        <div className="w-[45%] p-6">
+                            <div className="w-full h-[400px]">
+                            <Slider urlList={imageUrls} />
                             </div>
-                        )}
+                        </div>
+                        <div className="w-[55%] p-6 bg-gray-800 rounded-lg shadow-lg">
+                            {price && (
+                                <div className="mb-6">
+                                    <h2 className="text-2xl font-bold text-yellow-500">가격: {price}원</h2>
+                                </div>
+                            )}
+                            <div className="prose prose-invert max-w-none">
+                                <div dangerouslySetInnerHTML={renderSafeHTML(contentWithoutImages.replace(/\[PRICE\].*?\[\/PRICE\]/g, ''))} />
+                            </div>
+                            <div className="mt-6">
+                                <ul className="flex flex-wrap">
+                                    {article.tagResponseDTOList.map(tag => (
+                                        <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 mb-2">
+                                            #{tag.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                )}
-            </aside>
+                </>
+            ) : (
+                <div className="w-full">
+                    <div className="p-6">
+                        <h1 className="text-3xl font-bold mb-4 text-center">{article.title}</h1>
+                        <p className="text-sm text-gray-400 mb-6 text-right">{getDateTimeFormat(article.createDate)}</p>
+                    </div>
+                    <div className="p-6 bg-gray-800 rounded-lg shadow-lg">
+                        <div className="prose prose-invert max-w-none">
+                            <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                        </div>
+                        <div className="mt-6">
+                            <ul className="flex flex-wrap">
+                                {article.tagResponseDTOList.map(tag => (
+                                    <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 mb-2">
+                                        #{tag.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <div className="w-full mt-6">
+                <CommentList articleId={Number(articleId)} />
+            </div>
         </div>
     );
     
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
-            {content}
+            <div className="flex w-full">
+                <aside className="w-1/6 p-6 flex flex-col items-center">
+                    <div className="mt-5 flex flex-col items-center">
+                        <img src='/user.png' className='w-16 h-16 mb-2 rounded-full' alt="프로필" />
+                        <div className="mt-2 text-lg font-semibold">{article.profileResponseDTO.name || '알 수 없음'}</div>
+                    </div>
+                </aside>
+                <div className="w-4/6">
+                    {content}
+                </div>
+                <aside className="w-1/6 p-6 flex flex-col items-start">
+                    {hasEditPermission && (
+                        <div className="relative" id="dropdown">
+                            <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
+                                <span className="text-white">⁝</span>
+                            </button>
+                            {dropdownOpen && (
+                                <div className="absolute mt-2 bg-gray-800 rounded shadow-lg overflow-hidden">
+                                    <div className="flex flex-col w-20">
+                                        <Link 
+                                            href={`/account/article/${categoryId}/update/${article.articleId}`} 
+                                            className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
+                                        >
+                                            수정
+                                        </Link>
+                                        <button 
+                                            onClick={handleDelete} 
+                                            className="block w-full px-4 py-2 text-sm text-white text-center hover:bg-yellow-600 transition-colors"
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </aside>
+            </div>
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-gray-800 p-5 rounded shadow-lg">
