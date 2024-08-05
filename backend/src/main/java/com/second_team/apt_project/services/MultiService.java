@@ -38,6 +38,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MultiService {
     private final UserService userService;
+    private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AptService aptService;
     private final FileSystemService fileSystemService;
@@ -171,14 +172,16 @@ public class MultiService {
                         if (j < 10) jKey = "0" + jKey;  // 세대수가 한자리일 때 0을 붙임
 
                         String name = aptNum + String.valueOf(i) + jKey;  // 아파트 번호 생성
-                        SiteUser _user = userService.saveGroup(name, aptNum, apt);  // 사용자 그룹 저장
-                        userResponseDTOList.add(
-                                UserResponseDTO.builder()
-                                        .username(_user.getUsername())
-                                        .aptNum(_user.getAptNum())
-                                        .aptResponseDTO(this.getAptResponseDTO(apt))
-                                        .build()
-                        );
+                        SiteUser _user = userService.saveGroup(name, aptNum, apt);// 사용자 그룹 저장
+                        if (aptNum == min && i == 1 && j == 1 || aptNum == max && i == h && j == w){
+                            userResponseDTOList.add(
+                                    UserResponseDTO.builder()
+                                            .username(_user.getUsername())
+                                            .aptNum(_user.getAptNum())
+                                            .aptResponseDTO(this.getAptResponseDTO(apt))
+                                            .build()
+                            );
+                         }
                     }
                 }
             }
@@ -1837,8 +1840,8 @@ public class MultiService {
      */
 
     @Transactional
-    public ProposeResponseDTO savePropose(String title, String roadAddress, String aptName, Integer max, Integer min, String password, Integer h, Integer w) {
-        Propose propose = this.proposeService.save(title, roadAddress, aptName, max, min, password, h, w);
+    public ProposeResponseDTO savePropose(String title, String email, String roadAddress, String aptName, Integer max, Integer min, String password, Integer h, Integer w) {
+        Propose propose = this.proposeService.save(title, email, roadAddress, aptName, max, min, password, h, w);
         return this.proposeResponseDTO(propose);
     }
 
@@ -1913,10 +1916,23 @@ public class MultiService {
                 .max(propose.getMax())
                 .createDate(this.dateTimeTransfer(propose.getCreateDate()))
                 .modifyDate(this.dateTimeTransfer(propose.getModifyDate()))
+                .email(propose.getEmail())
                 .id(propose.getId())
                 .roadAddress(propose.getRoadAddress())
                 .title(propose.getTitle())
                 .build();
+    }
+
+    @Transactional
+    public void sendEmail (String username, EmailRequestDTO requestDTO) {
+        SiteUser user = null;
+        if (username != null) {
+            user = this.userService.get(username);
+        }
+        if (user != null && user.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("NOT AUTH");
+        }
+       this.emailService.mailSend(requestDTO);
     }
 
 }

@@ -55,6 +55,7 @@ interface proposeProps {
     h: number,
     w: number
     password?: string,
+    email: string,
     proposeStatus?: number
 }
 
@@ -64,16 +65,35 @@ export const postPropose = async (data: proposeProps) => {
 }
 
 export const getProposeList = async (status: number, data?: number) => {
-    const response = await NonUserApi.get('/api/propose/list', {headers: {'Page': data, 'Status': status}});
+    const response = await NonUserApi.get('/api/propose/list', { headers: { 'Page': data, 'Status': status } });
     return response.data;
 }
 
 export const getPropose = async (id: number, password?: string) => {
-    const response = await NonUserApi.get('api/propose', {headers: {'ProposeId': id, 'Password': password}});
+    const response = await NonUserApi.get('api/propose', { headers: { 'ProposeId': id, 'Password': password } });
     return response.data;
 }
 
 export const updatePropose = async (data: proposeProps) => {
     const response = await NonUserApi.put('/api/propose', data);
+    return response.data;
+}
+
+interface EmailProps {
+    to: string,
+    aptName: string,
+    roadAddress: string,
+    totalUserCount: number,
+    first: string,
+    last: string
+}
+
+export const sendEmail = async (data: EmailProps) => {
+    const response = await NonUserApi.post('/api/email', data);
+    return response.data;
+}
+
+export const deletePropose = async (id: number, password: string) => {
+    const response = await NonUserApi.delete('/api/propose', { headers: { 'ProposeId': id, 'Password': password } });
     return response.data;
 }

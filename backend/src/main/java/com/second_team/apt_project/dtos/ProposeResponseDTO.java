@@ -19,11 +19,12 @@ public class ProposeResponseDTO {
     private Integer h;
     private Integer w;
     private String proposeStatus;
+    private String email;
     private Long createDate;
     private Long modifyDate;
 
     @Builder
-    public ProposeResponseDTO(Long id, String title, String roadAddress, String aptName, Integer min, Integer max, Integer h, Integer w, String proposeStatus, Long createDate, Long modifyDate) {
+    public ProposeResponseDTO(Long id, String email, String title, String roadAddress, String aptName, Integer min, Integer max, Integer h, Integer w, String proposeStatus, Long createDate, Long modifyDate) {
         this.id = id;
         this.title = title;
         this.roadAddress = roadAddress;
@@ -32,6 +33,7 @@ public class ProposeResponseDTO {
         this.max = max;
         this.h = h;
         this.w = w;
+        this.email = email;
         this.proposeStatus = proposeStatus;
         this.createDate = createDate;
         this.modifyDate = modifyDate;
