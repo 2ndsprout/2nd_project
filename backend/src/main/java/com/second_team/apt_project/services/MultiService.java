@@ -185,6 +185,7 @@ public class MultiService {
                     }
                 }
             }
+            this.userService.save(aptId + "_security", "security" + aptId, aptId + "security@security.co.kr", 0, 1, apt);
             return userResponseDTOList;
         } else {
             throw new IllegalArgumentException("권한 불일치");

@@ -19,7 +19,7 @@ public class EmailService {
             mailHandler.setFrom(FROM_ADDRESS);
             mailHandler.setTo(emailRequestDTO.getTo());
             mailHandler.setSubject("꿀단지 서비스 사용승인 확인 바랍니다.");
-
+            String aptId = emailRequestDTO.getFirst().split("_")[0];
             String htmlContent =
                     "<!DOCTYPE html>" +
                             "<html lang=\"en\">" +
@@ -82,6 +82,8 @@ public class EmailService {
                             "<p class=\"highlight\">첫번째 동 첫번째 호 계정명 : <span class=\"highlight-value\">" + emailRequestDTO.getFirst() + "</span></p>" +
                             "<p class=\"highlight\">마지막 동 마지막 호 계정명 : <span class=\"highlight-value\">" + emailRequestDTO.getLast() + "</span></p>" +
                             "<p class=\"highlight-value\">계정명에서 _(언더바) 앞자리가 해당 아파트 번호입니다. _(언더바) 뒷자리로는 동,호수 입니다.</p>" +
+                            "<p class=\"highlight\">관리자 계정명 : <span class=\"highlight-value\"> " + aptId + "_security</span></p>" +
+                            "<p class=\"highlight\">관리자 비밀번호 : <span class=\"highlight-value\"> security" + aptId + "</span></p>" +
                             "<p>자세한 내용을 확인하려면 아래 버튼을 클릭하세요:</p>" +
                             "<a href=\"https://example.com\" class=\"button\">자세히 보기</a>" +
                             "<p>감사합니다!</p>" +
