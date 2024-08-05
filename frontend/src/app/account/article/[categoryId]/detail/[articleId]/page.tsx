@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import CommentList from '../../../comment/page';
+import Slider from '@/app/Global/component/Slider';
 
 interface Tag {
     id: number;
@@ -16,7 +17,6 @@ interface Tag {
 }
 
 interface Article {
-    categoryId: number;
     articleId: number;
     title: string;
     content: string;
@@ -33,6 +33,28 @@ interface Article {
     tagResponseDTOList: Tag[];
 }
 
+const USED_ITEMS_CATEGORY_NAME = "중고장터"; // 중고장터 카테고리 이름
+
+const extractPrice = (content: string) => {
+    const priceMatch = content.match(/\[PRICE\](.*?)\[\/PRICE\]/);
+    return priceMatch ? priceMatch[1] : null;
+};
+
+const extractImageUrls = (content: string) => {
+    const imgRegex = /<img[^>]+src="([^">]+)"/g;
+    const urls = [];
+    let match;
+    while ((match = imgRegex.exec(content)) !== null) {
+        urls.push(match[1]);
+    }
+    console.log("Extracted Image URLs:", urls);  // 디버깅용 로그
+    return urls;
+};
+
+const removeImagesFromContent = (content: string) => {
+    return content.replace(/<img[^>]+>/g, '').trim();
+};
+
 export default function ArticleDetail() {
     const { categoryId, articleId } = useParams();
     const [article, setArticle] = useState<Article | null>(null);
@@ -48,6 +70,10 @@ export default function ArticleDetail() {
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const [ hasEditPermission, setHasEditPermission ] = useState(false);
+    const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
+    const price = article ? extractPrice(article.content) : null;
+    const imageUrls = article ? extractImageUrls(article.content) : [];
+    const contentWithoutImages = article ? removeImagesFromContent(article.content) : '';
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -97,26 +123,42 @@ export default function ArticleDetail() {
         }
     }, [user, article, PROFILE_ID]);
 
+//     useEffect(() => {
+//     if (categoryId) {
+//         setIsUsedItemsCategory(Number(categoryId) === USED_ITEMS_CATEGORY_ID);
+//         console.log("Category ID:", categoryId);
+//         console.log("Is Used Items Category:", Number(categoryId) === USED_ITEMS_CATEGORY_ID);
+//     }
+// }, [categoryId]);
+
+    useEffect(() => {
+        if (article) {
+            console.log("Full article object:", article);
+            console.log("Article Category Name:", article.categoryName);
+            
+            const isUsedItems = article.categoryName === USED_ITEMS_CATEGORY_NAME;
+            setIsUsedItemsCategory(isUsedItems);
+            
+            console.log("Is Used Items Category:", isUsedItems);
+        }
+    }, [article]);
+
     useEffect(() => {
         const fetchArticle = async () => {
             try {
                 if (articleId) {
                     const fetchedArticle = await getArticle(Number(articleId));
+                    console.log("Fetched article:", fetchedArticle);
                     if (fetchedArticle) {
                         const tagPromises = fetchedArticle.tagResponseDTOList.map((tag: Tag) => getTag(tag.id));
                         const tagDetails = await Promise.all(tagPromises);
                         setArticle((prev: Article | null): Article => {
-                            if (prev === null) {
-                                return {
-                                    ...fetchedArticle,
-                                    tagResponseDTOList: tagDetails
-                                };
-                            }
-                            return {
-                                ...prev,
+                            const newArticle = {
                                 ...fetchedArticle,
                                 tagResponseDTOList: tagDetails
                             };
+                            console.log("Setting article state:", newArticle);
+                            return newArticle;
                         });
                     }
                 }
@@ -127,6 +169,74 @@ export default function ArticleDetail() {
     
         fetchArticle();
     }, [articleId]);
+
+    const renderContent = () => {
+        if (!article) return null;
+
+        const price = extractPrice(article.content);
+        const imageUrls = extractImageUrls(article.content);
+        const contentWithoutImages = removeImagesFromContent(article.content);
+
+        console.log("Rendering content for article:", article.articleId);
+        console.log("Article Category Name:", article.categoryName);
+        console.log("Is Used Items Category:", isUsedItemsCategory);
+        console.log("Extracted Price:", price);
+        console.log("Image URLs:", imageUrls);
+
+        if (isUsedItemsCategory) {
+            return (
+                <div className="flex">
+                    <div className="w-1/2">
+                        <Slider urlList={imageUrls} />
+                    </div>
+                    <div className="w-1/2 p-6">
+                        {/* <h1 className="text-2xl font-bold mb-4">{article.title}</h1> */}
+                        {price && <p className="text-xl text-yellow-500 mb-4">가격: {price}원</p>}
+                        <div dangerouslySetInnerHTML={renderSafeHTML(contentWithoutImages.replace(/\[PRICE\].*?\[\/PRICE\]/g, ''))} />
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    {/* <h1 className="text-2xl font-bold mb-4">{article.title}</h1> */}
+                    <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                </div>
+            );
+        }
+    };
+
+
+    // useEffect(() => {
+    //     const fetchArticle = async () => {
+    //         try {
+    //             if (articleId) {
+    //                 const fetchedArticle = await getArticle(Number(articleId));
+    //                 if (fetchedArticle) {
+    //                     const tagPromises = fetchedArticle.tagResponseDTOList.map((tag: Tag) => getTag(tag.id));
+    //                     const tagDetails = await Promise.all(tagPromises);
+    //                     setArticle((prev: Article | null): Article => {
+    //                         if (prev === null) {
+    //                             return {
+    //                                 ...fetchedArticle,
+    //                                 tagResponseDTOList: tagDetails
+    //                             };
+    //                         }
+    //                         return {
+    //                             ...prev,
+    //                             ...fetchedArticle,
+    //                             tagResponseDTOList: tagDetails
+    //                         };
+    //                     });
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching article:', error);
+    //         }
+    //     };
+    
+    //     fetchArticle();
+    // }, [articleId]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -196,13 +306,13 @@ export default function ArticleDetail() {
                 </div>
             </aside>
             <div className="w-4/6 p-10 flex flex-col">
-                <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
-                <div className="text-end mb-2">{getDateTimeFormat(article.createDate)}</div>
+            <div className="text-3xl font-bold mb-10 text-center">{article.title}</div>
+                <div className="text-end mb-2">{article && getDateTimeFormat(article.createDate)}</div>
                 <div className="bg-gray-800 flex flex-col min-h-[600px] p-6 rounded-lg shadow-lg">
-                    <div className="flex-grow" dangerouslySetInnerHTML={{ __html: article.content }} />
+                    {renderContent()}
                     <div className="mt-4">
                         <ul className="flex flex-wrap">
-                            {article.tagResponseDTOList.map(tag => (
+                            {article?.tagResponseDTOList.map(tag => (
                                 <li key={tag.id} className="bg-gray-700 text-white rounded-full px-3 py-1 text-sm mr-2 inline-block">
                                     #{tag.name}
                                 </li>
