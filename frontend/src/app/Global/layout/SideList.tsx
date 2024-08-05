@@ -24,8 +24,9 @@ export default function SideList(props: sideListProps) {
             </div>
             <div className="flex flex-col border-x-2 border-b-2 border-gray-400 py-2 px-4 w-full">
                 <label className="font-bold mb-3">My Lessons</label>
-                {user?.role !== "USER" && <a href="/account/mypage/lesson/list" className="text-sm text-gray-500 hover:underline">내 레슨 목록</a>}
+                <a href="/account/mypage/lesson/list" className="text-sm text-gray-500 hover:underline">내 레슨 목록</a>
                 {user?.role !== "USER" && <a href="/account/mypage/lesson/manage" className="text-sm text-gray-500 hover:underline">레슨 관리</a>}
+                {user?.role === "STAFF" && <a href="/account/mypage/lesson/create" className="text-sm text-gray-500 hover:underline">레슨 생성</a>}
             </div>
             <div className="flex flex-col border-x-2 border-b-2 border-gray-400 py-2 px-4 w-full rounded-b-lg">
                 <label className="font-bold mb-3"></label>
