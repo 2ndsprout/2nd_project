@@ -293,9 +293,10 @@ interface SearchArticleParams {
     sort: number;
     categoryId?: number;
     aptId?: number;
+    size?: number;
 }
 
-export const searchArticles = async ({ page, keyword, sort, categoryId, aptId }: SearchArticleParams) => {
+export const searchArticles = async ({ page, keyword, sort, categoryId, aptId, size }: SearchArticleParams) => {
     try {
         const headers: { [key: string]: string } = {
             'Page': page.toString(),
