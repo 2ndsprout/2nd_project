@@ -866,7 +866,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 15);
         Boolean topActive = false;
         Page<Article> articleList;
         if (user.getRole() == UserRole.ADMIN) {
