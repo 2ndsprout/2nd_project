@@ -22,7 +22,7 @@ public class ProposeController {
                                          @RequestBody ProposeRequestDTO requestDto) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
-            ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto.getTitle(), requestDto.getRoadAddress(), requestDto.getAptName(),//
+            ProposeResponseDTO proposeResponseDTO = this.multiService.savePropose(requestDto.getTitle(), requestDto.getEmail(), requestDto.getRoadAddress(), requestDto.getAptName(),//
                     requestDto.getMax(), requestDto.getMin(), requestDto.getPassword(), requestDto.getH(), requestDto.getW());
             return ResponseEntity.status(HttpStatus.OK).body(proposeResponseDTO);
         } catch (IllegalArgumentException e) {

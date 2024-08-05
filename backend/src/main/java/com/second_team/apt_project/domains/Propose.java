@@ -36,6 +36,8 @@ public class Propose {
 
     private String password;
 
+    private String email;
+
     private ProposeStatus proposeStatus;
 
     private LocalDateTime createDate;
@@ -43,7 +45,7 @@ public class Propose {
     private LocalDateTime modifyDate;
 
     @Builder
-    public Propose (String title, String roadAddress, String aptName, Integer min, Integer max, Integer h, Integer w, String password) {
+    public Propose (String email, String title, String roadAddress, String aptName, Integer min, Integer max, Integer h, Integer w, String password) {
         this.title = title;
         this.roadAddress = roadAddress;
         this.aptName = aptName;
@@ -52,6 +54,7 @@ public class Propose {
         this.h = h;
         this.w = w;
         this.password = password;
+        this.email = email;
         this.createDate = LocalDateTime.now();
         this.proposeStatus = ProposeStatus.PENDING;
     }

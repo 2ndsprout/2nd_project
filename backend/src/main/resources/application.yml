@@ -1,4 +1,16 @@
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: 2ndsprout
+    password: uirmupfgwyncdpvh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
   web:
     resources:
       static-locations:
@@ -19,7 +31,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_batch_fetch_size: 100
+        default_batch_fetch_size: 5000
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://ls-6a6167099f1b8b918a180513a70146a343e9ff7c.cps8so0e8jyp.ap-northeast-2.rds.amazonaws.com:3306/apt_project?serverTimezone=Asia/Seoul&characterEncoding=UTF-8

@@ -207,7 +207,7 @@ export default function Main(props: Readonly<PageInterface>) {
         {props.children}
       </div>
       <ScrollToTopButton />
-      <footer className='flex flex-col w-[1450px] mt-18 ml-52 p-10 gap-2 z-[950]'>
+      <footer className='flex flex-col w-[1450px] mt-18 ml-52 p-10 gap-2'>
         <div className='flex justify-between'>
           <div className='text-secondary flex font-bold'>상호명 및 호스팅 서비스 제공 :
             <span className='text-white flex flex-col ml-2'> 꿀단지(주)</span>

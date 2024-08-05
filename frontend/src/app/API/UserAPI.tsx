@@ -48,16 +48,16 @@ const refreshAccessToken = async () => {
 }
 // User
 interface RegisterProps {
-    name: string,
     aptId: number,
-    aptNumber: number,
-    password: string,
-    email: string,
-    role: number,
-    min: number,
-    max: number,
-    h: number,
-    w: number
+    min?: number,
+    max?: number,
+    h?: number,
+    w?: number,
+    name?: string,
+    aptNumber?: number,
+    password?: string,
+    email?: string,
+    role?: number
 }
 export const register = async (data: RegisterProps) => {
     const response = await UserApi.post('/api/user', data);
@@ -79,7 +79,7 @@ export const getUserDetail = async (data: string) => {
     return response.data;
 }
 export const getUserList = async (data: number, page?: number) => {
-    const response = await UserApi.get('/api/user/list', { headers: { 'AptId': data , 'Page': page} });
+    const response = await UserApi.get('/api/user/list', { headers: { 'AptId': data, 'Page': page } });
     return response.data;
 }
 interface UpdateProps {
@@ -529,8 +529,10 @@ export const getLessonRequestList = async () => {
     return response.data;
 }
 
-export const getLessonRequestListByStaff = async (type : number, id:number) => {
-    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: {'LessonId':id, 'Type': type } });
+export const getLessonRequestListByStaff = async (type: number, id: number) => {
+    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: { 'LessonId': id, 'Type': type } });
     return response.data;
 }
+
+
 
