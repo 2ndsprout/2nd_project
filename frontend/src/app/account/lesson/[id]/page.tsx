@@ -69,6 +69,7 @@ export default function Page() {
             console.log('type', targetLesson)
         }
     }, [lessonList, lessonId]);
+
     function Submit() {
         postLessonRequest({ id: null, lessonId, type: 0 })
             .then(() => {
@@ -132,7 +133,7 @@ export default function Page() {
                             {targetLesson?.profileResponseDTO?.name !== profile.name ? <button
                                 id='submit'
                                 className='bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
-                                onClick={() => Submit()}
+                                onClick={() => finalConfirm(targetLesson?.name, '해당 레슨을 신청하시겠습니까?', '신청',() => Submit())}
                             >
                                 수강 신청
                             </button> : <div className="flex gap-3">

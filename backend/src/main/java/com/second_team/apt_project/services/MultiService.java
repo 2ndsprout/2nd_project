@@ -38,6 +38,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MultiService {
     private final UserService userService;
+    private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AptService aptService;
     private final FileSystemService fileSystemService;
@@ -138,17 +139,22 @@ public class MultiService {
 
     @Transactional
     public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username, Long profileId) {
-        SiteUser user = userService.get(username);
-        Profile profile = profileService.findById(profileId);
-        this.userCheck(user, profile);
-        Apt apt = aptService.get(aptId);
-        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
-        if (user.getRole() != UserRole.ADMIN)
-            if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
-                throw new IllegalArgumentException("권한 불일치");
-        if (email != null) userService.userEmailCheck(email);
-        SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
-        return this.getUserResponseDTO(siteUser);
+        try {
+            SiteUser user = userService.get(username);
+            Profile profile = profileService.findById(profileId);
+            this.userCheck(user, profile);
+            Apt apt = aptService.get(aptId);
+            if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+            if (user.getRole() != UserRole.ADMIN)
+                if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
+                    throw new IllegalArgumentException("권한 불일치");
+            if (email != null) userService.userEmailCheck(email);
+            SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
+            return this.getUserResponseDTO(siteUser);
+        }catch (RuntimeException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 
     @Transactional
@@ -171,17 +177,20 @@ public class MultiService {
                         if (j < 10) jKey = "0" + jKey;  // 세대수가 한자리일 때 0을 붙임
 
                         String name = aptNum + String.valueOf(i) + jKey;  // 아파트 번호 생성
-                        SiteUser _user = userService.saveGroup(name, aptNum, apt);  // 사용자 그룹 저장
-                        userResponseDTOList.add(
-                                UserResponseDTO.builder()
-                                        .username(_user.getUsername())
-                                        .aptNum(_user.getAptNum())
-                                        .aptResponseDTO(this.getAptResponseDTO(apt))
-                                        .build()
-                        );
+                        SiteUser _user = userService.saveGroup(name, aptNum, apt);// 사용자 그룹 저장
+                        if (aptNum == min && i == 1 && j == 1 || aptNum == max && i == h && j == w){
+                            userResponseDTOList.add(
+                                    UserResponseDTO.builder()
+                                            .username(_user.getUsername())
+                                            .aptNum(_user.getAptNum())
+                                            .aptResponseDTO(this.getAptResponseDTO(apt))
+                                            .build()
+                            );
+                         }
                     }
                 }
             }
+            this.userService.save(aptId + "_security", "security" + aptId, aptId + "security@security.co.kr", 0, 1, apt);
             return userResponseDTOList;
         } else {
             throw new IllegalArgumentException("권한 불일치");
@@ -862,7 +871,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Pageable pageable = PageRequest.of(page, 15);
+        Pageable pageable = PageRequest.of(page, 10);
         Boolean topActive = false;
         Page<Article> articleList;
         if (user.getRole() == UserRole.ADMIN) {
@@ -1837,15 +1846,15 @@ public class MultiService {
      */
 
     @Transactional
-    public ProposeResponseDTO savePropose(String title, String roadAddress, String aptName, Integer max, Integer min, String password, Integer h, Integer w) {
-        Propose propose = this.proposeService.save(title, roadAddress, aptName, max, min, password, h, w);
+    public ProposeResponseDTO savePropose(String title, String email, String roadAddress, String aptName, Integer max, Integer min, String password, Integer h, Integer w) {
+        Propose propose = this.proposeService.save(title, email, roadAddress, aptName, max, min, password, h, w);
         return this.proposeResponseDTO(propose);
     }
 
     @Transactional
-    public Page<ProposeResponseDTO> getProposePage(int page) {
-        Pageable pageable = PageRequest.of(page, 15);
-        Page<Propose> proposePage = this.proposeService.getList(pageable);
+    public Page<ProposeResponseDTO> getProposePage(int page, int status) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Propose> proposePage = this.proposeService.getList(pageable, status);
         if (proposePage == null)
             throw new DataNotFoundException("신청 페이지 객체 없음");
         List<ProposeResponseDTO> proposeResponseDTOS = new ArrayList<>();
@@ -1913,10 +1922,23 @@ public class MultiService {
                 .max(propose.getMax())
                 .createDate(this.dateTimeTransfer(propose.getCreateDate()))
                 .modifyDate(this.dateTimeTransfer(propose.getModifyDate()))
+                .email(propose.getEmail())
                 .id(propose.getId())
                 .roadAddress(propose.getRoadAddress())
                 .title(propose.getTitle())
                 .build();
+    }
+
+    @Transactional
+    public void sendEmail (String username, EmailRequestDTO requestDTO) {
+        SiteUser user = null;
+        if (username != null) {
+            user = this.userService.get(username);
+        }
+        if (user != null && user.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("NOT AUTH");
+        }
+       this.emailService.mailSend(requestDTO);
     }
 
 }

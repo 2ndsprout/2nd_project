@@ -194,7 +194,7 @@ const CreateCategory: React.FC = () => {
                   id="categoryName"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full p-2 border rounded text-black"
+                  className="w-full p-2 border rounded text-white"
                   required
                 />
               </div>

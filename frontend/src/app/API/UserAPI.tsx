@@ -48,16 +48,16 @@ const refreshAccessToken = async () => {
 }
 // User
 interface RegisterProps {
-    name: string,
     aptId: number,
-    aptNumber: number,
-    password: string,
-    email: string,
-    role: number,
-    min: number,
-    max: number,
-    h: number,
-    w: number
+    min?: number,
+    max?: number,
+    h?: number,
+    w?: number,
+    name?: string,
+    aptNum?: number,
+    password?: string,
+    email?: string,
+    role?: number
 }
 export const register = async (data: RegisterProps) => {
     const response = await UserApi.post('/api/user', data);
@@ -80,8 +80,7 @@ export const getUserDetail = async (data: string) => {
 }
 
 export const getUserList = async (data: number, page?: number) => {
-    const response = await UserApi.get('/api/user/list', { headers: { 'AptId': data , 'Page': page} });
-
+    const response = await UserApi.get('/api/user/list', { headers: { 'AptId': data, 'Page': page } });
     return response.data;
 }
 interface UpdateProps {
@@ -104,8 +103,8 @@ export const updateUserPassword = async (data: UpdateProps) => {
     return response.data;
 }
 // 유저 삭제
-export const deleteUser = async (data : string) => {
-    await UserApi.delete('/api/user', { headers: { 'DeleteUsername': data } });
+export const deleteUser = async (deleteUsername: string) => {
+    await UserApi.delete('/api/user', { headers: { 'DeleteUsername': deleteUsername} });
 }
 // Profile
 interface ProfileProps {
@@ -181,8 +180,6 @@ interface AptProps {
     id: number,
     roadAddress: string,
     aptName: string,
-    x: number,
-    y: number;
 }
 // 아파트 등록
 export const postApt = async (data: AptProps) => {
@@ -297,9 +294,10 @@ interface SearchArticleParams {
     sort: number;
     categoryId?: number;
     aptId?: number;
+    size?: number;
 }
 
-export const searchArticles = async ({ page, keyword, sort, categoryId, aptId }: SearchArticleParams) => {
+export const searchArticles = async ({ page, keyword, sort, categoryId, aptId, size }: SearchArticleParams) => {
     try {
         const headers: { [key: string]: string } = {
             'Page': page.toString(),
@@ -533,8 +531,10 @@ export const getLessonRequestList = async () => {
     return response.data;
 }
 
-export const getLessonRequestListByStaff = async (type : number, id:number) => {
-    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: {'LessonId':id, 'Type': type } });
+export const getLessonRequestListByStaff = async (type: number, id: number) => {
+    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: { 'LessonId': id, 'Type': type } });
     return response.data;
 }
+
+
 

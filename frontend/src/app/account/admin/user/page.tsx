@@ -193,17 +193,13 @@ export default function Page() {
     };
 
     function submit() {
+        console.log(aptNum);
         register({
             name: username,
             password: password,
-            aptNumber: aptNum,
-            aptId: selectedApt.aptId,
-            role: role,
-            email: '',
-            min: 0,
-            max: 0,
-            h: 0,
-            w: 0
+            aptNum: aptNum,
+            aptId: apt.aptId,
+            role: role
         })
             // .then(() => window.location.href = '/propose')
             .catch(e => console.log(e));

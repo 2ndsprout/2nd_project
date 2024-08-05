@@ -4,6 +4,7 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.Propose;
 import com.second_team.apt_project.domains.QPropose;
+import com.second_team.apt_project.enums.ProposeStatus;
 import com.second_team.apt_project.repositories.customs.ProposeRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,9 +18,14 @@ public class ProposeRepositoryImpl implements ProposeRepositoryCustom {
     QPropose qPropose = QPropose.propose;
 
     @Override
-    public Page<Propose> findList(Pageable pageable) {
+    public Page<Propose> findList(Pageable pageable, int status) {
+        ProposeStatus proposeStatus = ProposeStatus.values()[status];
         QueryResults<Propose> results = jpaQueryFactory.selectFrom(qPropose)
-                .orderBy(qPropose.createDate.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+                .where(qPropose.proposeStatus.eq(proposeStatus))
+                .orderBy(qPropose.createDate.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
         return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 }

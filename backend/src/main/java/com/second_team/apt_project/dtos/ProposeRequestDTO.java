@@ -23,5 +23,7 @@ public class ProposeRequestDTO {
 
     private String password;
 
+    private String email;
+
     private Integer proposeStatus;
 }
