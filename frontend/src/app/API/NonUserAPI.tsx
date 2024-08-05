@@ -92,3 +92,8 @@ export const sendEmail = async (data: EmailProps) => {
     const response = await NonUserApi.post('/api/email', data);
     return response.data;
 }
+
+export const deletePropose = async (id: number, password: string) => {
+    const response = await NonUserApi.delete('/api/propose', { headers: { 'ProposeId': id, 'Password': password } });
+    return response.data;
+}

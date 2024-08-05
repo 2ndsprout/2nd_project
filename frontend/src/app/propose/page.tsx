@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getApt, getUser, postApt, registerGroup } from "../API/UserAPI";
 import Admin from "../Global/layout/AdminLayout";
-import { getPropose, getProposeList, postPropose, sendEmail, updatePropose } from "../API/NonUserAPI";
+import { deletePropose, getPropose, getProposeList, postPropose, sendEmail, updatePropose } from "../API/NonUserAPI";
 import { checkInput, getDateTimeFormat } from "../Global/component/Method";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
@@ -53,7 +53,7 @@ export default function Page() {
     const [modifyDate, setModifyDate] = useState('');
     const [aptId, setAptId] = useState(0);
     const [apt, setApt] = useState(null as any);
-    const [status, setsatus] = useState(0);
+    const [status, setStatus] = useState(0);
     const [TotalElements, setTotalElements] = useState(null as any);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
@@ -257,13 +257,16 @@ export default function Page() {
             .then(list => {
                 showAlert('그룹 등록이 완료되었습니다.');
                 setUserList(list);
+                console.log(list);
+                const firstUsername = list.length > 0 ? list[0].username : 'N/A';
+                const lastUsername = list.length > 1 ? list[1].username : firstUsername;
                 getPropose(proposeId, '')
                     .then(r => {
                         setH(r.h);
                         setW(r.w);
                         setMin(r.min);
                         setMax(r.max);
-                        sendEmail({ 'to': r.email, 'aptName': r.aptName, 'roadAddress': r.roadAddress, 'totalUserCount': h * w * (max - min + 1), 'first': list[0].username, 'last': list[1].username})
+                        sendEmail({ 'to': r.email, 'aptName': r.aptName, 'roadAddress': r.roadAddress, 'totalUserCount': h * w * (max - min + 1), 'first': firstUsername, 'last': lastUsername })
                             .then(r => {
                                 console.log("이메일 전송 성공");
                             })
@@ -358,7 +361,7 @@ export default function Page() {
     }
 
     function handleUpdate() {
-        // proposeStatus를 숫자 코드로 변환합니다.
+        setUpdate(false);
         let proposeStatusCode: number;
         switch (proposeStatus) {
             case '대기중':
@@ -389,7 +392,7 @@ export default function Page() {
         })
             .then(r => {
                 closeConfirm();
-                showAlert('수정이 완료되었습니다.', '/propose');
+                showAlert('수정이 완료되었습니다.');
                 setUpdate(false);
 
             })
@@ -408,6 +411,7 @@ export default function Page() {
     }
 
     function updateStatus(id: number) {
+        handleModalClose(-2);
 
         let alert = '';
 
@@ -442,9 +446,23 @@ export default function Page() {
             });
     }
 
+    async function handleDelete() {
+        setUpdate(false);
+        try {
+            await deletePropose(proposeId, password);
+            closeConfirm();;
+            showAlert('서비스 요청 삭제가 완료되었습니다.', '/propose');
+
+        } catch (error) {
+            closeConfirm();;
+            console.error('삭제 처리 중 오류 발생:', error);
+            showAlert('서비스 요청 삭제중 오류가 발생했습니다.');
+        }
+    }
+
     function handleStatusChange(status: number) {
         setCurrentPage(1);
-        setsatus(status);
+        setStatus(status);
         getProposeList(status)
             .then(r => {
                 setTotalElements(r.totalElements);
@@ -498,7 +516,6 @@ export default function Page() {
                 <button onClick={() => handleStatusChange(1)} className={`btn bg-black border-gray-700 ${status == 1 ? 'text-secondary bg-gray-700' : ''}`}>승인 완료 목록</button>
                 <button onClick={() => handleStatusChange(2)} className={`btn bg-black border-gray-700 ${status == 2 ? 'text-secondary bg-gray-700' : ''}`}>반려중인 목록</button>
                 <button onClick={() => handlePostPropose()} className="w-[150px] btn btn-success">서비스 신청</button>
-                <button onClick={() => openModal(5)}>ㅎㅇ</button>
             </div>
             <div className="mt-[30px] ml-[50px] border-2 w-[1400px] h-[800px] rounded-lg bg-gray-700 border-gray-700 flex flex-col">
                 <div className="overflow-x-auto h-[750px]">
@@ -698,18 +715,18 @@ export default function Page() {
                         </button> : <button
                             className='btn btn-xl btn-info text-black'
                             disabled={first || !!updateErrors()}
-                            onClick={() => { finalConfirm(aptName, '내용 수정을 완료하시겠습니까?', '완료', handleUpdate); setUpdate(false); }}
+                            onClick={() => finalConfirm(aptName, '내용 수정을 완료하시겠습니까?', '완료', handleUpdate)}
                         >
                             수정 완료
                         </button>}
                         {!update ? <button
                             className='btn btn-xl btn-error text-black'
-                            onClick={() => setISModalOpen(-2)}
+                            onClick={() => finalConfirm(aptName, '서비스 요청을 삭제하시겠습니까?', '삭제', handleDelete)}
                         >
                             삭제
                         </button> : <button
                             className='btn btn-xl btn-error text-black'
-                            onClick={() => setUpdate(false)}
+                            onClick={() => { setUpdate(false); showAlert('수정 취소되었습니다.', '/propose'); }}
                         >
                             수정 취소
                         </button>}
