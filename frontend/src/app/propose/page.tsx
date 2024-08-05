@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { getApt, getUser, postApt } from "../API/UserAPI";
+import { getApt, getUser, postApt, registerGroup } from "../API/UserAPI";
 import Admin from "../Global/layout/AdminLayout";
-import { getPropose, getProposeList, postPropose, updatePropose } from "../API/NonUserAPI";
+import { deletePropose, getPropose, getProposeList, postPropose, sendEmail, updatePropose } from "../API/NonUserAPI";
 import { checkInput, getDateTimeFormat } from "../Global/component/Method";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
@@ -40,6 +40,7 @@ export default function Page() {
     const [wError, setWError] = useState('');
     const [hError, setHError] = useState('');
     const [daumAddr, setDaumAddr] = useState(null as any);
+    const [emailError, setEmailError] = useState('');
     const [title, setTitle] = useState('');
     const [min, setMin] = useState(0);
     const [max, setMax] = useState(0);
@@ -52,21 +53,38 @@ export default function Page() {
     const [modifyDate, setModifyDate] = useState('');
     const [aptId, setAptId] = useState(0);
     const [apt, setApt] = useState(null as any);
-    const [status, setsatus] = useState(0);
+    const [status, setStatus] = useState(0);
     const [TotalElements, setTotalElements] = useState(null as any);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
+    const [email, setEmail] = useState('');
+    const [titlePostError, setTitlePostError] = useState('제목을 입력해주세요.');
+    const [minPostError, setMinPostError] = useState('시작 동 번호를 입력해주세요.');
+    const [maxPostError, setMaxPostError] = useState('끝 동 번호를 입력해주세요.');
+    const [aptNamePostError, setAptNamePostError] = useState('아파트 이름을 입력해주세요.');
+    const [roadAddressPostError, setRoadAddressPostError] = useState('도로명 주소를 입력해주세요.');
+    const [passwordPostError, setPasswordPostError] = useState('비밀번호 최소 6자리를 입력해주세요.');
+    const [wPostError, setWPostError] = useState('층당 세대 수 를 입력해주세요.');
+    const [hPostError, setHPostError] = useState('층 수를 입력해주세요.');
+    const [emailPostError, setEmailPostError] = useState('이메일을 입력해주세요.');
+    const [userList, setUserList] = useState([] as any[]);
 
 
     const handleAddressChange = (address: IAddr) => {
         setRoadAddress(address.address);
         setDaumAddr(address);
+        setRoadAddressPostError('');
         setRoadAddressError('');
     };
 
-    const allErrors = () => {
-        const errors = [titleError, aptNameError, roadAddressError, minError, maxError, hError, wError, passwordError];
+    const updateErrors = () => {
+        const errors = [titleError, aptNameError, roadAddressError, minError, maxError, hError, wError, emailError, passwordError];
+        return errors.find(error => error !== '') || '';
+    };
+
+    const postErrors = () => {
+        const errors = [titlePostError, aptNamePostError, roadAddressPostError, minPostError, maxPostError, hPostError, wPostError, emailPostError, passwordPostError];
         return errors.find(error => error !== '') || '';
     };
 
@@ -90,8 +108,8 @@ export default function Page() {
                 checkInput(
                     value,
                     /^[0-9가-힣a-zA-Z\s.,!?@#$%^&*()_\-+=\[\]{}|;:'",<>?/]{2,25}$/,
-                    () => setTitleError(''),
-                    (e) => setTitleError(e),
+                    () => { setTitleError(''); setTitlePostError(''); },
+                    (e) => { setTitleError(e); setTitlePostError(e); },
                     '제목은 25자 이내로 작성해주세요.'
                 );
                 break;
@@ -99,8 +117,8 @@ export default function Page() {
                 checkInput(
                     value,
                     /^\d{1,4}$/,
-                    () => setMinError(''),
-                    (e) => setMinError(e),
+                    () => { setMinError(''); setMinPostError(''); },
+                    (e) => { setMinError(e); setMinPostError(e); },
                     '동 번호는 숫자만 입력 가능합니다.'
                 );
                 break;
@@ -108,8 +126,8 @@ export default function Page() {
                 checkInput(
                     value,
                     /^\d{1,4}$/,
-                    () => setMaxError(''),
-                    (e) => setMaxError(e),
+                    () => { setMaxError(''); setMaxPostError(''); },
+                    (e) => { setMaxError(e); setMaxPostError(e); },
                     '동 번호는 숫자만 입력 가능합니다.'
                 );
                 break;
@@ -117,8 +135,8 @@ export default function Page() {
                 checkInput(
                     value,
                     /^[0-9가-힣a-zA-Z\s.,!?@#$%^&*()_\-+=\[\]{}|;:'",<>?/]{2,25}$/,
-                    () => setAptNameError(''),
-                    (e) => setAptNameError(e),
+                    () => { setAptNameError(''); setAptNamePostError(''); },
+                    (e) => { setAptNameError(e); setAptNamePostError(e); },
                     '아파트 명은 50자 이내로 작성해주세요.'
                 );
                 break;
@@ -126,8 +144,8 @@ export default function Page() {
                 checkInput(
                     value,
                     /^[0-9가-힣a-zA-Z\s.,!?@#$%^&*()_\-+=\[\]{}|;:'",<>?/]{2,100}$/,
-                    () => setRoadAddressError(''),
-                    (e) => setRoadAddressError(e),
+                    () => { setRoadAddressError(''); setRoadAddressPostError(''); },
+                    (e) => { setRoadAddressError(e); setRoadAddressPostError(e); },
                     '도로명 주소는 100자 이내로 작성해주세요.'
                 );
                 break;
@@ -135,17 +153,26 @@ export default function Page() {
                 checkInput(
                     value,
                     /^[0-9a-zA-Z]{4,}$/,
-                    () => setPasswordError(''),
-                    (e) => setPasswordError(e),
+                    () => { setPasswordError(''); setPasswordPostError(''); },
+                    (e) => { setPasswordError(e); setPasswordPostError(e); },
                     '비밀번호는 최소 4자 이상이어야 합니다.'
+                );
+                break;
+            case 'email':
+                checkInput(
+                    value,
+                    /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    () => { setEmailError(''); setEmailPostError(''); },
+                    (e) => { setEmailError(e); setEmailPostError(e); },
+                    '이메일 형식이 맞지 않습니다.'
                 );
                 break;
             case 'w':
                 checkInput(
                     value,
                     /^\d{1,2}$/,
-                    () => setWError(''),
-                    (e) => setWError(e),
+                    () => { setWError(''); setWPostError(''); },
+                    (e) => { setWError(e); setWPostError(e); },
                     '세대수는 숫자만 입력 가능합니다.'
                 );
                 break;
@@ -153,8 +180,8 @@ export default function Page() {
                 checkInput(
                     value,
                     /^\d{1,2}$/,
-                    () => setHError(''),
-                    (e) => setHError(e),
+                    () => { setHError(''); setHPostError(''); },
+                    (e) => { setHError(e); setHPostError(e); },
                     '층 수는 숫자만 입력 가능합니다.'
                 );
                 break;
@@ -209,22 +236,66 @@ export default function Page() {
         if (canShow) {
             setCanShow(false);
         }
+        setDaumAddr(null);
         setISModalOpen(type);
         setUpdate(false);
+        setAptNameError('');
+        setEmailError('');
+        setMaxError('');
+        setMinError('');
+        setPasswordError('');
+        setRoadAddressError('');
+        setWError('');
+        setHError('');
+        setTitleError('');
+        setFirst(true);
     };
 
+    function handleGroupRegister() {
+        openModal(-5);
+        registerGroup({ 'min': min, 'max': max, 'h': h, 'w': w, 'aptId': aptId })
+            .then(list => {
+                showAlert('그룹 등록이 완료되었습니다.');
+                setUserList(list);
+                console.log(list);
+                const firstUsername = list.length > 0 ? list[0].username : 'N/A';
+                const lastUsername = list.length > 1 ? list[1].username : firstUsername;
+                getPropose(proposeId, '')
+                    .then(r => {
+                        setH(r.h);
+                        setW(r.w);
+                        setMin(r.min);
+                        setMax(r.max);
+                        sendEmail({ 'to': r.email, 'aptName': r.aptName, 'roadAddress': r.roadAddress, 'totalUserCount': h * w * (max - min + 1), 'first': firstUsername, 'last': lastUsername })
+                            .then(r => {
+                                console.log("이메일 전송 성공");
+                            })
+                            .catch(e => {
+                                console.log(e);
+                            });
+                    })
+                    .catch(e => {
+                        console.log(e);
+                    });
+            })
+            .catch(e => {
+                showAlert('그룹 등록 중 오류가 발생했습니다.');
+                console.log(e);
+            });
+    }
+
     function handlePostApt() {
-        updateStatus(1);
         openModal(-3);
         postApt({ id: 0, aptName: aptName, roadAddress: roadAddress })
             .then(r => {
                 setApt(r);
                 setAptName(r.aptName);
                 setRoadAddress(r.roadAddress);
-                setAptId(r.id);
+                setAptId(r.aptId);
+                setEmail(r.email);
                 closeConfirm();
-                // showAlert('아파트가 생성되었습니다.', '/account/admin/apt');
-                setISModalOpen(4);
+                showAlert('아파트가 생성되었습니다.');
+                openModal(5);
             })
             .catch(e => {
                 console.log(e);
@@ -247,6 +318,7 @@ export default function Page() {
                 setH(r.h);
                 setMin(r.min);
                 setMax(r.max);
+                setEmail(r.email);
                 setProposeStatus(r.proposeStatus);
                 setCreateDate(r.createDate);
                 setModifyDate(r.modifyDate);
@@ -267,7 +339,6 @@ export default function Page() {
         setUpdate(false);
         getPropose(id, '')
             .then(r => {
-                console.log(r);
                 setProposeId(id);
                 setPropose(r);
                 setTitle(r.title);
@@ -280,6 +351,7 @@ export default function Page() {
                 setProposeStatus(r.proposeStatus);
                 setCreateDate(r.createDate);
                 setModifyDate(r.modifyDate);
+                setEmail(r.email);
                 openModal(2);
             })
             .catch(e => {
@@ -289,7 +361,7 @@ export default function Page() {
     }
 
     function handleUpdate() {
-        // proposeStatus를 숫자 코드로 변환합니다.
+        setUpdate(false);
         let proposeStatusCode: number;
         switch (proposeStatus) {
             case '대기중':
@@ -315,13 +387,12 @@ export default function Page() {
             max: max,
             h: h,
             w: w,
-            password: password,
+            email: email,
             proposeStatus: proposeStatusCode // 숫자 코드로 변환된 상태
         })
             .then(r => {
-                console.log(r);
                 closeConfirm();
-                showAlert('수정이 완료되었습니다.', '/propose');
+                showAlert('수정이 완료되었습니다.');
                 setUpdate(false);
 
             })
@@ -333,12 +404,14 @@ export default function Page() {
     }
 
     function openPostApt() {
+        updateStatus(1);
         closeConfirm();
         setUpdate(false);
-        setISModalOpen(3)
+        openModal(3);
     }
 
     function updateStatus(id: number) {
+        handleModalClose(-2);
 
         let alert = '';
 
@@ -358,13 +431,12 @@ export default function Page() {
             max: max,
             h: h,
             w: w,
-            password: password,
+            email: email,
             proposeStatus: id, // 숫자 코드로 변환된 상태
         })
             .then(r => {
-                console.log(r);
                 closeConfirm();
-                showAlert(alert + ' 완료되었습니다.', '/propose');
+                showAlert(alert + ' 완료되었습니다.');
                 setUpdate(false);
             })
             .catch(e => {
@@ -374,9 +446,23 @@ export default function Page() {
             });
     }
 
+    async function handleDelete() {
+        setUpdate(false);
+        try {
+            await deletePropose(proposeId, password);
+            closeConfirm();;
+            showAlert('서비스 요청 삭제가 완료되었습니다.', '/propose');
+
+        } catch (error) {
+            closeConfirm();;
+            console.error('삭제 처리 중 오류 발생:', error);
+            showAlert('서비스 요청 삭제중 오류가 발생했습니다.');
+        }
+    }
+
     function handleStatusChange(status: number) {
         setCurrentPage(1);
-        setsatus(status);
+        setStatus(status);
         getProposeList(status)
             .then(r => {
                 setTotalElements(r.totalElements);
@@ -384,7 +470,6 @@ export default function Page() {
             })
             .catch(e => console.log(e));
     }
-
     function submit() {
         handleModalClose(-4);
         postPropose({
@@ -396,15 +481,19 @@ export default function Page() {
             h: h,
             w: w,
             password: password,
+            email: email,
             proposeStatus: 0
         })
-            .then(() => window.location.href = '/propose')
+            .then(r => {
+                showAlert('신청 등록이 완료되었습니다.', '/propose');
+            })
             .catch(e => {
-                console.log(e),
-                    closeConfirm(),
-                    showAlert('이미 등록된 아파트 단지 입니다.')
+                console.log(e);
+                closeConfirm();
+                showAlert('이미 등록된 아파트 단지입니다.');
             });
     }
+
 
     function handlePostPropose() {
         setISModalOpen(4);
@@ -473,7 +562,7 @@ export default function Page() {
                 <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-1)}> ✕ </button>
                 <div className="flex flex-col items-center gap-3">
                     <input type={canShow ? 'text' : 'password'} className='w-[300px] mt-3 input input-bordered input-md text-black'
-                        onChange={e => { setPassword(e.target.value); console.log(e.target.value) }} placeholder='비밀번호'
+                        onChange={e => setPassword(e.target.value)} placeholder='비밀번호'
                     />
                     <div className="flex mt-2">
                         <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
@@ -625,19 +714,19 @@ export default function Page() {
                             수정
                         </button> : <button
                             className='btn btn-xl btn-info text-black'
-                            disabled={first || !!allErrors()}
-                            onClick={() => { finalConfirm(aptName, '내용 수정을 완료하시겠습니까?', '완료', handleUpdate); setUpdate(false); }}
+                            disabled={first || !!updateErrors()}
+                            onClick={() => finalConfirm(aptName, '내용 수정을 완료하시겠습니까?', '완료', handleUpdate)}
                         >
                             수정 완료
                         </button>}
                         {!update ? <button
                             className='btn btn-xl btn-error text-black'
-                            onClick={() => setISModalOpen(-2)}
+                            onClick={() => finalConfirm(aptName, '서비스 요청을 삭제하시겠습니까?', '삭제', handleDelete)}
                         >
                             삭제
                         </button> : <button
                             className='btn btn-xl btn-error text-black'
-                            onClick={() => setUpdate(false)}
+                            onClick={() => { setUpdate(false); showAlert('수정 취소되었습니다.', '/propose'); }}
                         >
                             수정 취소
                         </button>}
@@ -659,17 +748,17 @@ export default function Page() {
                     </div>
                 </div>
             </Modal>
-            <Modal open={isModalOpen === 3} onClose={() => handleModalClose(-3)} className='rounded-3xl w-[400px] h-[200px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
+            <Modal open={isModalOpen === 3} onClose={() => handleModalClose(-3)} className='rounded-3xl w-[500px] h-[250px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
                 <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-3)}> ✕ </button>
                 <div className="text-black flex flex-col items-center gap-3">
-                    <div>
-                        아파트 생성
+                    <div className="text-secondary text-2xl font-bold mb-6">
+                        아파트 <span className="text-black"> 생성</span>
                     </div>
-                    <div>
-                        {aptName}
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">아파트 이름 : </span>{aptName}
                     </div>
-                    <div>
-                        {roadAddress}
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">도로명 주소 : </span>{roadAddress}
                     </div>
                     <button className='btn btn-xl btn-accent mt-3 text-black' onClick={handlePostApt}>확인</button>
                 </div>
@@ -677,7 +766,7 @@ export default function Page() {
             <Modal
                 open={isModalOpen === 4}
                 onClose={() => handleModalClose(-4)}
-                className='rounded-3xl w-[700px] h-[600px] flex flex-col justify-center items-center'
+                className='rounded-3xl w-[750px] h-[700px] flex flex-col justify-center items-center'
                 escClose={true}
                 outlineClose={true}
             >
@@ -688,6 +777,7 @@ export default function Page() {
                     ✕
                 </button>
                 <div className="flex flex-col w-full gap- mt-8">
+                    <label className="text-red-500 ml-60 mb-8 font-bold">{postErrors()}</label>
                     <div className="text-black flex w-full">
                         <div className="flex w-full ml-16">
                             <div className="flex">
@@ -698,6 +788,7 @@ export default function Page() {
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>아파트 동 번호</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>총 층수</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>층당 세대 수</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>이메일</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>비밀번호</label>
                                 </div>
                                 <div className="flex flex-col w-[10px] h-full gap-2">
@@ -708,24 +799,25 @@ export default function Page() {
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
                                     <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
+                                    <label className='text-xl font-bold text-secondary h-[55px] content-center'>:</label>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col w-[400px] h-full gap-2">
+                            <div className="flex flex-col w-[450px] h-full gap-2">
                                 <input
                                     type="text"
                                     className='ml-3 font-bold bg-white h-[55px] text-xl w-full content-center border-2 border-gray-500 rounded-xl'
                                     onChange={e => { if (first) setFirst(false); setTitle(e.target.value); validateInput('title', (e.target as HTMLInputElement).value); }}
-                                    onFocus={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if (e.target.value === '') setTitleError('제목을 입력해주세요.') }}
-                                    onKeyUp={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setTitleError('제목을 입력해주세요.') }}
+                                    onFocus={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if (e.target.value === '') setTitlePostError('제목을 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setTitlePostError('제목을 입력해주세요.') }}
                                 />
 
                                 <input
                                     type="text"
                                     className='ml-3 font-bold bg-white h-[55px] text-xl w-full content-center border-2 border-gray-500 rounded-xl'
                                     onChange={e => { if (first) setFirst(false); setAptName(e.target.value); validateInput('aptName', (e.target as HTMLInputElement).value); }}
-                                    onFocus={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if (e.target.value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
-                                    onKeyUp={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
+                                    onFocus={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if (e.target.value === '') setAptNamePostError('아파트 이름을 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setAptNamePostError('아파트 이름을 입력해주세요.') }}
                                 />
                                 <div className="flex items-center">
                                     <div className="w-[600px] h-[55px]">
@@ -741,40 +833,50 @@ export default function Page() {
                                 <div className="flex items-center mt-2 gap-2">
                                     <input
                                         type="text"
-                                        className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                        className='ml-3 font-bold bg-white h-[55px] text-xl w-1/3 content-center border-2 border-gray-500 rounded-xl'
                                         onChange={e => { if (first) setFirst(false); setMin(Number(e.target.value)); validateInput('min', (e.target as HTMLInputElement).value); }}
-                                        onFocus={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if (e.target.value === '') setMinError('시작 동 번호를 입력해주세요.') }}
-                                        onKeyUp={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMinError('시작 동 번호를 입력해주세요.') }}
+                                        onFocus={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if (e.target.value === '') setMinPostError('시작 동 번호를 입력해주세요.') }}
+                                        onKeyUp={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMinPostError('시작 동 번호를 입력해주세요.') }}
                                     />
                                     <span className="mx-3 text-3xl font-bold">~</span>
                                     <input
                                         type="text"
-                                        className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
+                                        className='ml-3 font-bold bg-white h-[55px] text-xl w-1/3 content-center border-2 border-gray-500 rounded-xl'
                                         onChange={e => { if (first) setFirst(false); setMax(Number(e.target.value)); validateInput('max', (e.target as HTMLInputElement).value); }}
-                                        onFocus={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if (e.target.value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
-                                        onKeyUp={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
+                                        onFocus={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if (e.target.value === '') setMaxPostError('끝 동 번호를 입력해주세요.') }}
+                                        onKeyUp={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMaxPostError('끝 동 번호를 입력해주세요.') }}
                                     />
+                                    <span className="text-xs text-red-500 tracking-tighter leading-tight">
+                                        가~하 동, A~Z 동 도 <br />숫자로 입력 부탁드립니다. <br /><span className="font-bold">  ex) 가, A = 1</span>
+                                    </span>
                                 </div>
                                 <input
                                     type="text"
                                     className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
                                     onChange={e => { if (first) setFirst(false); setH(Number(e.target.value)); validateInput('h', (e.target as HTMLInputElement).value); }}
-                                    onFocus={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if (e.target.value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
-                                    onKeyUp={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
+                                    onFocus={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if (e.target.value === '') setHPostError('아파트의 총 층 수를 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setHPostError('아파트의 총 층 수를 입력해주세요.') }}
                                 />
                                 <input
                                     type="text"
                                     className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
                                     onChange={e => { if (first) setFirst(false); setW(Number(e.target.value)); validateInput('w', (e.target as HTMLInputElement).value); }}
-                                    onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWError('층당 세대수를 입력해주세요.') }}
-                                    onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWError('층당 세대수를 입력해주세요.') }}
+                                    onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWPostError('층당 세대수를 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWPostError('층당 세대수를 입력해주세요.') }}
+                                />
+                                <input
+                                    type='text'
+                                    className='ml-3 font-bold bg-white h-[55px] text-xl w-full content-center border-2 border-gray-500 rounded-xl'
+                                    onChange={e => { if (first) setFirst(false); setEmail(e.target.value); validateInput('email', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('email', (e.target as HTMLInputElement).value); if (e.target.value === '') setEmailPostError('이메일을 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('email', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setEmailPostError('이메일을 입력해주세요.') }}
                                 />
                                 <input
                                     type={canShow ? 'text' : 'password'}
                                     className='ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center border-2 border-gray-500 rounded-xl'
-                                    onChange={e => { if (first) setFirst(false); setPassword(e.target.value); validateInput('w', (e.target as HTMLInputElement).value); }}
-                                    onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWError('층당 세대수를 입력해주세요.') }}
-                                    onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWError('층당 세대수를 입력해주세요.') }}
+                                    onChange={e => { if (first) setFirst(false); setPassword(e.target.value); validateInput('password', (e.target as HTMLInputElement).value); }}
+                                    onFocus={(e) => { validateInput('password', (e.target as HTMLInputElement).value); if (e.target.value === '') setPasswordPostError('비밀번호를 입력해주세요.') }}
+                                    onKeyUp={(e) => { validateInput('password', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setPasswordPostError('비밀번호를 입력해주세요.') }}
                                 />
                                 <div className="flex mt-2">
                                     <label className='ml-1 text-sm text-black'>비밀번호 보이기</label>
@@ -786,11 +888,39 @@ export default function Page() {
                     <div className="flex gap-3 ml-auto mr-5 mb-3">
                         <button
                             className='btn btn-xl btn-info text-black'
-                            onClick={() => submit()}
+                            disabled={first || !!postErrors()}
+                            onClick={() => finalConfirm(aptName, '서비스 신청을 완료하시겠습니까?', '신청완료', submit)}
                         >
                             서비스 신청
                         </button>
                     </div>
+                </div>
+            </Modal>
+            <Modal open={isModalOpen === 5} onClose={() => handleModalClose(-5)} className='rounded-3xl w-[700px] h-[500px] flex flex-col justify-center' escClose={true} outlineClose={true} >
+                <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => handleModalClose(-3)}> ✕ </button>
+                <div className="text-black flex flex-col items-start gap-3 ml-16">
+                    <div className="text-secondary text-2xl font-bold mb-6">
+                        입주민 계정 <span className="text-black"> 생성</span>
+                    </div>
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">아파트 이름 : </span><span className="text-3xl">{aptName}</span>
+                    </div>
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">도로명 주소 : </span><span className="text-xl">{roadAddress}</span>
+                    </div>
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">동 개수 : </span><span className="text-3xl">{max - min + 1}</span> 개
+                    </div>
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">층 수 : </span><span className="text-3xl">{h}</span> 층
+                    </div>
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">층당 세대 수 : </span><span className="text-3xl">{w}</span> 세대
+                    </div>
+                    <div className="text-black font-bold text-lg">
+                        <span className="text-secondary">입주민 계정 수 : </span><span className="text-3xl">{h * w * (max - min + 1)} </span>개
+                    </div>
+                    <button className='btn btn-xl btn-accent mt-3 text-black ml-[530px]' onClick={handleGroupRegister}>확인</button>
                 </div>
             </Modal>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
