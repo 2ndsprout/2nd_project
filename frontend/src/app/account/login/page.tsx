@@ -38,7 +38,8 @@ export default function Page() {
     return (
         <div className='bg-black min-h-screen w-full flex items-center justify-center'>
             <div className='flex flex-col items-center justify-center relative'>
-                <a href='/'><img src='/user.png' className='w-40 h-40 mb-5' alt='로고' /></a>
+                <a href='/'><img src='/logo.png' className='w-40 h-40' alt='로고' /></a>
+                <label className='text-3xl mb-8 font-bold'><span className='text-secondary'>Honey</span> Danji</label>
                 <label className='text-xs text-red-500 text-center w-[396px]'>{error}</label>
                 <div className='flex items-start'>
                     <div className='flex flex-col items-center'>

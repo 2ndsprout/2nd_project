@@ -2,6 +2,7 @@ package com.second_team.apt_project.controllers;
 
 import com.second_team.apt_project.dtos.ProfileResponseDTO;
 import com.second_team.apt_project.dtos.ProfileSaveRequestDTO;
+import com.second_team.apt_project.exceptions.DataDuplicateException;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.services.MultiService;
@@ -28,7 +29,7 @@ public class ProfileController {
                 ProfileResponseDTO profileResponseDTO = multiService.saveProfile(requestDTO.getName(), requestDTO.getUrl(), username);
                 return ResponseEntity.status(HttpStatus.OK).body(profileResponseDTO);
             }
-        } catch (DataNotFoundException ex) {
+        } catch (DataNotFoundException | DataDuplicateException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
         return tokenRecord.getResponseEntity();

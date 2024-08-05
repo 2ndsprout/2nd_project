@@ -255,9 +255,8 @@ export default function Page() {
         openModal(-5);
         registerGroup({ 'min': min, 'max': max, 'h': h, 'w': w, 'aptId': aptId })
             .then(list => {
-                showAlert('그룹 등록이 완료되었습니다.');
+                showAlert('그룹 등록이 완료되었습니다.', '/propose');
                 setUserList(list);
-                console.log(list);
                 const firstUsername = list.length > 0 ? list[0].username : 'N/A';
                 const lastUsername = list.length > 1 ? list[1].username : firstUsername;
                 getPropose(proposeId, '')
