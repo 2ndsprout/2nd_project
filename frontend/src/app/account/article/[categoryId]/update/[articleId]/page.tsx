@@ -9,7 +9,7 @@ import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import TagInput from '../../../tag/page';
+import TagInput from '../../../tag/TagInput';
 import DOMPurify from 'dompurify';
 
 

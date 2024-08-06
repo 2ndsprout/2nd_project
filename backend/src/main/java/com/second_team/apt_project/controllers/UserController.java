@@ -138,7 +138,9 @@ public class UserController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String accessToken, @RequestHeader("PROFILE_ID") Long profileId, @RequestHeader("DeleteUsername") String deleteUsername) {
+    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String accessToken,
+                                        @RequestHeader("PROFILE_ID") Long profileId,
+                                        @RequestHeader("DeleteUsername") String deleteUsername) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken);
         try {
             if (tokenRecord.isOK()) {

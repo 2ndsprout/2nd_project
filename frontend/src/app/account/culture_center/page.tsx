@@ -1,13 +1,13 @@
 'use client';
 
 import { getCenterList, getProfile, getUser } from "@/app/API/UserAPI";
-import CenterSlider from "@/app/Global/CenterSlider";
 import Main from "@/app/Global/layout/MainLayout";
 
 import { getTimeFormat } from "@/app/Global/component/Method";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import CenterSlider from "@/app/Global/component/CenterSlider";
 
 
 export default function Page() {

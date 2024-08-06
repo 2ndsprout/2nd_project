@@ -7,7 +7,21 @@ interface Props {
 }
 
 const Pagination: React.FC<Props> = ({ currentPage, totalPages, onPageChange }) => {
-  const viewPageList = Array.from({ length: totalPages }, (_, index) => index + 1);
+  let viewPageList: number[];
+  
+  if (totalPages <= 5) {
+    // 전체 페이지가 5 이하인 경우 모든 페이지 표시
+    viewPageList = Array.from({ length: totalPages }, (_, index) => index + 1);
+  } else if (currentPage <= 3) {
+    // 현재 페이지가 3 이하인 경우 처음 5페이지 표시
+    viewPageList = [1, 2, 3, 4, 5];
+  } else if (currentPage >= totalPages - 2) {
+    // 현재 페이지가 마지막에서 2번째 페이지 이후인 경우 마지막 5페이지 표시
+    viewPageList = Array.from({ length: 5 }, (_, index) => totalPages - 4 + index);
+  } else {
+    // 현재 페이지를 중심으로 ±2 페이지 범위 표시
+    viewPageList = Array.from({ length: 5 }, (_, index) => currentPage - 2 + index);
+  }
 
   const onPageClickHandler = (page: number) => {
     onPageChange(page);

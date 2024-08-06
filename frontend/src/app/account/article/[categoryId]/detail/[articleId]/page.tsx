@@ -8,7 +8,7 @@ import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
-import CommentList from '../../../comment/page';
+import CommentList from '../../../comment/CommentList';
 import Slider from '@/app/Global/component/ArticleSlider';
 
 interface Tag {
