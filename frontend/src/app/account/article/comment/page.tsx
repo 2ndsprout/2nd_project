@@ -10,6 +10,10 @@ import useConfirm from '@/app/Global/hook/useConfirm';
 import useAlert from '@/app/Global/hook/useAlert';
 import ConfirmModal from '@/app/Global/component/ConfirmModal';
 
+interface CommentListProps {
+    articleId: number;
+  }
+
 interface CommentResponseDTO {
     id: number;
     articleId: number;
@@ -37,7 +41,7 @@ interface PaginatedResponse {
     empty: boolean;
 }
 
-const CommentList = ({ articleId }: { articleId: number }) => {
+const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
     const [comments, setComments] = useState<CommentResponseDTO[]>([]);
     const [newComment, setNewComment] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null);

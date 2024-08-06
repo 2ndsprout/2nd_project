@@ -8,7 +8,6 @@ import Modal from '@/app/Global/component/Modal';
 import Pagination from '@/app/Global/component/Pagination';
 import useConfirm from '@/app/Global/hook/useConfirm';
 import Main from '@/app/Global/layout/MainLayout';
-import Admin from "@/app/Global/layout/MainLayout";
 import { all } from 'axios';
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -334,7 +333,7 @@ export default function Page() {
                                 <div key={user.username} className='flex items-center justify-between border-b-2 h-[50px]'>
                                     <div className='flex items-center w-full h-full'>
                                         <div className='ml-4 w-full h-full' >
-                                            <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{user.username}</div>
+                                            <div className='text-sm overflow-hidden overflow-ellipsis mt-[15px] whitespace-nowrap w-[300px]'>{user.username}</div>
                                         </div>
                                     </div>
                                     <div className="w-[300px] justify-end flex">

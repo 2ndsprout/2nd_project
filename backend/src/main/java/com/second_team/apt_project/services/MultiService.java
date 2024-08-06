@@ -140,7 +140,6 @@ public class MultiService {
 
     @Transactional
     public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username, Long profileId) {
-
             SiteUser user = userService.get(username);
             Profile profile = profileService.findById(profileId);
             this.userCheck(user, profile);
