@@ -105,6 +105,7 @@ export default function Page() {
                     .then((r) => {
                         setUserList(r.content);
                         setTotalPages(r.totalPages);
+                        setCurrentPage(1);
                     })
                     .catch(e => console.log(e));
             }
@@ -125,8 +126,8 @@ export default function Page() {
     function deleteUserButton(targetUsername: string) {
         deleteUser(targetUsername)
             .then(() => {
-                if (selectedApt) {
-                    getUserList(selectedApt.aptId, currentPage - 1)
+                if (apt) {
+                    getUserList(apt.aptId, currentPage - 1)
                         .then((r) => {
                             setUserList(r.content);
                             setTotalPages(r.totalPages);
@@ -134,6 +135,7 @@ export default function Page() {
                         })
                         .catch(e => console.log(e));
                 }
+                closeConfirm();
             })
             .catch(e => console.log(e));
     }
@@ -337,16 +339,18 @@ export default function Page() {
                                         </div>
                                     </div>
                                     <div className="w-[300px] justify-end flex">
-                                        <button className='text-sm mr-[30px] font-bold text-red-400 hover:text-red-600' onClick={() => deleteUserButton(user.username)}>유저 삭제</button>
+                                    <button onClick={() => finalConfirm(user?.username, '해당 유저를 삭제하시겠습니까?', '삭제', () => deleteUserButton(user?.username))} className='text-sm mr-[30px] font-bold text-red-400 hover:text-red-600'>유저 삭제</button>
                                     </div>
                                 </div>
                             ))}
                             <div className="flex justify-center mt-6">
-                                <Pagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    onPageChange={handlePageChange}
-                                />
+                                {userList && userList.length > 0 ? (
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={handlePageChange}
+                                    />
+                                ) : null}
                             </div>
                         </div>
                     </div>
