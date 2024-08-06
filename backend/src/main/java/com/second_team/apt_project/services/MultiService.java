@@ -139,7 +139,7 @@ public class MultiService {
 
     @Transactional
     public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username, Long profileId) {
-        try {
+
             SiteUser user = userService.get(username);
             Profile profile = profileService.findById(profileId);
             this.userCheck(user, profile);
@@ -151,10 +151,7 @@ public class MultiService {
             if (email != null) userService.userEmailCheck(email);
             SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
             return this.getUserResponseDTO(siteUser);
-        }catch (RuntimeException ex) {
-            ex.printStackTrace();
-        }
-        return null;
+
     }
 
     @Transactional

@@ -37,7 +37,7 @@ export default function Page() {
     const [password, setPassword] = useState('' as string);
     const [aptNum, setAptNum] = useState('' as any);
     const [role, setRole] = useState('' as any);
-    const {confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const { confirmState, finalConfirm, closeConfirm } = useConfirm();
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -114,7 +114,7 @@ export default function Page() {
             getUserList(apt.aptId, newPage)
                 .then((r) => {
                     setUserList(r.content);
-                    setTotalPages(r.totalPages); // 응답에서 totalPages 설정
+                    setTotalPages(Math.max(1, r.totalPages)); // 응답에서 totalPages 설정
                 })
                 .catch(e => console.log(e));
         }
@@ -193,7 +193,8 @@ export default function Page() {
     };
 
     function submit() {
-        console.log(aptNum);
+        closeModal();
+        closeConfirm();
         register({
             name: username,
             password: password,
@@ -201,9 +202,17 @@ export default function Page() {
             aptId: apt.aptId,
             role: role
         })
-            // .then(() => window.location.href = '/propose')
-            .catch(e => console.log(e));
-    }
+        .then((r) => {
+            getUserList(apt.aptId)
+                .then(r => {
+                    console.log(r.content); // 상태 업데이트 확인
+                    setUserList(r.content);
+                })
+                .catch(e => console.log(e));
+        })
+        .catch(e => console.log(e));
+    };
+
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setRole(Number(event.target.value) || ''); // 변환된 숫자값 설정
