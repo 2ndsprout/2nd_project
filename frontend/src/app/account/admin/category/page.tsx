@@ -55,10 +55,10 @@ const CreateCategory: React.FC = () => {
           })
           .catch(e => console.log(e));
       else
-        redirect('/account/profile');
+      redirect('/account/profile');
     }
     else
-      redirect('/account/login');
+    redirect('/account/login');
   }, [ACCESS_TOKEN, PROFILE_ID]);
 
   useEffect(() => {

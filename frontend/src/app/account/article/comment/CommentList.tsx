@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
 import { UpdateCommentProps, CommentProps } from '@/app/API/UserAPI';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import LoveButton from '../love/LoveButton';
 import Image from 'next/image';
 import useConfirm from '@/app/Global/hook/useConfirm';
@@ -12,7 +12,7 @@ import ConfirmModal from '@/app/Global/component/ConfirmModal';
 
 interface CommentListProps {
     articleId: number;
-  }
+}
 
 interface CommentResponseDTO {
     id: number;
@@ -62,6 +62,7 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
     const [totalLoves, setTotalLoves] = useState(0);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { showAlert } = useAlert();
+    const router = useRouter();
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
@@ -75,10 +76,10 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
             if (PROFILE_ID)
                 getProfile().then(r => setProfile(r)).catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            redirect('/account/profile');
         }
         else
-            redirect('/account/login');
+        redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {

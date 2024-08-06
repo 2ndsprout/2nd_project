@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { getProfile, getUser, getArticleList, getCategoryList, getCenterList } from "@/app/API/UserAPI";
 import Pagination from "@/app/Global/component/Pagination";
 import Main from "@/app/Global/layout/MainLayout";
@@ -46,6 +46,7 @@ export default function Page() {
     const [categoryId, setCategoryId] = useState<any>(null);
     const [centerList, setCenterList] = useState([] as any[]);
     const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
+    const router = useRouter();
 
 
     useEffect(() => {

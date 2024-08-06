@@ -8,7 +8,7 @@ import Modal from '@/app/Global/component/Modal';
 import Pagination from '@/app/Global/component/Pagination';
 import useConfirm from '@/app/Global/hook/useConfirm';
 import Main from '@/app/Global/layout/MainLayout';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 
@@ -39,6 +39,7 @@ export default function Page() {
     const [aptNum, setAptNum] = useState('' as any);
     let [role, setRole] = useState('' as any);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const router = useRouter();
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -68,10 +69,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            redirect('/account/profile');
         }
         else
-            redirect('/account/login');
+        redirect('/account/login');
         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
     }, [ACCESS_TOKEN, PROFILE_ID, userList]);
 

@@ -63,10 +63,10 @@ export default function EditPage() {
         })
             .catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            redirect('/account/profile');
         }
         else
-            redirect('/account/login');
+        redirect('/account/login');
 
         if (articleId) {
             getArticle(Number(articleId))
