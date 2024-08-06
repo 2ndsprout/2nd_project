@@ -54,7 +54,7 @@ interface RegisterProps {
     h?: number,
     w?: number,
     name?: string,
-    aptNumber?: number,
+    aptNum?: number,
     password?: string,
     email?: string,
     role?: number
@@ -78,6 +78,7 @@ export const getUserDetail = async (data: string) => {
     const response = await UserApi.get('/api/user/detail', { headers: { 'Username': data } });
     return response.data;
 }
+
 export const getUserList = async (data: number, page?: number) => {
     const response = await UserApi.get('/api/user/list', { headers: { 'AptId': data, 'Page': page } });
     return response.data;

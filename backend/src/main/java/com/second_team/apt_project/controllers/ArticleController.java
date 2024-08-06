@@ -79,8 +79,8 @@ public class ArticleController {
     @GetMapping("/list")
     public ResponseEntity<?> articleList(@RequestHeader("Authorization") String accessToken,
                                          @RequestHeader("PROFILE_ID") Long profileId,
-                                         @RequestHeader(value = "Page", defaultValue = "0") int page,
                                          @RequestHeader("CategoryId") Long categoryId,
+                                         @RequestHeader(value = "Page", defaultValue = "0") int page,
                                          @RequestHeader(value = "AptId", defaultValue = "0") Long aptId) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {

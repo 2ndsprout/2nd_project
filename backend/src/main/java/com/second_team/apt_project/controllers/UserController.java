@@ -112,6 +112,7 @@ public class UserController {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
                 Page<UserResponseDTO> userResponseDTOList = multiService.getUserList(page, aptId, username, profileId);
+                System.out.println("123 : " + userResponseDTOList.getContent());
                 return ResponseEntity.status(HttpStatus.OK).body(userResponseDTOList);
             }
         } catch (IllegalArgumentException | DataNotFoundException ex) {

@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +30,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     public Page<SiteUser> findByUserList(Pageable pageable, Long aptId) {
         JPAQuery<SiteUser> query = jpaQueryFactory.selectFrom(qSiteUser)
                 .where(qSiteUser.apt.id.eq(aptId))
-                .orderBy(qSiteUser.role.asc());
+                .orderBy(qSiteUser.role.asc())
+                .orderBy(qSiteUser.username.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize());
 
         QueryResults<SiteUser> results = query.fetchResults();
         List<SiteUser> sortedResults = results.getResults().stream()

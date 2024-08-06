@@ -140,17 +140,19 @@ public class MultiService {
 
     @Transactional
     public UserResponseDTO saveUser(String name, String password, String email, int aptNumber, int role, Long aptId, String username, Long profileId) {
-        SiteUser user = userService.get(username);
-        Profile profile = profileService.findById(profileId);
-        this.userCheck(user, profile);
-        Apt apt = aptService.get(aptId);
-        if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
-        if (user.getRole() != UserRole.ADMIN)
-            if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
-                throw new IllegalArgumentException("권한 불일치");
-        if (email != null) userService.userEmailCheck(email);
-        SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
-        return this.getUserResponseDTO(siteUser);
+
+            SiteUser user = userService.get(username);
+            Profile profile = profileService.findById(profileId);
+            this.userCheck(user, profile);
+            Apt apt = aptService.get(aptId);
+            if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
+            if (user.getRole() != UserRole.ADMIN)
+                if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
+                    throw new IllegalArgumentException("권한 불일치");
+            if (email != null) userService.userEmailCheck(email);
+            SiteUser siteUser = userService.save(name, password, email, aptNumber, role, apt);
+            return this.getUserResponseDTO(siteUser);
+
     }
 
     @Transactional
@@ -201,8 +203,8 @@ public class MultiService {
         this.userCheck(user, profile);
         Apt apt = aptService.get(aptId);
         if (apt == null) throw new DataNotFoundException("아파트 객체 없음");
-        Pageable pageable = PageRequest.of(page, 20);
-        Page<SiteUser> userList = userService.getUserList(pageable, apt.getId());
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<SiteUser> userList = userService.getUserList(pageable, aptId);
         List<UserResponseDTO> responseDTOList = new ArrayList<>();
         if (user.getRole() != UserRole.ADMIN)
             if (!user.getApt().equals(apt) && user.getRole() == UserRole.SECURITY)
