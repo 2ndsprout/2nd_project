@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
-import { UpdateCommentProps, CommentProps, GetCommentListProps } from '@/app/API/UserAPI';
+import { UpdateCommentProps, CommentProps } from '@/app/API/UserAPI';
 import { redirect } from "next/navigation";
-import LoveButton from '../love/page';
+import LoveButton from '../love/LoveButton';
 import Image from 'next/image';
 
 interface CommentListProps {
@@ -39,6 +39,7 @@ interface PaginatedResponse {
 }
 
 const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
+
     const [comments, setComments] = useState<CommentResponseDTO[]>([]);
     const [newComment, setNewComment] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
