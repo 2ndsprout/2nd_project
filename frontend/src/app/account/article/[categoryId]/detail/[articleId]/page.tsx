@@ -95,10 +95,10 @@ export default function ArticleDetail() {
                     })
                     .catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            router.push('/account/profile');
         }
         else
-            redirect('/account/login');
+        router.push('/account/login');
 
     }, [ACCESS_TOKEN, PROFILE_ID]);
 

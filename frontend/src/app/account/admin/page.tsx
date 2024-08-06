@@ -2,7 +2,7 @@
 
 import { getProfile, getUser } from "@/app/API/UserAPI";
 import Main from "@/app/Global/layout/MainLayout";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Page() {
@@ -11,6 +11,7 @@ export default function Page() {
     const [isLoading, setIsLoading] = useState(false);
     const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+    const router = useRouter();
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -18,7 +19,7 @@ export default function Page() {
                 .then(r => {
                     setUser(r);
                     if (r.role !== 'ADMIN') {
-                        redirect('/account/login');
+                        router.push('/account/login');
                     }
                     console.log(r);
                 })
@@ -31,10 +32,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             } else {
-                redirect('/account/profile');
+                router.push('/account/profile');
             }
         } else {
-            redirect('/account/login');
+            router.push('/account/login');
         }
     }, [ACCESS_TOKEN, PROFILE_ID]);
 

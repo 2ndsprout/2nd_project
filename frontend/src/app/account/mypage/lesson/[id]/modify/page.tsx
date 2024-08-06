@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { deleteImageList, getCenterList, getLesson, getProfile, getUser, saveImageList, updateLesson } from "@/app/API/UserAPI";
 import { DateValueType } from 'react-tailwindcss-datepicker/dist/types';
 import Profile from "@/app/Global/layout/ProfileLayout";
@@ -53,6 +53,7 @@ export default function Page() {
     const [first, setFirst] = useState(false);
     const [lessonEndDate, setLessonEndDate] = useState(null as any);
     const [selectedCenter, setSelectedCenter] = useState('');
+    const router = useRouter();
 
     const convertEpochToDayjs = (epochMilliseconds: number): Dayjs => {
         return dayjs(epochMilliseconds);
@@ -255,10 +256,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             } else {
-                redirect('/account/profile');
+                router.push('/account/profile');
             }
         } else {
-            redirect('/account/login');
+            router.push('/account/login');
         }
         deleteImageList()
         .catch(e => console.log('임시 이미지 없음'));

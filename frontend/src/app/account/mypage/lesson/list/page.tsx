@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { getMyLessonList, getProfile, getUser, updateLessonRequest, deleteLessonRequest, getCenterList } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import { getDateFormat, getTimeFormat } from "@/app/Global/component/Method";
@@ -27,6 +27,7 @@ export default function Page() {
     const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
+    const router = useRouter();
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -74,10 +75,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             } else {
-                redirect('/account/profile');
+                router.push('/account/profile');
             }
         } else {
-            redirect('/account/login');
+            router.push('/account/login');
         }
     }, [ACCESS_TOKEN, PROFILE_ID]);
 

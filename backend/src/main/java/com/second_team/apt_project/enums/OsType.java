@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum OsType {
-    Window("C:/web/apt_project"), Linux("/home/ubuntu/apt_project/data")
+    Window("C:/web/apt_project"), Linux("/home/ubuntu/apt/data")
     //
     ;
     private final String loc;

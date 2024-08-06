@@ -5,7 +5,7 @@ import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
 import Main from "@/app/Global/layout/MainLayout";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -41,7 +41,7 @@ export default function Page() {
     const [price, setPrice] = useState('');
     const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
     const [hasImages, setHasImages] = useState(false);
-
+    const router = useRouter();
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
@@ -74,11 +74,11 @@ export default function Page() {
                     })
                     .catch(console.error);
             } else {
-                redirect('/account/profile');
+                router.push('/account/profile');
             }
             cleanupImages();
         } else {
-            redirect('/account/login');
+            router.push('/account/login');
         }
 
         const handleBeforeUnload = () => {

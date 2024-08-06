@@ -63,10 +63,10 @@ export default function EditPage() {
         })
             .catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            router.push('/account/profile');
         }
         else
-            redirect('/account/login');
+        router.push('/account/login');
 
         if (articleId) {
             getArticle(Number(articleId))
@@ -171,11 +171,11 @@ export default function EditPage() {
                     })
                     .catch(console.error);
             } else {
-                redirect('/account/profile');
+                router.push('/account/profile');
             }
             cleanupImages();
         } else {
-            redirect('/account/login');
+            router.push('/account/login');
         }
 
         if (articleId) {

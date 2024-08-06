@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getUser, getProfile} from '@/app/API/UserAPI';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { postTag, getTag } from '@/app/API/UserAPI';
 
 interface Tag {
@@ -24,17 +24,17 @@ const TagInput: React.FC<TagInputProps> = ({ tags, setTags, deletedTagIds, setDe
     const [profile, setProfile] = useState(null as any);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
-
+    const router = useRouter();
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser().then(r => setUser(r)).catch(e => console.log(e));
             if (PROFILE_ID)
                 getProfile().then(r => setProfile(r)).catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            router.push('/account/profile');
         }
         else
-            redirect('/account/login');
+        router.push('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {

@@ -4,7 +4,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css'
 import { getProfile, getProfileList, getUser, postProfile, saveProfileImage, updateUser, updateUserPassword } from "@/app/API/UserAPI";
 import DropDown, { Direction } from "@/app/Global/component/DropDown";
 import Modal from "@/app/Global/component/Modal";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faUserPlus, faBars, faEnvelope, faLock, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
@@ -35,6 +35,7 @@ export default function Page() {
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const passwordErrors = () => {
         if (oldPasswordError) return oldPasswordError;
@@ -60,7 +61,7 @@ export default function Page() {
                 })
                 .catch(e => console.log(e));
         else
-            redirect('/account/login');
+        router.push('/account/login');
     }, [ACCESS_TOKEN]);
 
     function IsDisabledEamil() {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
@@ -18,7 +18,7 @@ interface Center {
 
 
 export default function Page() {
-  const Router = useRouter();
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [url, setUrl] = useState('');
@@ -59,10 +59,10 @@ export default function Page() {
           })
           .catch(e => console.log(e));
       } else {
-        redirect('/account/profile');
+        router.push('/account/profile');
       }
     } else {
-      redirect('/account/login');
+      router.push('/account/login');
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 

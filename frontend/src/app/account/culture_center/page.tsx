@@ -5,7 +5,7 @@ import Main from "@/app/Global/layout/MainLayout";
 
 import { getTimeFormat } from "@/app/Global/component/Method";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CenterSlider from "@/app/Global/component/CenterSlider";
 
@@ -21,6 +21,7 @@ export default function Page() {
     const [swimUrlList, setSwimUrlList] = useState([] as any[]);
     const [libUrlList, setLibUrlList] = useState([] as any[]);
     const [golfUrlList, setGolfUrlList] = useState([] as any[]);
+    const router = useRouter();
 
     
 
@@ -76,10 +77,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             } else {
-                redirect('/account/profile');
+                router.push('/account/profile');
             }
         } else {
-            redirect('/account/login');
+            router.push('/account/login');
         }
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
