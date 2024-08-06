@@ -1087,7 +1087,7 @@ public class MultiService {
         Article article = articleService.findById(articleId);
         if (article == null)
             throw new DataNotFoundException("게시물 객체 없음");
-        Pageable pageable = PageRequest.of(page, 15);
+        Pageable pageable = PageRequest.of(page, 10);
         Page<Comment> commentList = commentService.getCommentPaging(pageable, article.getId());
         if (commentList == null) throw new DataNotFoundException("댓글 객체 없음");
         List<CommentResponseDTO> commentResponseDTOList = new ArrayList<>();
