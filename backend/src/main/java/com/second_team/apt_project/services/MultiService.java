@@ -6,6 +6,7 @@ import com.second_team.apt_project.dtos.*;
 import com.second_team.apt_project.enums.ImageKey;
 import com.second_team.apt_project.enums.Sorts;
 import com.second_team.apt_project.enums.UserRole;
+import com.second_team.apt_project.exceptions.DataDuplicateException;
 import com.second_team.apt_project.exceptions.DataNotFoundException;
 import com.second_team.apt_project.records.TokenRecord;
 import com.second_team.apt_project.securities.CustomUserDetails;
@@ -173,7 +174,7 @@ public class MultiService {
                         String jKey = String.valueOf(j);
                         if (j < 10) jKey = "0" + jKey;  // 세대수가 한자리일 때 0을 붙임
 
-                        String name = aptNum + String.valueOf(i) + jKey;  // 아파트 번호 생성
+                        String name = aptNum + "_" + String.valueOf(i) + jKey;  // 아파트 번호 생성
                         SiteUser _user = userService.saveGroup(name, aptNum, apt);// 사용자 그룹 저장
                         if (aptNum == min && i == 1 && j == 1 || aptNum == max && i == h && j == w){
                             userResponseDTOList.add(
@@ -560,6 +561,12 @@ public class MultiService {
     @Transactional
     public ProfileResponseDTO saveProfile(String name, String url, String username) {
         SiteUser user = userService.get(username);
+        List<Profile> profileList = profileService.findProfilesByUserList(user);
+        for (Profile profile : profileList) {
+            if (profile.getName().equals(name)) {
+                throw new DataDuplicateException("중복된 프로필 이름");
+            }
+        }
         if (user == null) throw new DataNotFoundException("유저 객체 없음");
         if (!name.trim().isEmpty()) {
             Profile profile = profileService.save(user, name);
@@ -868,7 +875,7 @@ public class MultiService {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 15);
         Boolean topActive = false;
         Page<Article> articleList;
         if (user.getRole() == UserRole.ADMIN) {

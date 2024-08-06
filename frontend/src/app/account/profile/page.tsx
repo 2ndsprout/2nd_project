@@ -167,24 +167,31 @@ export default function Page() {
             .then(() => {
                 closeConfirm();
                 console.log("profile selected!");
-            //     window.location.href = '/';
-            // })
-            if (user.role === 'ADMIN') {
-                window.location.href = '/account/admin';
-            }else {
-                window.location.href = '/';
-            }})
+                //     window.location.href = '/';
+                // })
+                if (user.role === 'ADMIN') {
+                    window.location.href = '/account/admin';
+                } else {
+                    window.location.href = '/';
+                }
+            })
             .catch(e => console.log(e));
         closeConfirm();
     }
 
 
     function Regist() {
+        const isNameDuplicate = profileList.some(profile => profile.name === name);
+
+        if (isNameDuplicate) {
+            showAlert('이미 있는 프로필 이름입니다.')
+            return;
+        }
+
         if (profileList.length < 6) {
             postProfile({ name: name, url: url })
                 .then(() => window.location.href = '/account/profile')
                 .catch(e => { console.log(e), closeConfirm(), showAlert('이미 있는 프로필 이름입니다.') });
-
         } else {
             closeConfirm();
             showAlert('프로필은 최대 6개까지 생성 가능합니다.');
@@ -224,7 +231,7 @@ export default function Page() {
                 </div>
                 <div className="h-1/5">
                     <div className="w-full flex flex-col items-center py-3">
-                        <img src='/user.png' className='w-[64px] h-[64px] mb-2' alt="로고" />
+                        <img src='/logo.png' className='w-[78px] h-[78px] mb-2' alt="로고" />
                         <label className="font-bold text-2xl text-white">Honey Danji</label>
                     </div>
                 </div>

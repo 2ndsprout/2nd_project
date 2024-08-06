@@ -20,7 +20,8 @@ public class Profile { // 프로필
 
     @ManyToOne(fetch = FetchType.LAZY)
     private SiteUser user;
-    @Column(length = 50, unique = true)
+
+    @Column(length = 10)
     private String name;
 
     private LocalDateTime createDate;
