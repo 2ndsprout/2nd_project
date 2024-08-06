@@ -61,12 +61,12 @@ public class EmailService {
                             "border-radius: 5px;" +
                             "}" +
                             ".highlight {" +
-                            "color: orange;" +  // 주황색으로 강조
-                            "font-weight: normal;" +  // 굵게 하지 않음
+                            "color: orange;" +
+                            "font-weight: normal;" +
                             "}" +
                             ".highlight-value {" +
-                            "color: black;" +  // 검정색으로 텍스트 색상 설정
-                            "font-weight: normal;" +  // 굵게 하지 않음
+                            "color: black;" +
+                            "font-weight: normal;" +
                             "}" +
                             "</style>" +
                             "</head>" +

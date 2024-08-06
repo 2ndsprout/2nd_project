@@ -1,7 +1,7 @@
 'use client'
 
 import { getProfile, getUser } from "@/app/API/UserAPI";
-import Admin from "@/app/Global/layout/AdminLayout";
+import Main from "@/app/Global/layout/MainLayout";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -40,8 +40,8 @@ export default function Page() {
 
 
     return (
-        <Admin user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             fdsafsd
-            </Admin>
+            </Main>
     );
 }

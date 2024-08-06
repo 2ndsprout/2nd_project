@@ -7,7 +7,7 @@ import ConfirmModal from '@/app/Global/component/ConfirmModal';
 import Modal from '@/app/Global/component/Modal';
 import Pagination from '@/app/Global/component/Pagination';
 import useConfirm from '@/app/Global/hook/useConfirm';
-import Admin from "@/app/Global/layout/AdminLayout";
+import Main from '@/app/Global/layout/MainLayout';
 import { all } from 'axios';
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -239,7 +239,7 @@ export default function Page() {
     };
 
     return (
-        <Admin user={user} profile={profile} isLoading={isLoading}>
+        <Main user={user} profile={profile} isLoading={isLoading}>
             <div className="bg-black w-full text-white flex items-center justify-center">
                 <div className='flex w-full h-[800px] items-center justify-center mt-[30px]'>
                     <div className='w-[1500px] h-[800px] bg-gray-700 rounded-lg items-center justify-center flex flex-col'>
@@ -353,6 +353,6 @@ export default function Page() {
                 </div>
             </div>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
-        </Admin>
+        </Main>
     );
 }
