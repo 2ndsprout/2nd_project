@@ -16,7 +16,7 @@ spring:
       static-locations:
        - classpath:/static/
        - file:C:/web/apt_project
-       - file:/home/ubuntu/apt_project/data
+       - file:/home/ubuntu/apt
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
