@@ -8,7 +8,6 @@ import Modal from '@/app/Global/component/Modal';
 import Pagination from '@/app/Global/component/Pagination';
 import useConfirm from '@/app/Global/hook/useConfirm';
 import Main from '@/app/Global/layout/MainLayout';
-import { all } from 'axios';
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -73,23 +72,8 @@ export default function Page() {
         }
         else
             redirect('/account/login');
+            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
     }, [ACCESS_TOKEN, PROFILE_ID, userList]);
-
-    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
-
-    useEffect(() => {
-        if (selectedApt) {
-            setIsLoading(true);
-            getUserList(selectedApt.aptId, currentPage - 1)
-                .then(r => {
-                    setUserList(r.content);
-                    console.log("content", r.content);
-                    setTotalPages(r.totalPages);
-                })
-                .catch(e => console.log(e))
-                .finally(() => setIsLoading(false));
-        }
-    }, [selectedApt, currentPage]);
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
