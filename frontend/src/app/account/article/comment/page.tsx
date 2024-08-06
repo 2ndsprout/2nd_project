@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
 import { UpdateCommentProps, CommentProps, GetCommentListProps } from '@/app/API/UserAPI';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import LoveButton from '../love/page';
 import Image from 'next/image';
+import useConfirm from '@/app/Global/hook/useConfirm';
+import useAlert from '@/app/Global/hook/useAlert';
+import ConfirmModal from '@/app/Global/component/ConfirmModal';
 
 interface CommentResponseDTO {
     id: number;
@@ -52,7 +55,8 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const [isLoved, setIsLoved] = useState(false);
     const [loveCount, setLoveCount] = useState(0);
     const [totalLoves, setTotalLoves] = useState(0);
-
+    const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const { showAlert } = useAlert();
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
@@ -83,7 +87,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
             setTotalPages(Math.max(1, response.totalPages)); // 최소값을 1로 설정
             setTotalElements(response.totalElements);
             //setTotalPages(response.totalPages));
-            
+
             // 전체 댓글 수 계산 (첫 페이지에서만 수행)
             if (currentPage === 0) {
                 const totalCount = calculateTotalComments(response);
@@ -126,9 +130,12 @@ const CommentList = ({ articleId }: { articleId: number }) => {
                 };
                 await updateComment(updateCommentDTO);
                 setEditingCommentId(null);
+                closeConfirm();
                 fetchComments();
             } catch (error) {
                 console.error('댓글을 수정하는데 실패했습니다 :', error);
+                closeConfirm();
+                showAlert('댓글을 수정하는데 실패했습니다');
             }
         }
     };
@@ -136,9 +143,12 @@ const CommentList = ({ articleId }: { articleId: number }) => {
     const handleDeleteComment = async (commentId: number) => {
         try {
             await deleteComment(commentId);
+            closeConfirm();
             fetchComments();
         } catch (error) {
             console.error('댓글을 삭제하는데 실패했습니다 :', error);
+            closeConfirm();
+            showAlert('댓글을 삭제하는데 실패했습니다');
         }
     };
 
@@ -159,7 +169,7 @@ const CommentList = ({ articleId }: { articleId: number }) => {
             }
         }
     };
-    
+
     const handleLoveChange = (isLoved: boolean, count: number) => {
         setTotalLoves(count);
     };
@@ -183,14 +193,15 @@ const CommentList = ({ articleId }: { articleId: number }) => {
                 <small>{comment.profileResponseDTO.name} - {new Date(comment.createDate).toLocaleString()}</small>
                 <div className="mt-2">
                     {editingCommentId === comment.id ? (
-                        <button onClick={() => handleEditComment(comment.id)} className="mr-2 text-blue-500">저장</button>
+                        <button onClick={() => finalConfirm(user?.username, '해당 댓글를 수정하시겠습니까?', '수정', () => handleEditComment(comment.id))} className="mr-2 text-blue-500">저장</button>
                     ) : (
                         <button onClick={() => {
                             setEditingCommentId(comment.id);
                             setEditContent(comment.content);
                         }} className="mr-2 text-blue-500">수정</button>
                     )}
-                    <button onClick={() => handleDeleteComment(comment.id)} className="mr-2 text-red-500">삭제</button>
+                    <button onClick={() => finalConfirm(user?.username, '해당 댓글를 삭제하시겠습니까?', '삭제', () => handleDeleteComment(comment.id))} className="mr-2 text-red-500">삭제</button>
+                    <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
                     <button onClick={() => setReplyingToId(comment.id)} className="text-green-500">답글</button>
                 </div>
             </div>
@@ -217,8 +228,8 @@ const CommentList = ({ articleId }: { articleId: number }) => {
         <div className="w-full flex justify-between">
             <div className="w-1/6 flex flex-col items-center justify-start pt-4">
                 <div className="flex items-center justify-center w-full px-4">
-                    <LoveButton 
-                        articleId={articleId} 
+                    <LoveButton
+                        articleId={articleId}
                         onLoveChange={handleLoveChange}
                     />
                     <div className="flex flex-col items-center ml-5">
