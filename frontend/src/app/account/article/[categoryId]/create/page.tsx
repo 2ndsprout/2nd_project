@@ -74,11 +74,11 @@ export default function Page() {
                     })
                     .catch(console.error);
             } else {
-                router.push('/account/profile');
+                redirect('/account/profile');
             }
             cleanupImages();
         } else {
-            router.push('/account/login');
+            redirect('/account/login');
         }
 
         const handleBeforeUnload = () => {

@@ -256,10 +256,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             } else {
-                router.push('/account/profile');
+                redirect('/account/profile');
             }
         } else {
-            router.push('/account/login');
+            redirect('/account/login');
         }
         deleteImageList()
         .catch(e => console.log('임시 이미지 없음'));

@@ -46,10 +46,10 @@ export default function Page() {
           .catch(e => console.log(e));
           const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
       } else {
-        router.push('/account/profile');
+        redirect('/account/profile');
       }
     } else {
-      router.push('/account/login');
+      redirect('/account/login');
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 

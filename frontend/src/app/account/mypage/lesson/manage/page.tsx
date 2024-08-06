@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
@@ -59,10 +59,10 @@ export default function Page() {
           })
           .catch(e => console.log(e));
       } else {
-        router.push('/account/profile');
+        redirect('/account/profile');
       }
     } else {
-      router.push('/account/login');
+      redirect('/account/login');
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 

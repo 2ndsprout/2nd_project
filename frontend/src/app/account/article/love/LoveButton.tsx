@@ -31,10 +31,10 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
         if (PROFILE_ID)
             getProfile().then(r => setProfile(r)).catch(e => console.log(e));
         else
-        router.push('/account/profile');
+        redirect('/account/profile');
     }
     else
-    router.push('/account/login');
+    redirect('/account/login');
 }, [ACCESS_TOKEN, PROFILE_ID]);
 
   const fetchLoveInfo = useCallback(async () => {

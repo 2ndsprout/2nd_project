@@ -73,10 +73,10 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             } else {
-                router.push('/account/profile');
+                redirect('/account/profile');
             }
         } else {
-            router.push('/account/login');
+            redirect('/account/login');
         }
         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
     }, [ACCESS_TOKEN, PROFILE_ID, currentPage]);

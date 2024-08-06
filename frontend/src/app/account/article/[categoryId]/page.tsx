@@ -107,10 +107,10 @@ export default function ArticleListPage() {
                     })
                     .catch(e => console.error("프로필 정보 가져오기 실패:", e));
             else
-            router.push('/account/profile');
+            redirect('/account/profile');
         }
         else
-        router.push('/account/login');
+        redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     const fetchArticles = async (isSearch: boolean = false) => {

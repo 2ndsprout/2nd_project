@@ -61,7 +61,7 @@ export default function Page() {
                 })
                 .catch(e => console.log(e));
         else
-        router.push('/account/login');
+        redirect('/account/login');
     }, [ACCESS_TOKEN]);
 
     function IsDisabledEamil() {

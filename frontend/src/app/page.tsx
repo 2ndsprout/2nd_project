@@ -30,7 +30,7 @@ export default function Page() {
       getUser()
         .then(r => {
           if (r.role === 'ADMIN') {
-            router.push('/account/admin');
+            redirect('/account/admin');
           }
           setUser(r);
           console.log(r);
@@ -61,10 +61,10 @@ export default function Page() {
           })
           .catch(e => console.log(e));
       } else {
-        router.push('/account/profile');
+        redirect('/account/profile');
       }
     } else {
-      router.push('/account/login');
+      redirect('/account/login');
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 
