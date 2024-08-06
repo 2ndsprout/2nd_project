@@ -72,7 +72,7 @@ export default function Page() {
         }
         else
             redirect('/account/login');
-            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
+        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
     }, [ACCESS_TOKEN, PROFILE_ID, userList]);
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
