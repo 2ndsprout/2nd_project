@@ -7,6 +7,10 @@ import { redirect } from "next/navigation";
 import LoveButton from '../love/page';
 import Image from 'next/image';
 
+interface CommentListProps {
+    articleId: number;
+  }
+
 interface CommentResponseDTO {
     id: number;
     articleId: number;
@@ -34,7 +38,7 @@ interface PaginatedResponse {
     empty: boolean;
 }
 
-const CommentList = ({ articleId }: { articleId: number }) => {
+const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
     const [comments, setComments] = useState<CommentResponseDTO[]>([]);
     const [newComment, setNewComment] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null);

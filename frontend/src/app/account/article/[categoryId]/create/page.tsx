@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../tag/page';
+import Slider from '@/app/Global/component/ArticleSlider';
 
 interface Tag {
     id: number;
@@ -21,6 +22,8 @@ interface UploadedImage {
     v: string;
 }
 
+const USED_ITEMS_CATEGORY_ID = 3;
+
 export default function Page() {
     const { categoryId } = useParams();
     const [title, setTitle] = useState('');
@@ -31,13 +34,21 @@ export default function Page() {
     const [user, setUser] = useState(null as any);
     const [profile, setProfile] = useState(null as any);
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+    const [usedItemImages, setUsedItemImages] = useState<string[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
     const [centerList, setCenterList] = useState([] as any[]);
+    const [price, setPrice] = useState('');
+    const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
+    const [hasImages, setHasImages] = useState(false);
 
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
+
+    useEffect(() => {
+        setIsUsedItemsCategory(Number(categoryId) === USED_ITEMS_CATEGORY_ID);
+    }, [categoryId]);
 
     useEffect(() => {
         const cleanupImages = async () => {
@@ -107,16 +118,23 @@ export default function Page() {
                 }
     
                 const imgUrl = newImage.value;
-                const editor = quillInstance.current?.getEditor();
-                if (editor) {
-                    const range = editor.getSelection();
-                    if (range) {
-                        editor.insertEmbed(range.index, 'image', imgUrl);
-                        editor.setSelection(range.index + 1);
+                setUploadedImages(prev => [...prev, newImage]);
+
+                if (isUsedItemsCategory) {
+                    setUsedItemImages(prev => [...prev, imgUrl]);
+                    setHasImages(true);
+                } else {
+                    const editor = quillInstance.current?.getEditor();
+                    if (editor) {
+                        const range = editor.getSelection();
+                        if (range) {
+                            editor.insertEmbed(range.index, 'image', imgUrl);
+                            editor.setSelection(range.index + 1);
+                        }
                     }
                 }
     
-                setUploadedImages(prev => [...prev, newImage]);
+
             } catch (error) {
                 console.error('Error uploading image:', error);
                 alert('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
@@ -140,7 +158,7 @@ export default function Page() {
                 matchVisual: false,
             },
         }),
-        [],
+        [isUsedItemsCategory],
     );
 
     const Submit = async () => {
@@ -149,27 +167,30 @@ export default function Page() {
             return;
         }
     
+        if (isUsedItemsCategory && !price) {
+            setError('중고장터 게시물의 경우 가격을 입력해주세요.');
+            return;
+        }
+    
         try {
-            const content = quillInstance.current?.getEditor().root.innerHTML || '';
-
-            // 이미지 URL 추출
-            const imgRegex = /<img.*?src="(.*?)"/g;
-            const urlList = [];
-            let match;
-            while ((match = imgRegex.exec(content)) !== null) {
-                urlList.push(match[1]);
+            let finalContent = quillInstance.current?.getEditor().root.innerHTML || '';
+    
+            if (isUsedItemsCategory) {
+                finalContent += `<p>[PRICE]${price}[/PRICE]</p>`;
+                usedItemImages.forEach(imgUrl => {
+                    finalContent += `<img src="${imgUrl}" style="display:none;">`;
+                });
             }
-
             const tagNames = tags.map(tag => tag.name);
-
+    
             const requestData = {
                 title,
-                content,
+                content: finalContent,
                 categoryId: Number(categoryId),
                 tagName: tagNames,
                 articleTagId: deletedTagIds,
                 topActive: false,
-                urlList: urlList
+                urlList: isUsedItemsCategory ? usedItemImages : extractImageUrls(finalContent)
             };
     
             await postArticle(requestData);
@@ -181,64 +202,129 @@ export default function Page() {
         }
     };
 
-    return (
-        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList} >
-            <div className="flex flex-1 w-full">
-            <div className="bg-black w-full min-h-screen text-white flex">
-                <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
-                    <CategoryList userRole={user?.role}/>
-                </aside>
-                <div className="p-10 ml-[400px] w-4/6">
-                    <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
+    const extractImageUrls = (content: string) => {
+        const imgRegex = /<img[^>]+src="([^">]+)"/g;
+        const urls = [];
+        let match;
+        while ((match = imgRegex.exec(content)) !== null) {
+            urls.push(match[1]);
+        }
+        return urls;
+    };
+
+    const renderContent = () => {
+        if (isUsedItemsCategory && hasImages) {
+            return (
+                <div className="flex space-x-4">
+                    <div className="w-1/2 h-120">
+                        <Slider urlList={usedItemImages} />
+                        <button
+                            onClick={imageHandler}
+                            className="w-1/4 mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            이미지 추가
+                        </button>
+                    </div>
+                    <div className="w-1/2">
                         <input
                             id='title'
                             type='text'
                             className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
                             style={{ outline: '0px', color: 'black' }}
                             placeholder='제목 입력'
-                            onFocus={e => e.target.style.border = '2px solid red'}
-                            onBlur={e => e.target.style.border = ''}
+                            value={title}
                             onChange={e => setTitle(e.target.value)}
                             onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
                         />
-                        <div className="flex flex-col" style={{ maxHeight: '800px' }}>
-                            <div className="flex-grow">
-                            <QuillNoSSRWrapper
-                                forwardedRef={quillInstance}
-                                value={content}
-                                onChange={setContent}
-                                modules={modules}
-                                theme="snow"
-                                className='h-64 mb-4'
-                                placeholder="내용을 입력해주세요."
-                                style={{ minHeight: '600px'}}
-                            />
-                            </div>
-                        </div>
-                        <div className="mt-10">
-                            <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
-                            </div>
+                        <input
+                            type='number'
+                            className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
+                            placeholder='가격 입력'
+                            value={price}
+                            onChange={e => setPrice(e.target.value)}
+                        />
+                        <QuillNoSSRWrapper
+                            forwardedRef={quillInstance}
+                            value={content}
+                            onChange={setContent}
+                            modules={modules}
+                            theme="snow"
+                            className='h-64 mb-4'
+                            placeholder="내용을 입력해주세요."
+                            style={{ minHeight: '400px'}}
+                        />
+                        <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
                     </div>
-                    <div className="flex justify-end gap-4 mt-6">
-                        <button
-                            className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
-                            onClick={() => window.location.href = '/'}
-                        >
-                            취소
-                        </button>
-                        <button
-                            id='submit'
-                            className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
-                            onClick={Submit}
-                        >
-                            작성
-                        </button>
+                </div>
+            );
+        } else {
+            return (
+                <>
+                    <input
+                        id='title'
+                        type='text'
+                        className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
+                        style={{ outline: '0px', color: 'black' }}
+                        placeholder='제목 입력'
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
+                    />
+                    {isUsedItemsCategory && (
+                        <input
+                            type='number'
+                            className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
+                            placeholder='가격 입력'
+                            value={price}
+                            onChange={e => setPrice(e.target.value)}
+                        />
+                    )}
+                    <QuillNoSSRWrapper
+                        forwardedRef={quillInstance}
+                        value={content}
+                        onChange={setContent}
+                        modules={modules}
+                        theme="snow"
+                        className='h-64 mb-4'
+                        placeholder="내용을 입력해주세요."
+                        style={{ minHeight: '600px'}}
+                    />
+                    <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
+                </>
+            );
+        }
+    };
+
+    return (
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList} >
+            <div className="flex flex-1 w-full">
+                <div className="bg-black w-full min-h-screen text-white flex">
+                    <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
+                        <CategoryList userRole={user?.role}/>
+                    </aside>
+                    <div className="p-10 ml-[400px] w-4/6">
+                        <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
+                            {renderContent()}
+                        </div>
+                        <div className="flex justify-end gap-4 mt-6">
+                            <button
+                                className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
+                                onClick={() => window.location.href = '/'}
+                            >
+                                취소
+                            </button>
+                            <button
+                                id='submit'
+                                className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
+                                onClick={Submit}
+                            >
+                                작성
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-            </div>
-            
         </Main>
     );
 }

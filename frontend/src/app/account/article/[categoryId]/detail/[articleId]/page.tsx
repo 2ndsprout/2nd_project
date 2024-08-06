@@ -206,38 +206,6 @@ export default function ArticleDetail() {
         }
     };
 
-
-    // useEffect(() => {
-    //     const fetchArticle = async () => {
-    //         try {
-    //             if (articleId) {
-    //                 const fetchedArticle = await getArticle(Number(articleId));
-    //                 if (fetchedArticle) {
-    //                     const tagPromises = fetchedArticle.tagResponseDTOList.map((tag: Tag) => getTag(tag.id));
-    //                     const tagDetails = await Promise.all(tagPromises);
-    //                     setArticle((prev: Article | null): Article => {
-    //                         if (prev === null) {
-    //                             return {
-    //                                 ...fetchedArticle,
-    //                                 tagResponseDTOList: tagDetails
-    //                             };
-    //                         }
-    //                         return {
-    //                             ...prev,
-    //                             ...fetchedArticle,
-    //                             tagResponseDTOList: tagDetails
-    //                         };
-    //                     });
-    //                 }
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching article:', error);
-    //         }
-    //     };
-    
-    //     fetchArticle();
-    // }, [articleId]);
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const dropdown = document.getElementById('dropdown');
