@@ -22,6 +22,10 @@ interface UploadedImage {
     v: string;
 }
 
+interface ConstrainedSliderProps {
+    urlList: string[];
+  }
+
 const USED_ITEMS_CATEGORY_ID = 3;
 
 export default function Page() {
@@ -45,6 +49,7 @@ export default function Page() {
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
+    const [editorReady, setEditorReady] = useState(false);
 
     useEffect(() => {
         setIsUsedItemsCategory(Number(categoryId) === USED_ITEMS_CATEGORY_ID);
@@ -227,119 +232,151 @@ export default function Page() {
         return urls;
     };
 
-    const renderContent = () => {
-        if (isUsedItemsCategory && hasImages) {
-            return (
-                <div className="flex space-x-4">
-                    <div className="w-1/2 h-120">
-                        <Slider urlList={usedItemImages} />
-                        <button
-                            onClick={imageHandler}
-                            className="w-1/4 mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            이미지 추가
-                        </button>
-                    </div>
-                    <div className="w-1/2">
-                        <input
-                            id='title'
-                            type='text'
-                            className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
-                            style={{ outline: '0px', color: 'black' }}
-                            placeholder='제목 입력'
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
-                            onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
-                        />
-                        <input
-                            type='number'
-                            className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
-                            placeholder='가격 입력'
-                            value={price}
-                            onChange={e => setPrice(e.target.value)}
-                        />
-                        <QuillNoSSRWrapper
-                            forwardedRef={quillInstance}
-                            value={content}
-                            onChange={setContent}
-                            modules={modules}
-                            theme="snow"
-                            className='h-64 mb-4'
-                            placeholder="내용을 입력해주세요."
-                            style={{ minHeight: '400px'}}
-                        />
-                        <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
-                    </div>
-                </div>
-            );
-        } else {
-            return (
-                <>
-                    <input
-                        id='title'
-                        type='text'
-                        className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
-                        style={{ outline: '0px', color: 'black' }}
-                        placeholder='제목 입력'
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
-                    />
-                    {isUsedItemsCategory && (
-                        <input
-                            type='number'
-                            className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
-                            placeholder='가격 입력'
-                            value={price}
-                            onChange={e => setPrice(e.target.value)}
-                        />
-                    )}
-                    <QuillNoSSRWrapper
-                        forwardedRef={quillInstance}
-                        value={content}
-                        onChange={setContent}
-                        modules={modules}
-                        theme="snow"
-                        className='h-64 mb-4'
-                        placeholder="내용을 입력해주세요."
-                        style={{ minHeight: '600px'}}
-                    />
-                    <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
-                </>
-            );
-        }
+    const ConstrainedSlider: React.FC<ConstrainedSliderProps> = ({ urlList }) => {
+        return (
+          <div className="w-full h-96 overflow-hidden">
+            <Slider urlList={urlList} />
+          </div>
+        );
     };
 
-    return (
-        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList} >
-            <div className="flex flex-1 w-full">
-                <div className="bg-black w-full min-h-screen text-white flex">
-                    <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
-                        <CategoryList userRole={user?.role}/>
-                    </aside>
-                    <div className="p-10 ml-[400px] w-4/6">
-                        <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
-                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
-                            {renderContent()}
-                        </div>
-                        <div className="flex justify-end gap-4 mt-6">
-                            <button
-                                className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
-                                onClick={() => window.location.href = '/'}
-                            >
-                                취소
-                            </button>
-                            <button
-                                id='submit'
-                                className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
-                                onClick={Submit}
-                            >
-                                작성
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    useEffect(() => {
+        const timer = setTimeout(() => {
+          setEditorReady(true);
+        }, 100);
+    
+        return () => clearTimeout(timer);
+      }, []);
+    
+      useEffect(() => {
+        if (isUsedItemsCategory) {
+          setEditorReady(false);
+          const timer = setTimeout(() => {
+            setEditorReady(true);
+          }, 100);
+    
+          return () => clearTimeout(timer);
+        }
+      }, [isUsedItemsCategory]);
+
+    const renderContent = () => {
+        const quillStyle = {
+          height: isUsedItemsCategory ? '500px' : '600px',
+          marginBottom: '40px'
+        };
+    
+        const commonInputs = (
+          <>
+            <input
+              id='title'
+              type='text'
+              className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
+              style={{ outline: '0px', color: 'black' }}
+              placeholder='제목 입력'
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
+            />
+            {isUsedItemsCategory && (
+              <div className="relative mb-4">
+                <input
+                  type='text'
+                  inputMode='numeric'
+                  pattern='[0-9]*'
+                  className='w-full h-12 input input-bordered rounded-[0] pr-8 text-black'
+                  style={{ outline: '0px', color: 'black' }}
+                  placeholder='가격 입력'
+                  value={price}
+                  onChange={e => {
+                    const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                    setPrice(onlyNums);
+                  }}
+                />
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  원
+                </span>
+              </div>
+            )}
+          </>
+        );
+    
+        const editor = (
+          <div className="flex flex-col flex-grow">
+            {editorReady && (
+            <QuillNoSSRWrapper
+                forwardedRef={quillInstance}
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                theme="snow"
+                placeholder="내용을 입력해주세요."
+                style={quillStyle}
+            />
+            )}
+            <div className="mt-4">
+              <TagInput tags={tags} setTags={setTags} deletedTagIds={deletedTagIds} setDeletedTagIds={setDeletedTagIds} />
             </div>
+          </div>
+        );
+    
+        if (isUsedItemsCategory && hasImages) {
+          return (
+            <div className="flex space-x-4">
+              <div className="w-1/2 flex flex-col">
+                <ConstrainedSlider urlList={usedItemImages} />
+                <button
+                  onClick={imageHandler}
+                  className="w-full mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  이미지 추가
+                </button>
+              </div>
+              <div className="w-1/2 flex flex-col">
+                {commonInputs}
+                {editor}
+              </div>
+            </div>
+          );
+        } else {
+          return (
+            <div className="flex flex-col h-full">
+              {commonInputs}
+              {editor}
+            </div>
+          );
+        }
+      };
+    
+      return (
+        <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
+          <div className="flex flex-1 w-full">
+            <div className="bg-black w-full min-h-screen text-white flex">
+              <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-[920px]">
+                <CategoryList userRole={user?.role}/>
+              </aside>
+              <div className="p-10 ml-[400px] w-4/6">
+                <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
+                <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[750px] flex flex-col">
+                  {renderContent()}
+                </div>
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    className='btn btn-outline text-red-500 border border-red-500 bg-transparent hover:bg-red-500 hover:text-white text-lg'
+                    onClick={() => window.location.href = '/'}
+                  >
+                    취소
+                  </button>
+                  <button
+                    id='submit'
+                    className='btn btn-outline text-yellow-500 border border-yellow-500 bg-transparent hover:bg-yellow-500 hover:text-white text-lg'
+                    onClick={Submit}
+                  >
+                    작성
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </Main>
-    );
-}
+      );
+};
