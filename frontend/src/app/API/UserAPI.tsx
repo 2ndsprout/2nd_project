@@ -372,12 +372,12 @@ export const getLoveInfo = async (articleId: number): Promise<LoveResponseDTO> =
     }
 };
 
-// Center
+// Center // 나중에 풀어야해요
 interface CenterProps {
     type: number,
-    startDate: Date,
-    endDate: Date,
-    url : string
+    startDate?: Date,
+    endDate?: Date,
+    url?: string
 }
 
 export const postCenter = async (data: CenterProps) => {
