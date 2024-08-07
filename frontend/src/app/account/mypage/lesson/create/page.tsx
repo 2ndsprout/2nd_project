@@ -242,7 +242,6 @@ export default function Page() {
                         getCenterList()
                             .then(r => {
                                 setCenterList(r);
-                                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
                             })
                             .catch(e => console.log(e));
                     })
@@ -256,6 +255,7 @@ export default function Page() {
         deleteImageList()
             .catch(e => console.log('임시 이미지 없음'));
     }, [ACCESS_TOKEN, PROFILE_ID]);
+    const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 200);
 
     useEffect(() => {
         if (lessonStartDate && lessonEndDate) {

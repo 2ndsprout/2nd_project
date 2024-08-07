@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
-import { getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff } from "@/app/API/UserAPI";
+import { getCenterList, getProfile, updateLessonRequest, getStaffLessonList, getUser, deleteLessonRequest, getLessonRequestListByStaff, getLessonList } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
 import AlertModal from "@/app/Global/component/AlertModal";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import useAlert from "@/app/Global/hook/useAlert";
 import Modal from "@/app/Global/component/Modal";
+import { get } from "http";
+import Pagination from "@/app/Global/component/Pagination";
 
 
 interface Center {
@@ -34,10 +36,14 @@ export default function Page() {
   const [centerId, setCenterId] = useState(0);
   const [center, setCenter] = useState<Center | null>(null);
   const [lessonUser, setLessonUser] = useState([] as any[]);
+  const [lessonCancelling, setLessonCancelling] = useState([] as any[]);
+  const [lessonPending, setLessonPending] = useState([] as any[]);
   const [centerError, setCenterError] = useState('문화센터를 설정해주세요.');
   const [isModalOpen, setISModalOpen] = useState(-1);
   const [typeNum, setTypeNum] = useState<any>(null);
   const [lessonId, setLessonId] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
@@ -53,7 +59,6 @@ export default function Page() {
             getCenterList()
               .then(r => {
                 setCenterList(r);
-                const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
               })
               .catch(e => console.log(e));
           })
@@ -66,26 +71,41 @@ export default function Page() {
     }
   }, [ACCESS_TOKEN, PROFILE_ID]);
 
+  const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+
+  // function getLessonUserType(id: number) {
+  //   getLessonRequestListByStaff(0, id)
+  //     .then(r => {
+  //       setLessonPending(r);
+  //       console.log("대기", lessonPending);
+  //     }).catch(e => console.log(e));
+  //   getLessonRequestListByStaff(2, id)
+  //     .then(r => {
+  //       setLessonCancelling(r);
+  //       console.log("취소", lessonCancelling);
+  //     }).catch(e => console.log(e));
+  // }
+
 
   const fetchLessonList = (centerId: number, centerType: string) => {
     getStaffLessonList(centerId)
       .then((r) => {
         switch (centerType) {
           case 'GYM':
-            setLessons(r);
-            console.log('gym', r);
+            setLessons(r.content);
+            setTotalPages(r.totalPages);
             break;
           case 'SWIMMING_POOL':
-            setLessons(r);
-            console.log(r);
+            setLessons(r.content);
+            setTotalPages(r.totalPages);
             break;
           case 'LIBRARY':
-            setLessons(r);
-            console.log(r);
+            setLessons(r.content);
+            setTotalPages(r.totalPages);
             break;
           case 'SCREEN_GOLF':
-            setLessons(r);
-            console.log(r);
+            setLessons(r.content);
+            setTotalPages(r.totalPages);
             break;
           default:
             console.log("Invalid center ID");
@@ -135,6 +155,8 @@ export default function Page() {
   }
 
 
+
+
   function closeModal() {
     setISModalOpen(-1);
   }
@@ -179,6 +201,17 @@ export default function Page() {
       }
     }
   };
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if(selectedCenter){
+      getStaffLessonList(centerId, newPage -1)
+      .then((r) => {
+        setLessons(r.content);
+        setTotalPages(r.totalPages);
+      })
+    }
+
+  };
 
   return (
     <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
@@ -207,21 +240,34 @@ export default function Page() {
               </select>
             </div>
             <div className="h-[500px] w-[1000px] overflow-y-scroll">
-              {lessons.map((lesson) => (
-                <div key={lesson?.id} className='flex items-center justify-between border-b-2 h-[50px]'>
-                  <a href={`/account/lesson/${lesson.id}`}>
-                    <div className='flex items-center w-full h-full'>
-                      <div className='ml-4 w-full h-full' >
-                        <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{lesson?.name}</div>
+              {lessons.length === 0 ? (
+                <div className="text-center text-gray-500 py-4">레슨을 골라주세요.</div>
+              ) : (
+                lessons.map((lesson) => (
+                  <div key={lesson?.id} className='flex items-center justify-between border-b-2 h-[50px]'>
+                    <a href={`/account/lesson/${lesson.id}`}>
+                      <div className='flex items-center w-full h-full'>
+                        <div className='ml-4 w-full h-full'>
+                          <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{lesson?.name}</div>
+                        </div>
                       </div>
+                    </a>
+                    <div className="w-[300px] justify-end flex">
+                      <button className='text-sm mr-[30px] font-bold text-orange-300 hover:text-orange-500' onClick={() => openModal(1, lesson.id, 0)}>신청 관리 </button>
+                      <button className='text-sm mr-[30px] font-bold text-red-300 hover:text-red-500' onClick={() => openModal(1, lesson.id, 2)}>취소 관리 </button>
                     </div>
-                  </a>
-                  <div className="w-[300px] justify-end flex">
-                    <button className='text-sm mr-[30px] font-bold text-orange-300 hover:text-orange-500' onClick={() => openModal(1, lesson.id, 0)}>신청 관리</button>
-                    <button className='text-sm mr-[30px] font-bold text-red-300 hover:text-red-500' onClick={() => openModal(1, lesson.id, 2)}>취소 관리</button>
                   </div>
-                </div>
-              ))}
+                )))
+              }
+            </div>
+            <div className="flex justify-center mt-6">
+              {lessons && lessons.length > 0 ? (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              ) : null}
             </div>
           </div>
         </div>
@@ -229,16 +275,20 @@ export default function Page() {
       <Modal open={isModalOpen === 1} onClose={() => setISModalOpen(-1)} className='modal-box w-[600px] h-[700px] flex flex-col justify-center items-center' escClose={true} outlineClose={true} >
         <button className="btn btn-xl btn-circle text-xl text-black btn-ghost absolute right-2 top-2 hover:cursor-pointer" onClick={() => closeModal()}> ✕ </button>
         <div className="flex flex-col w-[450px] h-[500px]">
-          {lessonUser.map((lessonUser) => (
-            <div key={lessonUser?.id} className='w-[450px] h-[50px] flex flex-row border-b border-gray-500  items-center pb-3 pl-3 mt-[10px]'>
-              <img className="w-[50px] h-[50px]" src={lessonUser.profileResponseDTO?.url ? lessonUser.profileResponseDTO.url : '/user.png'} alt="profile"></img>
-              <div className="w-[250px] text-black text-lg ml-[20px]">{lessonUser.profileResponseDTO.name}</div>
-              <div className="w-[200px] flex justify-end items-center flex-row pr-[30px]">
-                <button className='text-sm w-[50px] font-bold text-blue-300 hover:text-blue-500' onClick={() => updateModal(lessonUser.id, lessonUser.lessonResponseDTO.id, (typeNum + 1))}>승인</button>
-                <button className='text-sm w-[50px] font-bold text-red-300 hover:text-red-500' onClick={() => deleteModal(lessonUser.id)}>거절</button>
+          {lessonUser.length === 0 ? (
+            <div className="text-center text-black">신청자가 없습니다.</div>
+          ) : (
+            lessonUser.map((lessonUser) => (
+              <div key={lessonUser?.id} className='w-[450px] h-[50px] flex flex-row border-b border-gray-500  items-center pb-3 pl-3 mt-[10px]'>
+                <img className="w-[50px] h-[50px]" src={lessonUser.profileResponseDTO?.url ? lessonUser.profileResponseDTO.url : '/user.png'} alt="profile"></img>
+                <div className="w-[250px] text-black text-lg ml-[20px]">{lessonUser.profileResponseDTO.name}</div>
+                <div className="w-[200px] flex justify-end items-center flex-row pr-[30px]">
+                  <button className='text-sm w-[50px] font-bold text-blue-300 hover:text-blue-500' onClick={() => updateModal(lessonUser.id, lessonUser.lessonResponseDTO.id, (typeNum + 1))}>승인</button>
+                  <button className='text-sm w-[50px] font-bold text-red-300 hover:text-red-500' onClick={() => deleteModal(lessonUser.id)}>거절</button>
+                </div>
               </div>
-            </div>
-          ))}
+            )))
+          }
         </div>
       </Modal>
       <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />

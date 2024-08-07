@@ -36,7 +36,8 @@ public class LessonRepositoryImpl implements LessonRepositoryCustom {
     }
 
     @Override
-    public List<Lesson> findByProfileAndCenter(Long profileId, Long cultureCenterId) {
-        return jpaQueryFactory.selectFrom(qLesson).where(qLesson.cultureCenter.id.eq(cultureCenterId).and(qLesson.profile.id.eq(profileId)), qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc()).fetch();
+    public Page<Lesson> findByProfileAndCenter(Long profileId, Long cultureCenterId, Pageable pageable) {
+        QueryResults<Lesson> results = jpaQueryFactory.selectFrom(qLesson).where(qLesson.cultureCenter.id.eq(cultureCenterId).and(qLesson.profile.id.eq(profileId)), qLesson.endDate.gt(LocalDateTime.now())).orderBy(qLesson.startDate.asc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+        return new PageImpl<>(results.getResults(), pageable, results.getTotal());
     }
 }

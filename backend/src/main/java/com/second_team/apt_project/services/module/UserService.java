@@ -47,7 +47,7 @@ public class UserService {
     public SiteUser saveGroup(String name, int aptNumber, Apt apt) {
         return userRepository.save(SiteUser.builder()
                 .username(String.valueOf(apt.getId()) + "_" + name)
-                .password(passwordEncoder.encode(name))
+                .password(passwordEncoder.encode(String.valueOf(apt.getId()) + "_" + name))
                 .aptNum(aptNumber)
                 .role(UserRole.values()[3])
                 .apt(apt)

@@ -83,7 +83,7 @@ public class EmailService {
                             "<p class=\"highlight\">마지막 동 마지막 호 계정명 : <span class=\"highlight-value\">" + emailRequestDTO.getLast() + "</span></p>" +
                             "<p class=\"highlight-value\">계정명에서 첫번째 _(언더바) 앞자리가 해당 아파트 ID입니다. 뒷자리는 동,호수 입니다.</p>" +
                             "<p class=\"highlight\">관리자 계정명 : <span class=\"highlight-value\"> " + aptId + "_security</span></p>" +
-                            "<p class=\"highlight\">관리자 비밀번호 : <span class=\"highlight-value\"> security" + aptId + "</span></p>" +
+                            "<p class=\"highlight\">관리자 비밀번호 : <span class=\"highlight-value\">" + aptId + "_security</span></p>" +
                             "<p>자세한 내용을 확인하려면 아래 버튼을 클릭하세요:</p>" +
                             "<a href=\"https://example.com\" class=\"button\">자세히 보기</a>" +
                             "<p>감사합니다!</p>" +
