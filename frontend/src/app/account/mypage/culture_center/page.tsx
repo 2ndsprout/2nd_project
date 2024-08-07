@@ -5,6 +5,7 @@ import { redirect, useRouter } from "next/navigation";
 import { getProfile, getUser, postCenter, saveImageList, getCenterList } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
+import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
 
 
@@ -101,7 +102,7 @@ export default function Page() {
                             </button>
                         </div>
                         <div className="w-[600px] h-[450px] mt-[50px] border">
-                            시계 넣을 영역
+                            timepicker space
                         </div>
                     </div>
                     <div className="relative w-[500px] h-[550px] ml-[100px] flex justify-center items-center mb-10">

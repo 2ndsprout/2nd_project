@@ -54,10 +54,10 @@ const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, cat
     <div className="mt-5 ml-20">
       <div className="flex items-center mb-4">
 
-      <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
-      {userRole === 'ADMIN' && (
+        <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>게시판</h2>
+        {userRole === 'ADMIN' && (
           <Link href="/account/admin/category" className="ml-2">
-            <Image 
+            <Image
               src="/free-icon-setting.png"
               alt="카테고리 관리"
               width={24}
@@ -71,13 +71,15 @@ const CategoryList: React.FC<CategoryListProps> = ({ managementMode = false, cat
         <p className="text-red-500">{error}</p>
       ) : (
         <ul>
-          {categories.slice(0, 3).map((category) => (
-            <li key={category.id} className="mb-2">
-              <Link href={`/account/article/${category.id}`} className={getLinkClass(category.id)}>
-                {category.name}
-              </Link>
-            </li>
-          ))}
+          {categories
+            .filter(category => category.name !== "FAQ") // "FAQ"가 아닌 항목만 필터링
+            ?.map((category) => (
+              <li key={category.id} className="mb-2">
+                <Link href={`/account/article/${category.id}`} className={getLinkClass(category.id)}>
+                  {category.name}
+                </Link>
+              </li>
+            ))}
         </ul>
       )}
     </div>

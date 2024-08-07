@@ -256,8 +256,8 @@ interface PostArticleProps {
     title: string;
     content: string;
     categoryId: number;
-    tagName: string[];
-    topActive: boolean;
+    tagName?: string[];
+    topActive?: boolean;
 }
 
 export const postArticle = async (data: PostArticleProps) => {

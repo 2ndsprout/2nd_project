@@ -102,7 +102,7 @@ export default function Main(props: Readonly<PageInterface>) {
       return 35;
     }
     if (centerList?.length === 2) {
-      return 75;
+      return 65;
     }
     if (centerList?.length === 3) {
       return 100;
@@ -226,15 +226,14 @@ export default function Main(props: Readonly<PageInterface>) {
                   onMouseLeave={() => closeHover(setBoardHover)}>
                   <a href='/account/article/1' className='hover:text-secondary text-sm'>공지사항</a>
                   <a href='/account/article/2' className='hover:text-secondary text-sm'>자유게시판</a>
-                  {user?.role !== 'USER' ? <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a> : null}
+                  <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a>
                 </div>
               </DropDown>
-              <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDirection={Direction.DOWN} height={65} width={180} y={14} x={-20}>
+              <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDirection={Direction.DOWN} height={35} width={180} y={14} x={-20}>
                 <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
                   onMouseEnter={() => openHover(setManageHover)}
                   onMouseLeave={() => closeHover(setManageHover)}>
                   <a href='/account/FAQ/' className='hover:text-secondary text-sm'>FAQ</a>
-                  <a href='/' className='hover:text-secondary text-sm'>건의사항</a>
                 </div>
               </DropDown>
               <div className="navbar-end">
