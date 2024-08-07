@@ -63,6 +63,8 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { showAlert } = useAlert();
     const router = useRouter();
+    const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
+    const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
@@ -72,15 +74,25 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
-            getUser().then(r => setUser(r)).catch(e => console.log(e));
+            getUser().then(r => {
+                setUser(r);
+                console.log(r.role);
+            }).catch(e => console.log(e));
             if (PROFILE_ID)
-                getProfile().then(r => setProfile(r)).catch(e => console.log(e));
+                getProfile().then(r => {
+                    setProfile(r);
+                    setCurrentProfileId(r.id);
+        }).catch(e => console.log(e));
             else
             redirect('/account/profile');
         }
         else
         redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
+
+    const hasEditPermission = (commentAuthorId: number) => {
+        return currentProfileId === commentAuthorId;
+    };
 
     useEffect(() => {
         fetchComments();
@@ -93,12 +105,13 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
             setTotalPages(Math.max(1, response.totalPages)); // 최소값을 1로 설정
             setTotalElements(response.totalElements);
             //setTotalPages(response.totalPages));
-
+            const totalCount = countTotalComments(response.content);
+            setTotalComments(totalCount);
             // 전체 댓글 수 계산 (첫 페이지에서만 수행)
-            if (currentPage === 0) {
-                const totalCount = calculateTotalComments(response);
-                setTotalComments(totalCount);
-            }
+            // if (currentPage === 0) {
+            //     const totalCount = calculateTotalComments(response);
+            //     setTotalComments(totalCount);
+            // }
         } catch (error) {
             console.error('댓글을 불러오는데 실패했습니다 :', error);
         }
@@ -180,55 +193,106 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
         setTotalLoves(count);
     };
 
-    const renderComment = (comment: CommentResponseDTO, depth = 0) => (
-        <li key={comment.id} className={`mb-4 ${depth > 0 ? 'ml-8 relative' : ''}`}>
-            {depth > 0 && (
-                <div className="absolute left-[-2rem] top-0 bottom-0 w-8 boomerang-line"></div>
-            )}
-            <div className={`p-3 rounded bg-gray-800 ${depth > 0 ? 'border-l-4 border-blue-500' : ''}`}>
-                {editingCommentId === comment.id ? (
-                    <input
-                        type="text"
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="bg-gray-700 w-full text-white p-2 border rounded"
-                    />
-                ) : (
-                    <p>{comment.content}</p>
+    const isCommentAuthor = (commentAuthorId: number) => {
+        return currentProfileId === commentAuthorId;
+    };
+
+    const toggleReplyForm = (commentId: number) => {
+        if (replyingToId === commentId) {
+            setReplyingToId(null);
+        } else {
+            setReplyingToId(commentId);
+        }
+    };
+
+    const toggleCommentExpansion = (commentId: number) => {
+        setExpandedComments(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(commentId)) {
+                newSet.delete(commentId);
+            } else {
+                newSet.add(commentId);
+            }
+            return newSet;
+        });
+    };
+
+    const countTotalReplies = (comment: CommentResponseDTO): number => {
+        return comment.commentResponseDTOList.reduce((total, reply) => {
+            return total + 1 + countTotalReplies(reply);
+        }, 0);
+    };
+
+    const renderComment = (comment: CommentResponseDTO, depth = 0) => {
+        const replyCount = countTotalReplies(comment);
+        
+        return (
+            <li key={comment.id} className={`mb-4 ${depth > 0 ? 'ml-8 relative' : ''}`}>
+                {depth > 0 && (
+                    <div className="absolute left-[-2rem] top-0 bottom-0 w-8 boomerang-line"></div>
                 )}
-                <small>{comment.profileResponseDTO.name} - {new Date(comment.createDate).toLocaleString()}</small>
-                <div className="mt-2">
+                <div 
+                    className={`p-3 rounded bg-gray-800 ${depth > 0 ? 'border-l-4 border-blue-500' : ''} ${replyCount > 0 ? 'cursor-pointer' : ''}`}
+                    onClick={() => replyCount > 0 && toggleCommentExpansion(comment.id)}
+                >
                     {editingCommentId === comment.id ? (
-                        <button onClick={() => finalConfirm(user?.username, '해당 댓글를 수정하시겠습니까?', '수정', () => handleEditComment(comment.id))} className="mr-2 text-blue-500">저장</button>
+                        <input
+                            type="text"
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="bg-gray-700 w-full text-white p-2 border rounded"
+                        />
                     ) : (
-                        <button onClick={() => {
-                            setEditingCommentId(comment.id);
-                            setEditContent(comment.content);
-                        }} className="mr-2 text-blue-500">수정</button>
+                        <p>{comment.content}</p>
                     )}
-                    <button onClick={() => finalConfirm(user?.username, '해당 댓글를 삭제하시겠습니까?', '삭제', () => handleDeleteComment(comment.id))} className="mr-2 text-red-500">삭제</button>
-                    <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
-                    <button onClick={() => setReplyingToId(comment.id)} className="text-green-500">답글</button>
+                    <small>{comment.profileResponseDTO.name} - {new Date(comment.createDate).toLocaleString()}</small>
+                    <div className="mt-2">
+                        {hasEditPermission(comment.profileResponseDTO.id) && (
+                            <>
+                                {editingCommentId === comment.id ? (
+                                    <button onClick={() => finalConfirm(user?.username, '해당 댓글을 수정하시겠습니까?', '수정', () => handleEditComment(comment.id))} className="mr-2 text-blue-500">저장</button>
+                                ) : (
+                                    <button onClick={() => {
+                                        setEditingCommentId(comment.id);
+                                        setEditContent(comment.content);
+                                    }} className="mr-2 text-blue-500">수정</button>
+                                )}
+                                <button onClick={() => finalConfirm(user?.username, '해당 댓글을 삭제하시겠습니까?', '삭제', () => handleDeleteComment(comment.id))} className="mr-2 text-red-500">삭제</button>
+                            </>
+                        )}
+                        <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+                        <button onClick={(e) => {
+                            e.stopPropagation();
+                            toggleReplyForm(comment.id);
+                        }} className="text-green-500">
+                            {replyingToId === comment.id ? '답글 취소' : '답글'}
+                        </button>
+                        {replyCount > 0 && (
+                            <span className="ml-2 text-gray-400">
+                                (답글 {replyCount})
+                            </span>
+                        )}
+                    </div>
                 </div>
-            </div>
-            {replyingToId === comment.id && (
-                <div className="flex mt-2 ml-8">
-                    <textarea
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                        className="bg-gray-700 text-white w-4/6 h-12 mr-2 p-2 border rounded"
-                        placeholder="답글을 입력하세요..."
-                    />
-                    <button onClick={() => handleReply(comment.id)} className="bg-yellow-600 hover:bg-yellow-400 text-white px-4 py-2 rounded">작성</button>
-                </div>
-            )}
-            {comment.commentResponseDTOList && comment.commentResponseDTOList.length > 0 && (
-                <ul className="mt-2">
-                    {comment.commentResponseDTOList.map(reply => renderComment(reply, depth + 1))}
-                </ul>
-            )}
-        </li>
-    );
+                {replyingToId === comment.id && (
+                    <div className="flex mt-2 ml-8">
+                        <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            className="bg-gray-700 text-white w-4/6 h-12 mr-2 p-2 border rounded"
+                            placeholder="답글을 입력하세요..."
+                        />
+                        <button onClick={() => handleReply(comment.id)} className="bg-yellow-600 hover:bg-yellow-400 text-white px-4 py-2 rounded">작성</button>
+                    </div>
+                )}
+                {comment.commentResponseDTOList && comment.commentResponseDTOList.length > 0 && expandedComments.has(comment.id) && (
+                    <ul className="mt-2">
+                        {comment.commentResponseDTOList.map(reply => renderComment(reply, depth + 1))}
+                    </ul>
+                )}
+            </li>
+        );
+    };
 
     return (
         <div className="w-full flex justify-between">
