@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile } from '@/app/API/UserAPI';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getCommentList, postComment, updateComment, deleteComment, getUser, getProfile, getLoveInfo } from '@/app/API/UserAPI';
 import { UpdateCommentProps, CommentProps } from '@/app/API/UserAPI';
 import { redirect, useRouter } from "next/navigation";
 import LoveButton from '../love/LoveButton';
@@ -65,6 +65,7 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
     const router = useRouter();
     const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
     const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
+    const [loveInfo, setLoveInfo] = useState({ isLoved:false, count : 0});
 
     const countTotalComments = (commentList: CommentResponseDTO[]): number => {
         return commentList.reduce((total, comment) => {
@@ -104,14 +105,8 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
             setComments(response.content);
             setTotalPages(Math.max(1, response.totalPages)); // 최소값을 1로 설정
             setTotalElements(response.totalElements);
-            //setTotalPages(response.totalPages));
             const totalCount = countTotalComments(response.content);
             setTotalComments(totalCount);
-            // 전체 댓글 수 계산 (첫 페이지에서만 수행)
-            // if (currentPage === 0) {
-            //     const totalCount = calculateTotalComments(response);
-            //     setTotalComments(totalCount);
-            // }
         } catch (error) {
             console.error('댓글을 불러오는데 실패했습니다 :', error);
         }
@@ -189,8 +184,21 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
         }
     };
 
+    const fetchLoveInfo = useCallback(async () => {
+        try {
+            const response = await getLoveInfo(articleId);
+            setLoveInfo(response);
+        } catch (error) {
+            console.error('좋아요 상태 확인 중 오류가 발생했습니다:', error);
+        }
+    }, [articleId]);
+
+    useEffect(() => {
+        fetchLoveInfo();
+    }, [fetchLoveInfo]);
+
     const handleLoveChange = (isLoved: boolean, count: number) => {
-        setTotalLoves(count);
+        setLoveInfo({isLoved ,count});
     };
 
     const isCommentAuthor = (commentAuthorId: number) => {
@@ -300,6 +308,7 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
                 <div className="flex items-center justify-center w-full px-4">
                     <LoveButton
                         articleId={articleId}
+                        initialLoveState={loveInfo}
                         onLoveChange={handleLoveChange}
                     />
                     <div className="flex flex-col items-center ml-5">
