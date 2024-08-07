@@ -75,13 +75,14 @@ public class LessonController {
     @GetMapping("/staff")
     public ResponseEntity<?> getLessonStaff(@RequestHeader("Authorization") String accessToken,
                                            @RequestHeader("PROFILE_ID") Long profileId,
-                                           @RequestHeader("CenterId") Long centerId) {
+                                           @RequestHeader("CenterId") Long centerId,
+                                            @RequestHeader(value = "Page", defaultValue = "0") int page) {
         TokenRecord tokenRecord = this.multiService.checkToken(accessToken, profileId);
         try {
             if (tokenRecord.isOK()) {
                 String username = tokenRecord.username();
-                List<LessonResponseDTO> responseDTOList = multiService.getLessonStaff(username, profileId, centerId);
-                return ResponseEntity.status(HttpStatus.OK).body(responseDTOList);
+                Page<LessonResponseDTO> responseDTOPage = multiService.getLessonStaff(username, profileId, centerId, page);
+                return ResponseEntity.status(HttpStatus.OK).body(responseDTOPage);
             }
         } catch (DataNotFoundException | IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
