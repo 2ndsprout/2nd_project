@@ -10,7 +10,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../../tag/TagInput';
-import DOMPurify from 'dompurify';
 
 
 interface Tag {
@@ -269,7 +268,6 @@ export default function EditPage() {
     
         try {
             const updatedContent = quillInstance.current?.getEditor().root.innerHTML || '';
-            const sanitizedContent = DOMPurify.sanitize(updatedContent);
 
             const tagNames = tags.map(tag => tag.name);
 
@@ -280,7 +278,7 @@ export default function EditPage() {
             const requestData = {
                 articleId: Number(articleId),
                 title,
-                content: sanitizedContent,
+                content: updatedContent,
                 categoryId: Number(categoryId),
                 tagName: tagNames, // 모든 태그 이름 포함
                 articleTagId: deletedTagIds, // 삭제된 태그 ID
