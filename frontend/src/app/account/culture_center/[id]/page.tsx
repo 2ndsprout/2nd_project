@@ -114,7 +114,7 @@ export default function Page() {
     }, [ACCESS_TOKEN, PROFILE_ID, centerId]);
 
     const getLinkClass = (id: number) => {
-        return centerId === id ? "text-yellow-400 hover:underline" : "hover:underline";
+        return centerId === id ? "text-lg text-yellow-400 flex mb-2 hover:underline font-bold" : "flex mb-2 text-lg hover:underline";
     };
 
     const fetchArticles = async () => {
@@ -147,11 +147,11 @@ export default function Page() {
             <div className="bg-black w-full min-h-screen text-white flex h-full">
                 <aside className="w-1/6 p-6">
                     <div className="mt-5 ml-20 flex flex-col items-start">
-                        <h2 className="text-3xl font-bold  mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
+                        <h2 className="text-3xl font-bold  mb-10" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
                         <div className="mb-2">
-                            <div>
+                            <div >
                                 {centerList?.map((center) =>
-                                    <div key={center.id} >
+                                    <div key={center.id}>
                                         <Link href={`/account/culture_center/${center.id}`} className={getLinkClass(center.id)}>
                                             {center?.type === 'GYM' ? '헬스장' : ''
                                                 || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
@@ -173,33 +173,32 @@ export default function Page() {
                                 <th className="ml-[270px] text-orange-400 w-[100px] flex justify-center border-b">수업 기간</th>
                             </tr>
                         </thead>
-                        {lessonList.length === 0 ? (
-                            <tbody className="text-center w-[450px] text-[30px] py-4">
-                                <tr>레슨이 없습니다.
-
+                        {lessonList?.length != 0 ? lessonList.map((lesson, index) => (
+                            <tbody key={index}>
+                                <tr className="bg-gray-800 p-2 rounded-lg w-[1000px] flex items-center mr-[200px] h-[120px] hover:cursor-pointer"
+                                    onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
+                                    <td className="w-[200px]"><img src={lesson.profileResponseDTO?.url ? lesson.profileResponseDTO.url : '/user.png'} className="w-full h-full" alt="profile" /></td>
+                                    <td className="w-[300px] h-1/3 flex items-center justify-center">{lesson.profileResponseDTO.name}</td>
+                                    <td className="text-xl font-bold items-center justify-center w-[1200px] text-orange-300 flex overflow-hidden overflow-ellipsis whitespace-nowrap">{lesson.name}</td>
+                                    <td className="flex h-3/4 w-[500px] items-center justify-end mr-5">{getDateFormat(lesson.startDate)} ~ {getDateFormat(lesson.endDate)}</td>
                                 </tr>
                             </tbody>
-                        ) : (
-                            lessonList.map((lesson, index) => (
-                                <tbody key={index}>
-                                    <tr className="bg-gray-800 p-2 rounded-lg w-[1000px] flex items-center mr-[200px] h-[120px] hover:cursor-pointer"
-                                        onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
-                                        <td className="w-[200px]"><img src={lesson.profileResponseDTO?.url ? lesson.profileResponseDTO.url : '/user.png'} className="w-full h-full" alt="profile" /></td>
-                                        <td className="w-[300px] h-1/3 flex items-center justify-center">{lesson.profileResponseDTO.name}</td>
-                                        <td className="text-xl font-bold items-center justify-center w-[1200px] text-orange-300 flex overflow-hidden overflow-ellipsis whitespace-nowrap">{lesson.name}</td>
-                                        <td className="flex h-3/4 w-[500px] items-center justify-end mr-5">{getDateFormat(lesson.startDate)} ~ {getDateFormat(lesson.endDate)}</td>
-                                    </tr>
-                                </tbody>
-                            )))}
+                        )) : <tbody>
+                            <tr>
+                                <td className="text-xl font-bold p-16">
+                                    등록된 레슨이 없습니다.
+                                </td>
+                            </tr>
+                        </tbody>}
                     </table>
                     <div className="flex w-[400px] mr-[70px] mt-[50px]">
                         {lessonList && lessonList.length > 0 ? (
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={handlePageChange}
-                        />
-                    ) : null}
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
+                        ) : null}
                     </div>
                 </div>
             </div>
