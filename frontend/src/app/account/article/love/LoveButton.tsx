@@ -2,7 +2,7 @@
 
 import { getLoveInfo, getProfile, getUser, toggleLove } from '@/app/API/UserAPI';
 import Image from 'next/image';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from 'react';
 
 interface LoveButtonProps {
@@ -23,6 +23,7 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
   const [profile, setProfile] = useState(null as any);
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+  const router = useRouter();
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
@@ -30,10 +31,10 @@ const LoveButton: React.FC<LoveButtonProps> = ({ articleId, onLoveChange }) => {
         if (PROFILE_ID)
             getProfile().then(r => setProfile(r)).catch(e => console.log(e));
         else
-            redirect('/account/profile');
+        redirect('/account/profile');
     }
     else
-        redirect('/account/login');
+    redirect('/account/login');
 }, [ACCESS_TOKEN, PROFILE_ID]);
 
   const fetchLoveInfo = useCallback(async () => {

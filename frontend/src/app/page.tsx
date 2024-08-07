@@ -23,14 +23,14 @@ export default function Page() {
   const ACCESS_TOKEN = typeof window == 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window == 'undefined' ? null : localStorage.getItem('PROFILE_ID');
   const [urlList, setUrlList] = useState([] as any[]);
-  const Router = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     if (ACCESS_TOKEN) {
       getUser()
         .then(r => {
           if (r.role === 'ADMIN') {
-            Router.push('/account/admin');
+            redirect('/account/admin');
           }
           setUser(r);
           console.log(r);
@@ -52,7 +52,7 @@ export default function Page() {
             getMyLessonList()
               .then(r => {
                 r.forEach((r: any) => {
-                  if(r.type === 'APPLIED') {
+                  if (r.type === 'APPLIED') {
                     setLessons(prev => [...prev, r.lessonResponseDTO])
                   }
                 });
@@ -138,7 +138,7 @@ export default function Page() {
   const displayUrls = urlList.length === 0 ? defaultUrls : urlList;
 
   const handleRowClick = (categoryId: number, articleId: number) => {
-    Router.push(`/account/article/${categoryId}/detail/${articleId}`);
+    router.push(`/account/article/${categoryId}/detail/${articleId}`);
   };
 
   return (

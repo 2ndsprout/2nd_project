@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { deleteProfile, getCenter, getCenterList, getProfile, getUser, saveImage, saveProfileImage, updateProfile } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import { checkInput } from "@/app/Global/component/Method";
@@ -22,6 +22,7 @@ export default function Page() {
   const [centerList, setCenterList] = useState([] as any[]);
   const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
   const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
+  const router = useRouter();
 
   useEffect(() => {
     if (ACCESS_TOKEN) {

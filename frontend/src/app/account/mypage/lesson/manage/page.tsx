@@ -18,7 +18,7 @@ interface Center {
 
 
 export default function Page() {
-  const Router = useRouter();
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [url, setUrl] = useState('');

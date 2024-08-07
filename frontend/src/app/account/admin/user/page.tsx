@@ -8,7 +8,7 @@ import Modal from '@/app/Global/component/Modal';
 import Pagination from '@/app/Global/component/Pagination';
 import useConfirm from '@/app/Global/hook/useConfirm';
 import Main from '@/app/Global/layout/MainLayout';
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 
@@ -39,6 +39,7 @@ export default function Page() {
     const [aptNum, setAptNum] = useState('' as any);
     let [role, setRole] = useState('' as any);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
+    const router = useRouter();
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -68,11 +69,11 @@ export default function Page() {
                     })
                     .catch(e => console.log(e));
             else
-                redirect('/account/profile');
+            redirect('/account/profile');
         }
         else
-            redirect('/account/login');
-            const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
+        redirect('/account/login');
+        const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 500);
     }, [ACCESS_TOKEN, PROFILE_ID, userList]);
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -104,6 +105,7 @@ export default function Page() {
                 .then((r) => {
                     setUserList(r.content);
                     setTotalPages(r.totalPages); // 응답에서 totalPages 설정
+                    console.log("content", r.content);
                 })
                 .catch(e => console.log(e));
         }
@@ -316,18 +318,20 @@ export default function Page() {
                             </button>
                         </Modal>
                         <div className="h-[500px] w-[1000px]">
-                            {userList.map((user) => (
-                                <div key={user.username} className='flex items-center justify-between border-b-2 h-[50px]'>
-                                    <div className='flex items-center w-full h-full'>
-                                        <div className='ml-4 w-full h-full' >
-                                            <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{user.username}</div>
+                            <div className="h-[500px]">
+                                {userList.map((user) => (
+                                    <div key={user.username} className='flex items-center justify-between border-b-2 h-[50px]'>
+                                        <div className='flex items-center w-full h-full'>
+                                            <div className='ml-4 w-full h-full' >
+                                                <div className='text-sm overflow-hidden overflow-ellipsis whitespace-nowrap w-[300px]'>{user.username}</div>
+                                            </div>
+                                        </div>
+                                        <div className="w-[300px] justify-end flex">
+                                            <button onClick={() => finalConfirm(user?.username, '해당 유저를 삭제하시겠습니까?', '삭제', () => deleteUserButton(user?.username))} className='text-sm mr-[30px] font-bold text-red-400 hover:text-red-600'>유저 삭제</button>
                                         </div>
                                     </div>
-                                    <div className="w-[300px] justify-end flex">
-                                    <button onClick={() => finalConfirm(user?.username, '해당 유저를 삭제하시겠습니까?', '삭제', () => deleteUserButton(user?.username))} className='text-sm mr-[30px] font-bold text-red-400 hover:text-red-600'>유저 삭제</button>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                             <div className="flex justify-center mt-6">
                                 {userList && userList.length > 0 ? (
                                     <Pagination

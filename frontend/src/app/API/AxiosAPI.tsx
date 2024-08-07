@@ -6,6 +6,9 @@ export function getAPI() {
         baseURL: 'http://localhost:8080',
         headers: {
             'Content-Type': 'application/json;charset=utf-8;',
+            'Cache-Control': 'no-store',
+            Pragma: 'no-store',
+            Expires: '0',
         },
     });
     return api;

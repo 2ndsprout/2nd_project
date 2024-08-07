@@ -6,7 +6,7 @@ import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
 import Main from "@/app/Global/layout/MainLayout";
 import Link from "next/link";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Article {
@@ -69,6 +69,7 @@ export default function ArticleListPage() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [aptList, setAptList] = useState<AptInfo[]>([]);
     const [selectedAptId, setSelectedAptId] = useState(0);
+    const router = useRouter();
 
     const USED_ITEMS_CATEGORY_ID = 3;
     const pageSize = Number(categoryId) === USED_ITEMS_CATEGORY_ID ? 9 : 15;
@@ -83,7 +84,7 @@ export default function ArticleListPage() {
         if (ACCESS_TOKEN) {
             getUser().then(r => {
                 setUser(r);
-                console.log("사용자 데이터 : ", r); // 디버깅용
+                console.log("사용자 데이터 : ", r);
                 setIsAdmin(r.role === "ADMIN");
                 setSelectedAptId(r.aptResponseDTO.aptId);
                 
@@ -98,7 +99,7 @@ export default function ArticleListPage() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
-                        console.log("프로필 데이터 : ", r); // 디버깅용
+                        console.log("프로필 데이터 : ", r);
                         getCenterList()
                             .then(r => setCenterList(r))
                             .catch(e => console.error("센터 목록 가져오기 실패:", e));
@@ -106,10 +107,10 @@ export default function ArticleListPage() {
                     })
                     .catch(e => console.error("프로필 정보 가져오기 실패:", e));
             else
-                redirect('/account/profile');
+            redirect('/account/profile');
         }
         else
-            redirect('/account/login');
+        redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     const fetchArticles = async (isSearch: boolean = false) => {
