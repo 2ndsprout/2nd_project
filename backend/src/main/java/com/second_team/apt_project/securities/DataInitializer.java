@@ -1,9 +1,11 @@
 package com.second_team.apt_project.securities;
 
 import com.second_team.apt_project.domains.Apt;
+import com.second_team.apt_project.domains.Category;
 import com.second_team.apt_project.domains.SiteUser;
 import com.second_team.apt_project.enums.UserRole;
 import com.second_team.apt_project.repositories.AptRepository;
+import com.second_team.apt_project.repositories.CategoryRepository;
 import com.second_team.apt_project.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AptRepository aptRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -50,6 +53,20 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Admin account created");
         } else {
             System.out.println("Admin account already exists");
+        }
+
+        String[] categoryNames = {"FAQ", "공지사항", "자유게시판", "중고장터"};
+        for (String categoryName : categoryNames) {
+            Optional<Category> existingCategory = this.categoryRepository.findByName(categoryName);
+            if (existingCategory.isEmpty()) {
+                Category category = Category.builder()
+                        .name(categoryName)
+                        .build();
+                this.categoryRepository.save(category);
+                System.out.println(categoryName + " category created");
+            } else {
+                System.out.println(categoryName + " category already exists");
+            }
         }
     }
 }

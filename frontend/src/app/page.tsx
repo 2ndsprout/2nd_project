@@ -42,8 +42,10 @@ export default function Page() {
           .then(r => {
             setProfile(r);
             getCategoryList()
-              .then(r => setCategories(r))
-              .catch(e => console.log(e))
+              .then(r => 
+                setCategories(r))
+              .catch(e => 
+                console.log(e))
             getCenterList()
               .then(r => {
                 setCenterList(r);
