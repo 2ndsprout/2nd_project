@@ -4,7 +4,6 @@
 import { deleteArticle, getArticle, getCenterList, getProfile, getUser, getTag } from '@/app/API/UserAPI';
 import { getDateTimeFormat } from '@/app/Global/component/Method';
 import Main from "@/app/Global/layout/MainLayout";
-import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
@@ -190,17 +189,15 @@ export default function ArticleDetail() {
                         <Slider urlList={imageUrls} />
                     </div>
                     <div className="w-1/2 p-6">
-                        {/* <h1 className="text-2xl font-bold mb-4">{article.title}</h1> */}
                         {price && <p className="text-xl text-yellow-500 mb-4">가격: {price}원</p>}
-                        <div dangerouslySetInnerHTML={renderSafeHTML(contentWithoutImages.replace(/\[PRICE\].*?\[\/PRICE\]/g, ''))} />
+                        <div dangerouslySetInnerHTML={{ __html: contentWithoutImages.replace(/\[PRICE\].*?\[\/PRICE\]/g, '') }} />
                     </div>
                 </div>
             );
         } else {
             return (
                 <div>
-                    {/* <h1 className="text-2xl font-bold mb-4">{article.title}</h1> */}
-                    <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                    <div dangerouslySetInnerHTML={{ __html: article.content }} />
                 </div>
             );
         }
@@ -258,13 +255,6 @@ export default function ArticleDetail() {
         return <div className="flex items-center justify-center h-screen text-gray-400">게시물을 불러오는 중입니다...</div>;
     }
 
-    const renderSafeHTML = (content: string) => {
-
-        const sanitizedContent = DOMPurify.sanitize(content);
-
-        return { __html: sanitizedContent };
-    };
-
     const content = (
         <div className="flex flex-col w-full">
             {isUsedItemsCategory ? (
@@ -286,7 +276,7 @@ export default function ArticleDetail() {
                                 </div>
                             )}
                             <div className="prose prose-invert max-w-none">
-                                <div dangerouslySetInnerHTML={renderSafeHTML(contentWithoutImages.replace(/\[PRICE\].*?\[\/PRICE\]/g, ''))} />
+                                <div dangerouslySetInnerHTML={{ __html: contentWithoutImages.replace(/\[PRICE\].*?\[\/PRICE\]/g, '') }} />
                             </div>
                             <div className="mt-6">
                                 <ul className="flex flex-wrap">
@@ -308,7 +298,7 @@ export default function ArticleDetail() {
                     </div>
                     <div className="p-6 bg-gray-800 rounded-lg shadow-lg">
                         <div className="prose prose-invert max-w-none">
-                            <div dangerouslySetInnerHTML={renderSafeHTML(article.content)} />
+                            <div dangerouslySetInnerHTML={{ __html: article.content }} />
                         </div>
                         <div className="mt-6">
                             <ul className="flex flex-wrap">
