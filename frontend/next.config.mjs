@@ -29,6 +29,7 @@ const nextConfig = {
 			{
 				source: '/api/:path*',
 				destination: 'http://3.39.93.40:8080/api/:path*',
+				// destination: 'http://localhost:8080/api/:path*',
 			},
 		]
 	},
