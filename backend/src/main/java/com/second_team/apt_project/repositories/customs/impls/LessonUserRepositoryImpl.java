@@ -1,10 +1,15 @@
 package com.second_team.apt_project.repositories.customs.impls;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.second_team.apt_project.domains.*;
 import com.second_team.apt_project.enums.LessonStatus;
+import com.second_team.apt_project.enums.ProposeStatus;
 import com.second_team.apt_project.repositories.customs.LessonUserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;

@@ -372,11 +372,12 @@ export const getLoveInfo = async (articleId: number): Promise<LoveResponseDTO> =
     }
 };
 
-// Center
+// Center // 나중에 풀어야해요
 interface CenterProps {
     type: number,
-    startDate: Date,
-    endDate: Date
+    startDate?: Date,
+    endDate?: Date,
+    url?: string
 }
 
 export const postCenter = async (data: CenterProps) => {
@@ -440,8 +441,8 @@ export const getMyLessonList = async () => {
     return response.data;
 }
 
-export const getStaffLessonList = async (data: number) => {
-    const response = await UserApi.get('/api/lesson/staff', { headers: { 'CenterId': data } });
+export const getStaffLessonList = async (data: number, page?: number) => {
+    const response = await UserApi.get('/api/lesson/staff', { headers: { 'CenterId': data, 'Page' : page } });
     return response.data;
 }
 interface UpdateLessonProps {
@@ -531,8 +532,8 @@ export const getLessonRequestList = async () => {
     return response.data;
 }
 
-export const getLessonRequestListByStaff = async (type: number, id: number) => {
-    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: { 'LessonId': id, 'Type': type } });
+export const getLessonRequestListByStaff = async (type: number, id?: number) => {
+    const response = await UserApi.get('/api/lesson/user/staff/list', { headers: { 'LessonId': id, 'Type': type} });
     return response.data;
 }
 

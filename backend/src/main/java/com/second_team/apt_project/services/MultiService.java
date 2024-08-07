@@ -187,7 +187,7 @@ public class MultiService {
                     }
                 }
             }
-            this.userService.save(aptId + "_security", "security" + aptId, aptId + "security@security.co.kr", 0, 1, apt);
+            this.userService.save(aptId + "_security", aptId + "_security", aptId + "security@security.co.kr", 0, 1, apt);
             return userResponseDTOList;
         } else {
             throw new IllegalArgumentException("권한 불일치");
@@ -1585,7 +1585,7 @@ public class MultiService {
     }
 
     @Transactional
-    public List<LessonResponseDTO> getLessonStaff(String username, Long profileId, Long centerId) {
+    public Page<LessonResponseDTO> getLessonStaff(String username, Long profileId, Long centerId, int page) {
         SiteUser user = userService.get(username);
         Profile profile = profileService.findById(profileId);
         this.userCheck(user, profile);
@@ -1594,12 +1594,13 @@ public class MultiService {
             throw new DataNotFoundException("센터 객체 없음");
         if (!cultureCenter.getApt().equals(user.getApt()) || user.getRole() == UserRole.USER)
             throw new IllegalArgumentException("권한 없음");
-        List<Lesson> lessonList = lessonService.findByProfileAndCenter(profile.getId(), cultureCenter.getId());
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Lesson> lessonPage = lessonService.findByProfileAndCenter(profile.getId(), cultureCenter.getId(), pageable);
         List<LessonResponseDTO> lessonResponseDTOList = new ArrayList<>();
-        for (Lesson lesson : lessonList) {
+        for (Lesson lesson : lessonPage) {
             lessonResponseDTOList.add(this.lessonResponseDTO(lesson));
         }
-        return lessonResponseDTOList;
+        return new PageImpl<>(lessonResponseDTOList, pageable, lessonPage.getTotalElements());
     }
 
 
@@ -1671,7 +1672,7 @@ public class MultiService {
         List<LessonUser> lessonUserList = lessonUserService.getStaffList(lesson, type);
         List<LessonUserResponseDTO> userResponseDTOS = new ArrayList<>();
         for (LessonUser lessonUser : lessonUserList) {
-            userResponseDTOS.add(lessonUserResponseDTO(lessonUser));
+            userResponseDTOS.add(this.lessonUserResponseDTO(lessonUser));
         }
         return userResponseDTOS;
     }
