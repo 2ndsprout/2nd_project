@@ -296,7 +296,7 @@ export default function ArticleDetail() {
                         <h1 className="text-3xl font-bold mb-4 text-center">{article.title}</h1>
                         <p className="text-sm text-gray-400 mb-6 text-right">{getDateTimeFormat(article.createDate)}</p>
                     </div>
-                    <div className="p-6 bg-gray-800 rounded-lg shadow-lg">
+                    <div className="p-6 bg-gray-800 rounded-lg shadow-lg min-h-[600px]">
                         <div className="prose prose-invert max-w-none">
                             <div dangerouslySetInnerHTML={{ __html: article.content }} />
                         </div>
