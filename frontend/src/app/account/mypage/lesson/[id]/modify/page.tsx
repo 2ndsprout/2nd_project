@@ -35,7 +35,7 @@ export default function Page() {
     const [centerList, setCenterList] = useState([] as any[]);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const { alertState, showAlert, closeAlert } = useAlert();
-    const [dateRange, setDateRange] = useState({ startDate: null as any, endDate: null as any });
+    const [dateRange, setDateRange] = useState({ startDate: null as any, endDate: null as any, createDate: null as any });
     const [startTime, setStartTime] = useState<Dayjs | string>('');
     const [endTime, setEndTime] = useState<Dayjs | string>('');
     const [centerId, setCenterId] = useState(0);
@@ -53,6 +53,7 @@ export default function Page() {
     const [first, setFirst] = useState(false);
     const [lessonEndDate, setLessonEndDate] = useState(null as any);
     const [selectedCenter, setSelectedCenter] = useState('');
+    const [createDate, setCreateDate] = useState(null as any);
     const router = useRouter();
 
     const convertEpochToDayjs = (epochMilliseconds: number): Dayjs => {
@@ -65,9 +66,9 @@ export default function Page() {
         const now = dayjs();
 
         // 시작일이 현재 날짜 이전인지 확인
-        if (dayjs(dateRange.startDate).isBefore(now, 'day')) {
+        if (dayjs(dateRange.createDate).isBefore(now, 'day')) {
             closeConfirm();
-            showAlert('레슨 시작일은 현재 날짜 이후여야 합니다.');
+            showAlert('레슨 시작일은 생성 날짜 이후여야 합니다.');
             return;
         }
 
@@ -136,7 +137,7 @@ export default function Page() {
     const handleDateChange = (newValue: DateValueType | string) => {
         if (typeof newValue === 'object' && newValue !== null) {
             const { startDate, endDate } = newValue;
-            setDateRange({ startDate, endDate });
+            setDateRange({ startDate, endDate, createDate });
             setDateError('');
         } else if (typeof newValue === 'string') {
             setDateError(newValue);
@@ -239,9 +240,11 @@ export default function Page() {
                                         setDateRange({
                                             startDate: dayjs(r.startDate).format('YYYY-MM-DD'),
                                             endDate: dayjs(r.endDate).format('YYYY-MM-DD'),
+                                            createDate: dayjs(r.createDate).format('YYYY-MM-DD'),
                                         });
                                         setStartTime(convertEpochToDayjs(Number(r.startDate)));
                                         setEndTime(convertEpochToDayjs(Number(r.endDate)));
+                                        setCreateDate(convertEpochToDayjs(Number(r.createDate)));
                                         setLessonName(r.name);
                                         setLessonContent(r.content);
                                         setCenterId(r.centerResponseDTO.id);

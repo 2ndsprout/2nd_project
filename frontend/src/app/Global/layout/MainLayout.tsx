@@ -229,13 +229,12 @@ export default function Main(props: Readonly<PageInterface>) {
                   {user?.role !== 'USER' ? <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a> : null}
                 </div>
               </DropDown>
-              <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDirection={Direction.DOWN} height={100} width={180} y={14} x={-20}>
+              <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDirection={Direction.DOWN} height={65} width={180} y={14} x={-20}>
                 <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
                   onMouseEnter={() => openHover(setManageHover)}
                   onMouseLeave={() => closeHover(setManageHover)}>
                   <a href='/account/FAQ/' className='hover:text-secondary text-sm'>FAQ</a>
                   <a href='/' className='hover:text-secondary text-sm'>건의사항</a>
-                  {user?.role !== 'USER' ? <a href='/lesson' className='hover:text-secondary text-sm'>1:1 문의</a> : null}
                 </div>
               </DropDown>
               <div className="navbar-end">

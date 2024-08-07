@@ -1,6 +1,6 @@
 'use client';
 
-import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList, postTag } from '@/app/API/UserAPI';
+import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -160,6 +160,21 @@ export default function Page() {
         }),
         [isUsedItemsCategory],
     );
+
+    const formats = [
+        'header',
+        'font',
+        'size',
+        'bold',
+        'italic',
+        'underline',
+        'strike',
+        'blockquote',
+        'list',
+        'bullet',
+        'align',
+        'image',
+    ];
 
     const Submit = async () => {
         if (!title.trim() || !quillInstance.current?.getEditor().getText().trim()) {
