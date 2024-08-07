@@ -36,7 +36,8 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Admin Apt created");
         }
 
-        if (userRepository.findByUsername("admin") == null) {
+        SiteUser _admin = userRepository.findByUsername("admin");
+        if (_admin == null) {
             SiteUser admin = SiteUser.builder()
                     .username("admin")
                     .apt(apt)

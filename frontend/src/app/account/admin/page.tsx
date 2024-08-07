@@ -42,7 +42,9 @@ export default function Page() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading}>
-            fdsafsd
+            <div className="flex justify-center items-center h-full">
+                <h1 className="text-3xl font-bold">관리자 페이지</h1>
+                </div>
             </Main>
     );
 }

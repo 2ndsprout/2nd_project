@@ -87,7 +87,7 @@ export default function ArticleListPage() {
                 console.log("사용자 데이터 : ", r);
                 setIsAdmin(r.role === "ADMIN");
                 setSelectedAptId(r.aptResponseDTO.aptId);
-                
+
                 if (r.role === "ADMIN") {
                     getAptList().then(aptData => {
                         setAptList(aptData);
@@ -107,10 +107,10 @@ export default function ArticleListPage() {
                     })
                     .catch(e => console.error("프로필 정보 가져오기 실패:", e));
             else
-            redirect('/account/profile');
+                redirect('/account/profile');
         }
         else
-        redirect('/account/login');
+            redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     const fetchArticles = async (isSearch: boolean = false) => {
@@ -189,175 +189,182 @@ export default function ArticleListPage() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
-        <div className="flex flex-col min-h-screen">
-            <div className="flex flex-1 w-full">
-                <div className="flex w-full h-full">
-                    <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
-                        <CategoryList userRole={user?.role} />
-                    </aside>
-                    <div className="flex-1 max-w-7xl p-10 ml-[400px]">
-                        {isAdmin && (
-                            <div className="mb-6">
-                                <select 
-                                    value={selectedAptId || ''}
-                                    onChange={handleAptChange}
-                                    className="p-2 bg-gray-700 rounded text-white"
-                                >
-                                    {aptList.map(apt => (
-                                        <option key={apt.aptId} value={apt.aptId}>
-                                            {apt.aptName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                        <h2 className="text-2xl font-bold mb-6">
-                            {isAdmin 
-                                ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
-                                : `${user?.aptResponseDTO?.aptName || ''} 게시판`
-                            }
-                        </h2>
-                        {error ? (
-                            <p className="text-red-500">{error}</p>
-                        ) : articleList.length === 0 ? (
-                            <p className="text-gray-400">게시물을 불러오는중...</p>
-                        ) : Number(categoryId) === USED_ITEMS_CATEGORY_ID ? (
-                            <div className="grid grid-cols-3 gap-4">
-                                {articleList.map((article) => {
-                                const price = extractPrice(article.content);
-                                const imageUrl = extractFirstImageUrl(article.content);
-                                return (
-                                    <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} key={article.articleId}>
-                                        <div className="bg-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-[400px]">
-                                            <div className="h-72 overflow-hidden relative">
-                                                {imageUrl && (
-                                                    <img 
-                                                        src={imageUrl} 
-                                                        alt={article.title} 
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                )}
-                                                <div className="absolute top-2 right-2 flex space-x-2">
-                                                    {(article.commentCount ?? 0) > 0 && (
-                                                        <div className="bg-black bg-opacity-50 rounded-full p-2 flex items-center">
-                                                            <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
-                                                            <span className="text-white text-xs">{article.commentCount}</span>
-                                                        </div>
-                                                    )}
-                                                    {(article.loveCount ?? 0) > 0 && (
-                                                        <div className="bg-black bg-opacity-50 rounded-full p-2 flex items-center">
-                                                            <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 h-4 mr-1" />
-                                                            <span className="text-white text-xs">{article.loveCount}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="p-4 flex flex-col flex-grow">
-                                                <h3 className="text-lg font-semibold mb-2 line-clamp-2">{article.title}</h3>
-                                                <div className="mt-auto flex justify-between items-end">
-                                                    {price && <p className="text-yellow-500 text-2xl font-semibold">{price}원</p>}
-                                                    <p className="text-sm text-gray-400">{getDate(article.createDate)}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
-                            </div>
-                        ) : (
-                            <table className="w-full table-auto">
-                                <thead>
-                                    <tr className="border-b border-gray-700">
-                                        <th className="w-1/2 p-4 text-left">제목</th>
-                                        <th className="w-1/6 p-4 text-center"><span className="invisible">댓글,좋아요수</span></th>
-                                        <th className="w-1/6 p-4 text-left">작성자</th>
-                                        <th className="w-1/6 p-4 text-right">작성일자</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {articleList.map((article) => (
-                                        <tr key={article.articleId} className="border-b border-gray-700">
-                                            <td className="p-4 text-left">
-                                                <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
-                                                    {article.title}
-                                                </Link>
-                                            </td>
-                                            <td className="flex p-4 text-center">
-                                                {(article.loveCount ?? 0) > 0 && (
-                                                    <div className="text-sm text-gray-400 flex items-center mr-4">
-                                                        <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 mr-1" />
-                                                        [{article.loveCount}]
-                                                    </div>
-                                                )}
-                                                {(article.commentCount ?? 0) > 0 && (
-                                                    <div className="text-sm text-gray-400 flex items-center justify-center">
-                                                        <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
-                                                        [{article.commentCount}]
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="p-4 text-left">{article.profileResponseDTO.name}</td>
-                                            <td className="p-4 text-right text-gray-400">{getDate(article.createDate)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-
-                        <div className="mt-10 flex justify-between items-center">
-                            <div className="flex items-center">
-                                <input
-                                    type="text"
-                                    placeholder="검색..."
-                                    className="p-2 bg-gray-700 rounded text-white mr-2"
-                                    value={keyword}
-                                    onChange={(e) => setKeyword(e.target.value)}
-                                />
-                                <select
-                                    className="p-2 bg-gray-700 rounded text-white mr-2"
-                                    value={sort}
-                                    onChange={(e) => setSort(Number(e.target.value))}
-                                >
-                                    <option value={0}>제목</option>
-                                    <option value={1}>제목+내용</option>
-                                    <option value={2}>작성자</option>
-                                    <option value={3}>태그</option>
-                                </select>
-                                <button
-                                    className="p-2 bg-yellow-600 rounded hover:bg-yellow-400 text-white mr-2"
-                                    onClick={handleSearch}
-                                >
-                                    검색
-                                </button>
-                                {isSearching && (
-                                    <button
-                                        className="p-2 bg-gray-600 rounded hover:bg-gray-400 text-white"
-                                        onClick={handleReset}
+            <div className="flex flex-col min-h-screen">
+                <div className="flex flex-1 w-full">
+                    <div className="flex w-full h-full">
+                        <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
+                            <CategoryList userRole={user?.role} />
+                        </aside>
+                        <div className="flex-1 max-w-7xl p-10 ml-[400px]">
+                            {isAdmin && (
+                                <div className="mb-6">
+                                    <select
+                                        value={selectedAptId || ''}
+                                        onChange={handleAptChange}
+                                        className="p-2 bg-gray-700 rounded text-white"
                                     >
-                                        초기화
+                                        {aptList.map(apt => (
+                                            <option key={apt.aptId} value={apt.aptId} disabled={apt.aptName === 'admin'}>
+                                                {apt?.aptName !== 'admin' ? apt?.aptName : '아파트를 선택해주세요'}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                            <h2 className="text-2xl font-bold mb-6">
+                                {
+                                    isAdmin ? (
+                                        selectedAptId !== 1
+                                            ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
+                                            : '아파트를 선택해주세요.'
+                                    ) : (
+                                        `${user?.aptResponseDTO?.aptName || ''} 게시판`
+                                    )
+                                }
+                            </h2>
+                            {error ? (
+                                <p className="text-red-500">{error}</p>
+                            ) : selectedAptId === 1 ? ( <>
+                            </>
+                            ) : articleList.length === 0 ? (
+                                <p className="text-gray-400">등록된 게시물이 없습니다.</p>
+                            ) : Number(categoryId) === USED_ITEMS_CATEGORY_ID ? (
+                                <div className="grid grid-cols-3 gap-4">
+                                    {articleList.map((article) => {
+                                        const price = extractPrice(article.content);
+                                        const imageUrl = extractFirstImageUrl(article.content);
+                                        return (
+                                            <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} key={article.articleId}>
+                                                <div className="bg-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-[400px]">
+                                                    <div className="h-72 overflow-hidden relative">
+                                                        {imageUrl && (
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={article.title}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        )}
+                                                        <div className="absolute top-2 right-2 flex space-x-2">
+                                                            {(article.commentCount ?? 0) > 0 && (
+                                                                <div className="bg-black bg-opacity-50 rounded-full p-2 flex items-center">
+                                                                    <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
+                                                                    <span className="text-white text-xs">{article.commentCount}</span>
+                                                                </div>
+                                                            )}
+                                                            {(article.loveCount ?? 0) > 0 && (
+                                                                <div className="bg-black bg-opacity-50 rounded-full p-2 flex items-center">
+                                                                    <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 h-4 mr-1" />
+                                                                    <span className="text-white text-xs">{article.loveCount}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-4 flex flex-col flex-grow">
+                                                        <h3 className="text-lg font-semibold mb-2 line-clamp-2">{article.title}</h3>
+                                                        <div className="mt-auto flex justify-between items-end">
+                                                            {price && <p className="text-yellow-500 text-2xl font-semibold">{price}원</p>}
+                                                            <p className="text-sm text-gray-400">{getDate(article.createDate)}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <table className="w-full table-auto">
+                                    <thead>
+                                        <tr className="border-b border-gray-700">
+                                            <th className="w-1/2 p-4 text-left">제목</th>
+                                            <th className="w-1/6 p-4 text-center"><span className="invisible">댓글,좋아요수</span></th>
+                                            <th className="w-1/6 p-4 text-left">작성자</th>
+                                            <th className="w-1/6 p-4 text-right">작성일자</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {articleList.map((article) => (
+                                            <tr key={article.articleId} className="border-b border-gray-700">
+                                                <td className="p-4 text-left">
+                                                    <Link href={`/account/article/${categoryId}/detail/${article.articleId}`} className="hover:underline">
+                                                        {article.title}
+                                                    </Link>
+                                                </td>
+                                                <td className="flex p-4 text-center">
+                                                    {(article.loveCount ?? 0) > 0 && (
+                                                        <div className="text-sm text-gray-400 flex items-center mr-4">
+                                                            <img src="/full-like.png" alt="좋아요 아이콘" className="w-4 mr-1" />
+                                                            [{article.loveCount}]
+                                                        </div>
+                                                    )}
+                                                    {(article.commentCount ?? 0) > 0 && (
+                                                        <div className="text-sm text-gray-400 flex items-center justify-center">
+                                                            <img src="/icon-comment.png" alt="댓글 아이콘" className="w-4 h-4 mr-1" />
+                                                            [{article.commentCount}]
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-left">{article.profileResponseDTO.name}</td>
+                                                <td className="p-4 text-right text-gray-400">{getDate(article.createDate)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+
+                            <div className="mt-10 flex justify-between items-center">
+                                <div className="flex items-center">
+                                    <input
+                                        type="text"
+                                        placeholder="검색..."
+                                        className="p-2 bg-gray-700 rounded text-white mr-2"
+                                        value={keyword}
+                                        onChange={(e) => setKeyword(e.target.value)}
+                                    />
+                                    <select
+                                        className="p-2 bg-gray-700 rounded text-white mr-2"
+                                        value={sort}
+                                        onChange={(e) => setSort(Number(e.target.value))}
+                                    >
+                                        <option value={0}>제목</option>
+                                        <option value={1}>제목+내용</option>
+                                        <option value={2}>작성자</option>
+                                        <option value={3}>태그</option>
+                                    </select>
+                                    <button
+                                        className="p-2 bg-yellow-600 rounded hover:bg-yellow-400 text-white mr-2"
+                                        onClick={handleSearch}
+                                    >
+                                        검색
                                     </button>
-                                )}
+                                    {isSearching && (
+                                        <button
+                                            className="p-2 bg-gray-600 rounded hover:bg-gray-400 text-white"
+                                            onClick={handleReset}
+                                        >
+                                            초기화
+                                        </button>
+                                    )}
+                                </div>
+                                <Link href={`/account/article/${categoryId}/create`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 text-white">
+                                    등록
+                                </Link>
                             </div>
-                            <Link href={`/account/article/${categoryId}/create`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 text-white">
-                                등록
-                            </Link>
-                        </div>
-                        {isSearching && keyword.trim() !== '' && (
-                            <p className="mt-4 text-gray-400">
-                                "{keyword}" 검색 결과 ({totalElements}건)
-                            </p>
-                        )}
-                        <div className="flex justify-center mt-6">
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={handlePageChange}
-                            />
+                            {isSearching && keyword.trim() !== '' && (
+                                <p className="mt-4 text-gray-400">
+                                    "{keyword}" 검색 결과 ({totalElements}건)
+                                </p>
+                            )}
+                            <div className="flex justify-center mt-6">
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </Main>
+        </Main>
     );
 }
