@@ -83,7 +83,7 @@ export default function Main(props: Readonly<PageInterface>) {
 
   function handleLogout() {
     localStorage.clear();
-    window.location.reload();
+    window.location.href = '/';
   }
 
   function openHover(setHover: React.Dispatch<React.SetStateAction<boolean>>) {
