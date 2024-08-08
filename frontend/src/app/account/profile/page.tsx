@@ -113,6 +113,7 @@ export default function Page() {
             .then(r => setUrl(r?.url))
             .catch(e => console.log(e));
     }
+    
     function ChangePassword() {
         // 비밀번호 입력 필드의 값을 가져옵니다.
         const old = (document.getElementById('old_password') as HTMLInputElement).value;
