@@ -1,6 +1,6 @@
 'use client';
 
-import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList } from '@/app/API/UserAPI';
+import { getCenterList ,deleteImageList, getProfile, getUser, postArticle, saveImageList, getCategory } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -26,7 +26,7 @@ interface ConstrainedSliderProps {
     urlList: string[];
   }
 
-const USED_ITEMS_CATEGORY_ID = 3;
+const USED_ITEMS_CATEGORY_NAME = "중고장터";
 
 export default function Page() {
     const { categoryId } = useParams();
@@ -43,6 +43,7 @@ export default function Page() {
     const [deletedTagIds, setDeletedTagIds] = useState<number[]>([]);
     const [centerList, setCenterList] = useState([] as any[]);
     const [price, setPrice] = useState('');
+    const [categoryName, setCategoryName] = useState('');
     const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
     const [hasImages, setHasImages] = useState(false);
     const router = useRouter();
@@ -52,8 +53,18 @@ export default function Page() {
     const [editorReady, setEditorReady] = useState(false);
 
     useEffect(() => {
-        setIsUsedItemsCategory(Number(categoryId) === USED_ITEMS_CATEGORY_ID);
-    }, [categoryId]);
+      const fetchCategoryInfo = async () => {
+          try {
+              const categoryData = await getCategory(Number(categoryId));
+              setCategoryName(categoryData.name);
+              setIsUsedItemsCategory(categoryData.name === USED_ITEMS_CATEGORY_NAME);
+          } catch (error) {
+              console.error('카테고리 정보를 가져오는 데 실패했습니다:', error);
+          }
+      };
+
+      fetchCategoryInfo();
+  }, [categoryId]);
 
     useEffect(() => {
         const cleanupImages = async () => {
@@ -326,9 +337,9 @@ export default function Page() {
                 <ConstrainedSlider urlList={usedItemImages} />
                 <button
                   onClick={imageHandler}
-                  className="w-full mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="w-1/5 mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  이미지 추가
+                  사진 등록
                 </button>
               </div>
               <div className="w-1/2 flex flex-col">

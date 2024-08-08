@@ -91,7 +91,6 @@ export default function Page() {
                                 r.forEach((r: any) => {
                                     if (r?.name === 'FAQ') {
                                         setCategoryId(r.id);
-                                        console.log('123',r.id);
                                         getArticleList(r.id)
                                             .then(r => {
                                                 console.log(r);
@@ -162,9 +161,14 @@ export default function Page() {
             postArticle({ categoryId: categoryId, title: title, content: content, topActive: false })
                 .then(r => {
                     closeConfirm();
-                    console.log(r);
                     handleModalClose(-1);
                     showAlert('글이 성공적으로 등록되었습니다.');
+                    getArticleList(categoryId)
+                        .then(r => {
+                            setArticleList(r?.content);
+                            setTotalPages(r?.totalPages);
+                        })
+                        .catch(e => console.log(e));
                 })
                 .catch(e => {
                     showAlert('글 등록에 실패했습니다.');
