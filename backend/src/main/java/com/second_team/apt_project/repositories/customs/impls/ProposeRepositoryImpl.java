@@ -22,7 +22,7 @@ public class ProposeRepositoryImpl implements ProposeRepositoryCustom {
         ProposeStatus proposeStatus = ProposeStatus.values()[status];
         QueryResults<Propose> results = jpaQueryFactory.selectFrom(qPropose)
                 .where(qPropose.proposeStatus.eq(proposeStatus))
-                .orderBy(qPropose.createDate.asc())
+                .orderBy(qPropose.createDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
