@@ -343,8 +343,23 @@ export default function EditPage() {
                 topActive: false,
                 urlList: isUsedItemsCategory ? usedItemImages : extractImageUrls(finalContent)
             };
-    
-            await updateArticle(requestData);
+
+            const requestTopData = {
+                articleId: Number(articleId),
+                title,
+                content: finalContent,
+                categoryId: Number(categoryId),
+                tagName: tagNames,
+                articleTagId: deletedTagIds,
+                topActive: true,
+                urlList: isUsedItemsCategory ? usedItemImages : extractImageUrls(finalContent)
+            };
+              if(user?.role === 'SECURITY') {
+                await updateArticle(requestTopData);
+              }
+              else{
+                await updateArticle(requestData);
+              }
             await deleteImageList();
             router.push(`/account/article/${categoryId}/detail/${articleId}`);
         } catch (error: any) {

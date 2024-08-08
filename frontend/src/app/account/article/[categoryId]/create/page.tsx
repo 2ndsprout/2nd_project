@@ -228,8 +228,23 @@ export default function Page() {
                 topActive: false,
                 urlList: isUsedItemsCategory ? usedItemImages : extractImageUrls(finalContent)
             };
-    
-            await postArticle(requestData);
+
+            const requestTopData = {
+              title,
+              content: finalContent,
+              categoryId: Number(categoryId),
+              tagName: tagNames,
+              articleTagId: deletedTagIds,
+              topActive: true,
+              urlList: isUsedItemsCategory ? usedItemImages : extractImageUrls(finalContent)
+          };
+            if(user?.role === 'SECURITY') {
+              await postArticle(requestTopData);
+            }
+            else{
+              await postArticle(requestData);
+            }
+
             await deleteImageList();
             window.location.href = `/account/article/${categoryId}`;
         } catch (error) {

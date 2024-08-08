@@ -1,6 +1,6 @@
 'use client'
 
-import { getArticleList, getAptList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles, getCategory } from "@/app/API/UserAPI";
+import { getArticleList, getAptList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles, getCategory, getTopArticleList } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
@@ -77,8 +77,11 @@ export default function ArticleListPage() {
     const [noResults, setNoResults] = useState(false);
     const router = useRouter();
     const [categoryName, setCategoryName] = useState('');
+    const [topCommentCount, setTopCommentCount] = useState(0);
+    const [topLoveCount, setTopLoveCount] = useState(0);
     const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
-    
+    const [topArticleList, setTopArticleList] = useState([] as any[]);
+
 
 
     const countTotalComments = (commentList: any[]): number => {
@@ -111,6 +114,12 @@ export default function ArticleListPage() {
                             .then(r => setCenterList(r))
                             .catch(e => console.error("센터 목록 가져오기 실패:", e));
                         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
+                        getTopArticleList(Number(categoryId), selectedAptId)
+                            .then(r => {
+                                setTopArticleList(r);
+                                console.log(r);
+                            })
+                            .catch(e => console.log(e));
                     })
                     .catch(e => console.error("프로필 정보 가져오기 실패:", e));
             else
@@ -170,7 +179,7 @@ export default function ArticleListPage() {
                 );
                 setSearchedKeyword('');
             }
-    
+
             if (data.content.length === 0) {
                 if (isSearch) {
                     setNoResults(true);
@@ -184,18 +193,18 @@ export default function ArticleListPage() {
                     ...article,
                     price: article.categoryName === USED_ITEMS_CATEGORY_NAME ? extractPrice(article.content) : null
                 }));
-    
+
                 const articlesWithCommentCount = await Promise.all(articlesWithPrice.map(async (article) => {
                     const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
                     const commentCount = countTotalComments(commentResponse.content);
                     const loveResponse = await getLoveInfo(article.articleId);
                     return { ...article, commentCount, loveCount: loveResponse.count };
                 }));
-    
+
                 setArticleList(articlesWithCommentCount);
                 setTotalPages(data.totalPages);
                 setTotalElements(data.totalElements);
-                setCurrentPage(data.number+1);
+                setCurrentPage(data.number + 1);
                 setNoResults(false);
             }
         } catch (error: any) {
@@ -253,45 +262,45 @@ export default function ArticleListPage() {
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
-        <div className="flex flex-col min-h-screen">
-            <div className="flex flex-1 w-full">
-                <div className="flex w-full h-full">
-                    <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
-                        <CategoryList userRole={user?.role} />
-                    </aside>
-                    <div className="flex-1 max-w-7xl p-10 ml-[400px]">
-                        {isAdmin && (
-                            <div className="mb-6">
-                                <select
-                                    value={selectedAptId || ''}
-                                    onChange={handleAptChange}
-                                    className="p-2 bg-gray-700 rounded text-white"
-                                >
-                                    {aptList.map(apt => (
-                                        <option key={apt.aptId} value={apt.aptId} disabled={apt.aptName === 'admin'}>
-                                            {apt?.aptName !== 'admin' ? apt?.aptName : '아파트를 선택해주세요'}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                        <h2 className="text-2xl font-bold mb-6">
-                            {isAdmin ? (
-                                selectedAptId !== 1
-                                    ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
-                                    : '아파트를 선택해주세요.'
-                            ) : (
-                                `${user?.aptResponseDTO?.aptName || ''} 게시판`
+            <div className="flex flex-col min-h-screen">
+                <div className="flex flex-1 w-full">
+                    <div className="flex w-full h-full">
+                        <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
+                            <CategoryList userRole={user?.role} />
+                        </aside>
+                        <div className="flex-1 max-w-7xl p-10 ml-[400px]">
+                            {isAdmin && (
+                                <div className="mb-6">
+                                    <select
+                                        value={selectedAptId || ''}
+                                        onChange={handleAptChange}
+                                        className="p-2 bg-gray-700 rounded text-white"
+                                    >
+                                        {aptList.map(apt => (
+                                            <option key={apt.aptId} value={apt.aptId} disabled={apt.aptName === 'admin'}>
+                                                {apt?.aptName !== 'admin' ? apt?.aptName : '아파트를 선택해주세요'}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             )}
-                        </h2>
-                        {isSearchLoading ? (
-                            <p className="text-gray-400 mt-4">검색 중...</p>
-                        ) : error ? (
-                            <p className="text-red-500 mt-4">{error}</p>
-                        ) : noResults ? (
-                            <p className="text-gray-400 mt-4">검색 결과가 없습니다.</p>
-                        ) : articleList.length === 0 ? (
-                            <p className="text-gray-400 mt-4">등록된 게시물이 없습니다.</p>
+                            <h2 className="text-2xl font-bold mb-6">
+                                {isAdmin ? (
+                                    selectedAptId !== 1
+                                        ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
+                                        : '아파트를 선택해주세요.'
+                                ) : (
+                                    `${user?.aptResponseDTO?.aptName || ''} 게시판`
+                                )}
+                            </h2>
+                            {isSearchLoading ? (
+                                <p className="text-gray-400 mt-4">검색 중...</p>
+                            ) : error ? (
+                                <p className="text-red-500 mt-4">{error}</p>
+                            ) : noResults ? (
+                                <p className="text-gray-400 mt-4">검색 결과가 없습니다.</p>
+                            ) : articleList.length === 0 ? (
+                                <p className="text-gray-400 mt-4">등록된 게시물이 없습니다.</p>
                             ) : isUsedItemsCategory ? (
                                 <div className="grid grid-cols-3 gap-4">
                                     {articleList.map((article) => {
@@ -346,6 +355,19 @@ export default function ArticleListPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {topArticleList?.slice(0, 5)?.map((article) => (
+                                            <tr key={article?.articleId} className="border-b border-gray-700">
+                                                <td className="p-4 text-left">
+                                                    <Link href={`/account/article/${categoryId}/detail/${article?.articleId}`} className="hover:underline">
+                                                        [공지]{article?.title}
+                                                    </Link>
+                                                </td>
+                                                <td className="flex p-4 text-center">
+                                                </td>
+                                                <td className="p-4 text-left">{article?.profileResponseDTO?.name}</td>
+                                                <td className="p-4 text-right text-gray-400">{getDate(article?.createDate)}</td>
+                                            </tr>
+                                        ))}
                                         {articleList.map((article) => (
                                             <tr key={article.articleId} className="border-b border-gray-700">
                                                 <td className="p-4 text-left">
@@ -410,9 +432,11 @@ export default function ArticleListPage() {
                                         </button>
                                     )}
                                 </div>
-                                <Link href={`/account/article/${categoryId}/create`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 text-white">
-                                    등록
-                                </Link>
+                                {(Number(categoryId) !== 2 || (Number(categoryId) === 2 && user?.role === 'SECURITY')) && (
+                                    <Link href={`/account/article/${categoryId}/create`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 text-white">
+                                        등록
+                                    </Link>
+                                )}
                             </div>
                             {!isSearchLoading && isSearching && searchedKeyword !== '' && !noResults && articleList.length > 0 && (
                                 <p className="mt-4 text-gray-400">

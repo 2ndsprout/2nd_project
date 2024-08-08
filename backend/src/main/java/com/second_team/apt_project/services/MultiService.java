@@ -855,16 +855,13 @@ public class MultiService {
         }
         List<ArticleResponseDTO> articleResponseDTOList = new ArrayList<>();
         for (Article article : articleList) {
-            ArticleResponseDTO articleResponseDTO = ArticleResponseDTO.builder()
-                    .articleId(article.getId())
-                    .topActive(article.getTopActive())
-                    .title(article.getTitle())
-                    .content(article.getContent())
-                    .categoryName(article.getCategory().getName())
-                    .createDate(this.dateTimeTransfer(article.getCreateDate()))
-                    .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
-                    .build();
-            articleResponseDTOList.add(articleResponseDTO);
+            List<ArticleTag> articleTagList = articleTagService.getArticle(article.getId());
+            List<TagResponseDTO> responseDTOList = new ArrayList<>();
+            for (ArticleTag articleTag : articleTagList) {
+                Tag tag = tagService.findById(articleTag.getTag().getId());
+                responseDTOList.add(tagResponseDTO(tag));
+            }
+            articleResponseDTOList.add(this.getArticleResponseDTO(article, responseDTOList));
         }
         return articleResponseDTOList;
     }
