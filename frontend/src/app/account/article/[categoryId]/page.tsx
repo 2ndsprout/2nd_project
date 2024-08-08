@@ -1,6 +1,6 @@
 'use client'
 
-import { getArticleList, getAptList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles } from "@/app/API/UserAPI";
+import { getArticleList, getAptList, getCenterList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles, getCategory } from "@/app/API/UserAPI";
 import CategoryList from "@/app/Global/component/CategoryList";
 import { getDate } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
@@ -50,6 +50,8 @@ const extractFirstImageUrl = (content: string) => {
     return match ? match[1] : null;
 };
 
+const USED_ITEMS_CATEGORY_NAME = "중고장터";
+
 export default function ArticleListPage() {
     const [articleList, setArticleList] = useState<Article[]>([]);
     const { categoryId } = useParams();
@@ -74,9 +76,10 @@ export default function ArticleListPage() {
     const [searchedKeyword, setSearchedKeyword] = useState('');
     const [noResults, setNoResults] = useState(false);
     const router = useRouter();
+    const [categoryName, setCategoryName] = useState('');
+    const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
+    const pageSize = isUsedItemsCategory ? 9 : 15;
 
-    const USED_ITEMS_CATEGORY_ID = 3;
-    const pageSize = Number(categoryId) === USED_ITEMS_CATEGORY_ID ? 9 : 15;
 
     const countTotalComments = (commentList: any[]): number => {
         return commentList.reduce((total, comment) => {
@@ -116,6 +119,20 @@ export default function ArticleListPage() {
         else
             redirect('/account/login');
     }, [ACCESS_TOKEN, PROFILE_ID]);
+
+    useEffect(() => {
+        const fetchCategoryInfo = async () => {
+            try {
+                const categoryData = await getCategory(Number(categoryId));
+                setCategoryName(categoryData.name);
+                setIsUsedItemsCategory(categoryData.name === USED_ITEMS_CATEGORY_NAME);
+            } catch (error) {
+                console.error('카테고리 정보를 가져오는 데 실패했습니다:', error);
+            }
+        };
+
+        fetchCategoryInfo();
+    }, [categoryId]);
 
     const fetchArticles = async (isSearch: boolean = false) => {
         setIsSearchLoading(true);
@@ -165,7 +182,7 @@ export default function ArticleListPage() {
                 const allArticles = data.content;
                 const articlesWithPrice = allArticles.map(article => ({
                     ...article,
-                    price: Number(categoryId) === USED_ITEMS_CATEGORY_ID ? extractPrice(article.content) : null
+                    price: article.categoryName === USED_ITEMS_CATEGORY_NAME ? extractPrice(article.content) : null
                 }));
     
                 const startIndex = 0;
@@ -195,6 +212,12 @@ export default function ArticleListPage() {
             setIsSearchLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (categoryName) {
+            fetchArticles();
+        }
+    }, [categoryName, isUsedItemsCategory]);
 
     useEffect(() => {
         if (selectedAptId) {
@@ -272,7 +295,7 @@ export default function ArticleListPage() {
                             <p className="text-gray-400 mt-4">검색 결과가 없습니다.</p>
                         ) : articleList.length === 0 ? (
                             <p className="text-gray-400 mt-4">등록된 게시물이 없습니다.</p>
-                            ) : Number(categoryId) === USED_ITEMS_CATEGORY_ID ? (
+                            ) : isUsedItemsCategory ? (
                                 <div className="grid grid-cols-3 gap-4">
                                     {articleList.map((article) => {
                                         const price = extractPrice(article.content);
