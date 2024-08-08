@@ -1,6 +1,6 @@
 'use client';
 
-import { getArticle, getCenterList, getProfile, getUser, saveImageList, updateArticle, deleteImageList, postTag } from '@/app/API/UserAPI';
+import { getArticle, getCenterList, getProfile, getUser, saveImageList, updateArticle, deleteImageList, getCategory } from '@/app/API/UserAPI';
 import CategoryList from '@/app/Global/component/CategoryList';
 import { KeyDownCheck, Move } from '@/app/Global/component/Method';
 import QuillNoSSRWrapper from '@/app/Global/component/QuillNoSSRWrapper';
@@ -10,7 +10,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../../tag/TagInput';
+import Slider from '@/app/Global/component/ArticleSlider';
 
+const USED_ITEMS_CATEGORY_NAME = "중고장터";
 
 interface Tag {
     id: number;
@@ -20,6 +22,10 @@ interface Tag {
 interface UploadedImage {
     k: string;
     v: string;
+}
+
+interface ConstrainedSliderProps {
+    urlList: string[];
 }
 
 export default function EditPage() {
@@ -39,10 +45,30 @@ export default function EditPage() {
     const [showEditConfirm, setShowEditConfirm] = useState(false);
     const [hasEditPermission, setHasEditPermission] = useState(false);
     const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+    const [hasImages, setHasImages] = useState(false);
+    const [editorReady, setEditorReady] = useState(false);
+    const [categoryName, setCategoryName] = useState('');
+    const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
+    const [price, setPrice] = useState('');
+    const [usedItemImages, setUsedItemImages] = useState<string[]>([]);
     const ACCESS_TOKEN = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const PROFILE_ID = typeof window !== 'undefined' ? localStorage.getItem('PROFILE_ID') : null;
     const quillInstance = useRef<ReactQuill>(null);
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchCategoryInfo = async () => {
+            try {
+                const categoryData = await getCategory(Number(categoryId));
+                setCategoryName(categoryData.name);
+                setIsUsedItemsCategory(categoryData.name === USED_ITEMS_CATEGORY_NAME);
+            } catch (error) {
+                console.error('카테고리 정보를 가져오는 데 실패했습니다:', error);
+            }
+        };
+
+        fetchCategoryInfo();
+    }, [categoryId]);
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -76,6 +102,14 @@ export default function EditPage() {
                         id: tag.id,
                         name: tag.name
                     })));
+                    if (isUsedItemsCategory) {
+                        const extractedPrice = extractPrice(article.content);
+                        setPrice(extractedPrice || '');
+                        const extractedImages = extractImageUrls(article.content);
+                        setUsedItemImages(extractedImages);
+                        setHasImages(extractedImages.length > 0);
+                        setContent(removeImagesAndPrice(article.content));
+                    }
                     setUploadedImages(article.urlList ? article.urlList.map((url: string, index: number) => ({
                         key: `existing-${index}`,
                         value: url
@@ -88,7 +122,7 @@ export default function EditPage() {
         return () => {
             setUploadedImages([]);
         };
-    }, [ACCESS_TOKEN, PROFILE_ID, articleId]);
+    }, [ACCESS_TOKEN, PROFILE_ID, articleId, isUsedItemsCategory]);
 
     const imageHandler = () => {
         const input = document.createElement('input') as HTMLInputElement;
@@ -115,12 +149,17 @@ export default function EditPage() {
                 }
     
                 const imgUrl = newImage.value;
-                const editor = quillInstance.current?.getEditor();
-                if (editor) {
-                    const range = editor.getSelection();
-                    if (range) {
-                        editor.insertEmbed(range.index, 'image', imgUrl);
-                        editor.setSelection(range.index + 1);
+                if (isUsedItemsCategory) {
+                    setUsedItemImages(prev => [...prev, imgUrl]);
+                    setHasImages(true);
+                } else {
+                    const editor = quillInstance.current?.getEditor();
+                    if (editor) {
+                        const range = editor.getSelection();
+                        if (range) {
+                            editor.insertEmbed(range.index, 'image', imgUrl);
+                            editor.setSelection(range.index + 1);
+                        }
                     }
                 }
     
@@ -266,47 +305,67 @@ export default function EditPage() {
             return;
         }
     
-        try {
-            const updatedContent = quillInstance.current?.getEditor().root.innerHTML || '';
-
-            const tagNames = tags.map(tag => tag.name);
-
+        if (isUsedItemsCategory && !price) {
+            setError('중고장터 게시물의 경우 가격을 입력해주세요.');
+            return;
+        }
     
-            // // 모든 태그의 이름을 포함
-            // const allTagNames = tags.map(tag => tag.name);
+        try {
+            let finalContent = isUsedItemsCategory 
+                ? content 
+                : quillInstance.current?.getEditor().root.innerHTML || '';
+    
+            if (isUsedItemsCategory) {
+                finalContent += `<p>[PRICE]${price}[/PRICE]</p>`;
+                usedItemImages.forEach(imgUrl => {
+                    finalContent += `<img src="${imgUrl}" style="display:none;">`;
+                });
+            }
+            const tagNames = tags.map(tag => tag.name);
     
             const requestData = {
                 articleId: Number(articleId),
                 title,
-                content: updatedContent,
+                content: finalContent,
                 categoryId: Number(categoryId),
-                tagName: tagNames, // 모든 태그 이름 포함
-                articleTagId: deletedTagIds, // 삭제된 태그 ID
+                tagName: tagNames,
+                articleTagId: deletedTagIds,
                 topActive: false,
-                images: uploadedImages.map(img => img.v)
+                urlList: isUsedItemsCategory ? usedItemImages : extractImageUrls(finalContent)
             };
-    
-            console.log('Sending request data:', requestData); // 요청 데이터 로깅
     
             await updateArticle(requestData);
             await deleteImageList();
             router.push(`/account/article/${categoryId}/detail/${articleId}`);
         } catch (error: any) {
             console.error('게시물 수정 중 오류:', error);
-            if (error.response) {
-                console.error('Error response:', error.response.data);
-                console.error('Error status:', error.response.status);
-            }
-            if (error.response && error.response.status === 403) {
-                setError('수정중에 오류가 발생했습니다. 관리자에게 문의 해주세요.');
-            } else {
-                setError('게시물 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');    
-            }
+            setError('게시물 수정 중 오류가 발생했습니다. 다시 시도해 주세요.');
         }
+    };
+
+    const extractPrice = (content: string) => {
+        const priceMatch = content.match(/\[PRICE\](.*?)\[\/PRICE\]/);
+        return priceMatch ? priceMatch[1] : null;
+    };
+
+    const extractImageUrls = (content: string) => {
+        const imgRegex = /<img[^>]+src="([^">]+)"/g;
+        const urls = [];
+        let match;
+        while ((match = imgRegex.exec(content)) !== null) {
+            urls.push(match[1]);
+        }
+        return urls;
     };
 
     const handleTagChange = (newTags: Tag[]) => {
         setTags(newTags);
+    };
+
+    const removeImagesAndPrice = (content: string) => {
+        return content.replace(/<img[^>]+>/g, '')
+                      .replace(/\[PRICE\].*?\[\/PRICE\]/g, '')
+                      .trim();
     };
 
     if (!hasEditPermission) {
@@ -325,6 +384,97 @@ export default function EditPage() {
         );
     }
 
+    const renderContent = () => {
+        const quillStyle = {
+            height: isUsedItemsCategory ? '400px' : '600px',
+            marginBottom: '20px'
+        };
+
+        const commonInputs = (
+            <>
+                <input
+                    id='title'
+                    type='text'
+                    className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
+                    style={{ outline: '0px', color: 'black' }}
+                    placeholder='제목 입력'
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
+                />
+                {isUsedItemsCategory && (
+                    <div className="relative mb-4">
+                        <input
+                            type='text'
+                            inputMode='numeric'
+                            pattern='[0-9]*'
+                            className='w-full h-12 input input-bordered rounded-[0] pr-8 text-black'
+                            style={{ outline: '0px', color: 'black' }}
+                            placeholder='가격 입력'
+                            value={price}
+                            onChange={e => {
+                                const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+                                setPrice(onlyNums);
+                            }}
+                        />
+                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            원
+                        </span>
+                    </div>
+                )}
+            </>
+        );
+
+        const editor = (
+            <div className="flex flex-col flex-grow">
+                <QuillNoSSRWrapper
+                    forwardedRef={quillInstance}
+                    value={content}
+                    onChange={setContent}
+                    modules={modules}
+                    theme="snow"
+                    placeholder="내용을 입력해주세요."
+                    style={quillStyle}
+                />
+                <div className="mt-4">
+                    <TagInput 
+                        tags={tags} 
+                        setTags={handleTagChange}
+                        deletedTagIds={deletedTagIds}
+                        setDeletedTagIds={setDeletedTagIds}
+                    />
+                </div>
+            </div>
+        );
+
+        if (isUsedItemsCategory && hasImages) {
+            return (
+                <div className="flex space-x-4">
+                    <div className="w-1/2 flex flex-col">
+                        <Slider urlList={usedItemImages} />
+                        <button
+                            onClick={imageHandler}
+                            className="w-full mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            이미지 추가
+                        </button>
+                    </div>
+                    <div className="w-1/2 flex flex-col">
+                        {commonInputs}
+                        {editor}
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className="flex flex-col h-full">
+                    {commonInputs}
+                    {editor}
+                </div>
+            );
+        }
+    };
+
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="flex flex-1 w-full">
@@ -335,40 +485,7 @@ export default function EditPage() {
                     <div className="p-10 ml-[400px] w-4/6">
                         <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
-                            <input
-                                id='title'
-                                type='text'
-                                className='w-full h-12 input input-bordered rounded-[0] mb-4 text-black'
-                                style={{ outline: '0px', color: 'black' }}
-                                placeholder='제목 입력'
-                                value={title}
-                                onFocus={e => e.target.style.border = '2px solid red'}
-                                onBlur={e => e.target.style.border = ''}
-                                onChange={e => setTitle(e.target.value)}
-                                onKeyDown={e => KeyDownCheck({ preKey, setPreKey, e: e, next: () => Move('content') })}
-                            />
-                            <div className="flex flex-col" style={{ maxHeight: '800px' }}>
-                                <div className="flex-grow">
-                                    <QuillNoSSRWrapper
-                                        forwardedRef={quillInstance}
-                                        value={content}
-                                        onChange={setContent}
-                                        modules={modules}
-                                        theme="snow"
-                                        className='h-64 mb-4'
-                                        placeholder="내용을 입력해주세요."
-                                        style={{ minHeight: '600px'}}
-                                    />
-                                </div>
-                            </div>
-                            <div className="mt-10">
-                            <TagInput 
-                                tags={tags} 
-                                setTags={handleTagChange}
-                                deletedTagIds={deletedTagIds}
-                                setDeletedTagIds={setDeletedTagIds}
-                            />
-                            </div>
+                            {renderContent()}
                         </div>
                         <div className="flex justify-end gap-4 mt-6">
                             <button
