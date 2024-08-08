@@ -78,7 +78,7 @@ export default function ArticleListPage() {
     const router = useRouter();
     const [categoryName, setCategoryName] = useState('');
     const [isUsedItemsCategory, setIsUsedItemsCategory] = useState(false);
-    const pageSize = isUsedItemsCategory ? 9 : 15;
+    
 
 
     const countTotalComments = (commentList: any[]): number => {
@@ -185,11 +185,7 @@ export default function ArticleListPage() {
                     price: article.categoryName === USED_ITEMS_CATEGORY_NAME ? extractPrice(article.content) : null
                 }));
     
-                const startIndex = 0;
-                const endIndex = Math.min(pageSize, articlesWithPrice.length);
-                const paginatedArticles = articlesWithPrice.slice(startIndex, endIndex);
-    
-                const articlesWithCommentCount = await Promise.all(paginatedArticles.map(async (article) => {
+                const articlesWithCommentCount = await Promise.all(articlesWithPrice.map(async (article) => {
                     const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
                     const commentCount = countTotalComments(commentResponse.content);
                     const loveResponse = await getLoveInfo(article.articleId);
@@ -197,9 +193,9 @@ export default function ArticleListPage() {
                 }));
     
                 setArticleList(articlesWithCommentCount);
-                setTotalPages(Math.ceil(data.totalElements / pageSize));
+                setTotalPages(data.totalPages);
                 setTotalElements(data.totalElements);
-                setCurrentPage(data.number + 1);
+                setCurrentPage(data.number+1);
                 setNoResults(false);
             }
         } catch (error: any) {
@@ -218,6 +214,7 @@ export default function ArticleListPage() {
             fetchArticles();
         }
     }, [categoryName, isUsedItemsCategory]);
+
 
     useEffect(() => {
         if (selectedAptId) {
