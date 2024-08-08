@@ -196,7 +196,7 @@ export default function Page() {
                 getUserList(apt.aptId, currentPage - 1)
                     .then(r => {
                         setUserList(r.content);
-                    })
+                    }) 
                     .catch(e => console.log(e));
             })
             .catch(e => console.log(e));

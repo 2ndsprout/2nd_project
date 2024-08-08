@@ -127,12 +127,12 @@ export default function Page() {
         }
 
         // 새 비밀번호가 올바른 형식인지 확인합니다.
-        if (!Check('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', new1)) {
-            setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한 개씩 들어가 있어야 합니다.');
+        if (!Check('^(?=.*[a-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*_\\-?]{6,24}$', new1)) {
+            setNewPassword1Error('비밀번호는 최소 6자로 소문자, 숫자는 필수로 포함해야 합니다.');
             closeConfirm();
             return;
         }
-        if (!Check('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', new2)) {
+        if (!Check('^(?=.*[a-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*_\\-?]{6,24}$', new2)) {
             setNewPassword2Error('변경할 비밀번호가 일치하지 않습니다.');
             closeConfirm();
             return;
@@ -273,9 +273,9 @@ export default function Page() {
 
                     <input id="new_password1" type={canShow ? 'text' : 'password'} className='w-[300px] mt-1 input input-bordered input-md text-black' placeholder='변경 할 비밀번호'
                         onKeyDown={e => { if (e.key == 'Enter') document.getElementById('new_password2')?.focus() }}
-                        onFocus={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))}
-                        onKeyUp={e => checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.'))}
-                        onChange={e => { if (first) setFirst(false); checkInput(e, '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-+={}~?:;`|/]).{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 대문자, 소문자, 숫자, 특수문자가 한개씩 들어가 있어야합니다.')) }} />
+                        onFocus={e => checkInput(e, '^(?=.*[a-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*_\\-?]{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 소문자, 숫자는 필수로 포함해야 합니다.'))}
+                        onKeyUp={e => checkInput(e, '^(?=.*[a-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*_\\-?]{6,24}$$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 소문자, 숫자는 필수로 포함해야 합니다.'))}
+                        onChange={e => { if (first) setFirst(false); checkInput(e, '^(?=.*[a-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*_\\-?]{6,24}$', () => setNewPassword1Error(''), () => setNewPassword1Error('비밀번호는 최소 6자로 소문자, 숫자는 필수로 포함해야 합니다.')) }} />
 
                     <input id="new_password2" type={canShow ? 'text' : 'password'} className='w-[300px] mt-1 input input-bordered input-md text-black' placeholder='비밀번호 확인'
                         onKeyDown={e => { if (e.key == 'Enter') document.getElementById('password_submit')?.click() }}

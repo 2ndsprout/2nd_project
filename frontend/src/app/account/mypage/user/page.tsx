@@ -98,10 +98,19 @@ export default function Page() {
     function deleteTargetUser(deleteUsername: string) {
         if (deleteUsername !== null) {
             try {
-                deleteUser(deleteUsername);
-                closeConfirm();
+                deleteUser(deleteUsername)
+                    .then(() => {
+                        getUserList(selectedApt.aptId, currentPage - 1)
+                            .then((r) => {
+                                setUserList(r.content);
+                                setTotalPages(r.totalPages);
+                                alert('유저가 삭제되었습니다.');
+                            })
+                            .catch(e => console.log(e));
+                        closeConfirm();
+                    })
+                    .catch(e => console.log(e));
                 showAlert('레슨 신청 취소가 완료되었습니다.', '/account/mypage/user');
-                setUserList(prevList => prevList.filter(user => user.username !== deleteUsername));
             } catch (e) {
                 showAlert('유저 삭제 중 오류가 발생했습니다.');
                 closeAlert();
@@ -209,7 +218,7 @@ export default function Page() {
     };
 
     return (
-       
+
         <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className='flex flex-col'>
                 <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>유저</label> 관리</label>
@@ -217,8 +226,8 @@ export default function Page() {
                     <div className="h-[580px]">
 
                         <div className="h-[500px]">
-                            {userList.map((user, index) => (
-                                <div key={index} className="w-[1200px] flex justify-center">
+                            {userList.map((user) => (
+                                <div key={user.username} className="w-[1200px] flex justify-center">
                                     <div className="border-b-[1px] w-[900px] flex">
                                         <p className="font-bold m-[13px]">{user?.username}</p>
                                         <div className="flex w-full items-center justify-end">

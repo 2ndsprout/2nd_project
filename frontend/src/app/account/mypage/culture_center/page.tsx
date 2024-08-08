@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
 import { getProfile, getUser, postCenter, saveImageList, getCenterList } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
 import ConfirmModal from "@/app/Global/component/ConfirmModal";
+import dayjs, { Dayjs } from "dayjs";
+import useAlert from "@/app/Global/hook/useAlert";
+import AlertModal from "@/app/Global/component/AlertModal";
 
 
 export default function Page() {
@@ -19,9 +22,16 @@ export default function Page() {
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
     const [url, setUrl] = useState('');
-    let [centerType, setCenterType] = useState('' as any);
+    const [startTime, setStartTime] = useState<Dayjs | string>('');
+    const [endTime, setEndTime] = useState<Dayjs | string>('');
+    const [startDateTime, setStartDateTime] = useState(null as any);
+    const [endDateTime, setEndDateTime] = useState(null as any);
+    const [centerType, setCenterType] = useState('' as any);
     const [centerTypeError, setCenterTypeError] = useState('센터 타입을 입력해주세요.');
+    const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
+    const [endTimeError, setEndTimeError] = useState('종료 시간을 설정해 주세요.');
     const [isModalOpen, setISModalOpen] = useState(-1);
+    const { alertState, showAlert, closeAlert } = useAlert();
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -50,6 +60,17 @@ export default function Page() {
         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
+    useEffect(() => {
+        if (centerType && startDateTime && endDateTime) {
+            postCenter({ type: centerType, startDate: startDateTime, endDate: endDateTime })
+                .then(r => {
+                    closeConfirm();
+                    showAlert('센터가 생성되었습니다.', '/account/culture_center');
+                })
+                .catch(e => console.log(e));
+        }
+    }, [startDateTime, endDateTime]);
+
     function Change(file: File) {
         const formData = new FormData();
         formData.append('file', file);
@@ -62,20 +83,47 @@ export default function Page() {
         setCenterTypeError('');
     };
 
-    function submit() {
-        if (centerType != null || centerType != '') {
-            onClose(-1);
-            closeConfirm();
-            // Type 제외 모두 ? 로 null도 들어가게 해놨음 수정해주세요~
-            postCenter({ type: centerType })
-            window.location.href = `/account/culture_center`;
-        }
+
+    const submit = () => {
+        const now = dayjs();
+
+        const todayDate = now.format('YYYY-MM-DD');
+
+        const startDate = todayDate;
+        const endDate = todayDate;
+
+        const startDateString = `${startDate}T${startTime}`;
+        const endDateString = `${endDate}T${endTime}`;
+
+        setStartDateTime(startDateString);
+        setEndDateTime(endDateString);
     };
+
+
 
 
     function onClose(type: number) {
         setISModalOpen(type);
     }
+
+
+    const handleStartTimeChange = (time: Dayjs | string) => {
+        const dayjsTime = typeof time === 'string' ? dayjs(time, 'HH:mm') : time;
+        setStartTime(dayjsTime.format('HH:mm:ss'));
+    };
+
+    const handleEndTimeChange = (time: Dayjs | string) => {
+        const dayjsTime = typeof time === 'string' ? dayjs(time, 'HH:mm') : time;
+        setEndTime(dayjsTime.format('HH:mm:ss'));
+    };
+
+    const handleTimeError = (errorSetter: React.Dispatch<React.SetStateAction<string>>, error: string) => {
+        errorSetter(error);
+    };
+
+    const handleStartTimeError = (error: string) => handleTimeError(setStartTimeError, error);
+
+    const handleEndTimeError = (error: string) => handleTimeError(setEndTimeError, error);
 
 
     return (
@@ -102,7 +150,11 @@ export default function Page() {
                             </button>
                         </div>
                         <div className="w-[600px] h-[450px] mt-[50px] border">
-                            timepicker space
+                            <StaticTimePickerLandscape
+                                onStartTimeChange={handleStartTimeChange}
+                                onEndTimeChange={handleEndTimeChange}
+                                onEndTimeError={handleEndTimeError}
+                                onStartTimeError={handleStartTimeError} />
                         </div>
                     </div>
                     <div className="relative w-[500px] h-[550px] ml-[100px] flex justify-center items-center mb-10">
@@ -114,6 +166,7 @@ export default function Page() {
                 </div>
             </div>
             <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
+            <AlertModal error={alertState?.error} show={alertState?.show} url={alertState?.url} onClose={closeAlert} />
         </Profile>
     );
 }
