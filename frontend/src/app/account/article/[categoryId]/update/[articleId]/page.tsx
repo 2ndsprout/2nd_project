@@ -11,6 +11,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../../tag/TagInput';
 import Slider from '@/app/Global/component/ArticleSlider';
+import EditableSlider from '@/app/Global/component/EditableSlider';
 
 const USED_ITEMS_CATEGORY_NAME = "중고장터";
 
@@ -149,6 +150,8 @@ export default function EditPage() {
                 }
     
                 const imgUrl = newImage.value;
+                setUploadedImages(prev => [...prev, newImage]);
+
                 if (isUsedItemsCategory) {
                     setUsedItemImages(prev => [...prev, imgUrl]);
                     setHasImages(true);
@@ -305,18 +308,20 @@ export default function EditPage() {
             return;
         }
     
-        if (isUsedItemsCategory && !price) {
-            setError('중고장터 게시물의 경우 가격을 입력해주세요.');
+        if (isUsedItemsCategory && (!price || usedItemImages.length === 0)) {
+            if (!price) {
+                setError('중고장터 게시물의 경우 가격을 입력해주세요.');
+            } else if (usedItemImages.length === 0) {
+                setError('중고장터 게시물의 경우 이미지를 한 장 이상 첨부해주세요.');
+            }
             return;
-        }
+          }
     
         try {
-            let finalContent = isUsedItemsCategory 
-                ? content 
-                : quillInstance.current?.getEditor().root.innerHTML || '';
+            let finalContent = quillInstance.current?.getEditor().root.innerHTML || '';
     
             if (isUsedItemsCategory) {
-                finalContent += `<p>[PRICE]${price}[/PRICE]</p>`;
+                finalContent += `[PRICE]${price}[/PRICE]`;
                 usedItemImages.forEach(imgUrl => {
                     finalContent += `<img src="${imgUrl}" style="display:none;">`;
                 });
@@ -368,6 +373,18 @@ export default function EditPage() {
                       .trim();
     };
 
+    const ConstrainedSlider: React.FC<ConstrainedSliderProps> = ({ urlList }) => {
+        return (
+          <div className="w-full h-96 overflow-hidden">
+            <Slider urlList={urlList} />
+          </div>
+        );
+    };
+
+    const handleRemoveImage = (index: number) => {
+        setUsedItemImages(prev => prev.filter((_, i) => i !== index));
+      };
+
     if (!hasEditPermission) {
         return (
             <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
@@ -386,8 +403,8 @@ export default function EditPage() {
 
     const renderContent = () => {
         const quillStyle = {
-            height: isUsedItemsCategory ? '400px' : '600px',
-            marginBottom: '20px'
+            height: isUsedItemsCategory ? '500px' : '600px',
+            marginBottom: '40px'
         };
 
         const commonInputs = (
@@ -447,16 +464,16 @@ export default function EditPage() {
             </div>
         );
 
-        if (isUsedItemsCategory && hasImages) {
+        if (isUsedItemsCategory) {
             return (
                 <div className="flex space-x-4">
                     <div className="w-1/2 flex flex-col">
-                        <Slider urlList={usedItemImages} />
+                        <EditableSlider urlList={usedItemImages} onRemove={handleRemoveImage} />
                         <button
                             onClick={imageHandler}
-                            className="w-full mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            className="w-1/5 mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
-                            이미지 추가
+                            사진 등록
                         </button>
                     </div>
                     <div className="w-1/2 flex flex-col">
@@ -484,7 +501,7 @@ export default function EditPage() {
                     </aside>
                     <div className="p-10 ml-[400px] w-4/6">
                         <label className='text-xs text-red-500 text-start w-full mb-4'>{error}</label>
-                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[800px]">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg min-h-[750px] flex flex-col">
                             {renderContent()}
                         </div>
                         <div className="flex justify-end gap-4 mt-6">
