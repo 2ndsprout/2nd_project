@@ -114,7 +114,7 @@ export default function Page() {
     }, [ACCESS_TOKEN, PROFILE_ID, centerId]);
 
     const getLinkClass = (id: number) => {
-        return centerId === id ? "text-lg text-yellow-400 flex mb-2 hover:underline font-bold" : "flex mb-2 text-lg hover:underline";
+        return centerId === id ? "text-lg text-secondary flex mb-2 hover:underline font-bold" : "font-bold flex mb-2 text-lg hover:underline";
     };
 
     const fetchArticles = async () => {

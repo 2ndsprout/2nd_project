@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { redirect, useRouter } from "next/navigation";
-import { getProfile, getUser, postCenter, saveImageList, getCenterList } from "@/app/API/UserAPI";
+import { getProfile, getUser, postCenter, saveImageList, getCenterList, deleteImageList } from "@/app/API/UserAPI";
 import Profile from "@/app/Global/layout/ProfileLayout";
 import useConfirm from "@/app/Global/hook/useConfirm";
 import StaticTimePickerLandscape from "@/app/Global/component/TimePicker";
@@ -10,6 +10,9 @@ import ConfirmModal from "@/app/Global/component/ConfirmModal";
 import dayjs, { Dayjs } from "dayjs";
 import useAlert from "@/app/Global/hook/useAlert";
 import AlertModal from "@/app/Global/component/AlertModal";
+import Slider from "@/app/Global/component/Slider";
+import { url } from "inspector";
+import CenterSlider from "@/app/Global/component/CenterSlider";
 
 
 export default function Page() {
@@ -21,7 +24,7 @@ export default function Page() {
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
     const PROFILE_ID = typeof window === 'undefined' ? null : localStorage.getItem('PROFILE_ID');
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
-    const [url, setUrl] = useState('');
+    const [urlList, setUrlList] = useState([] as any[]);
     const [startTime, setStartTime] = useState<Dayjs | string>('');
     const [endTime, setEndTime] = useState<Dayjs | string>('');
     const [startDateTime, setStartDateTime] = useState(null as any);
@@ -30,7 +33,6 @@ export default function Page() {
     const [centerTypeError, setCenterTypeError] = useState('센터 타입을 입력해주세요.');
     const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
     const [endTimeError, setEndTimeError] = useState('종료 시간을 설정해 주세요.');
-    const [isModalOpen, setISModalOpen] = useState(-1);
     const { alertState, showAlert, closeAlert } = useAlert();
 
     useEffect(() => {
@@ -48,6 +50,8 @@ export default function Page() {
                         getCenterList()
                             .then((r) => {
                                 setCenterList(r);
+                                deleteImageList()
+                                    .catch(e => console.log(e));
                             })
                     })
                     .catch(e => console.log(e));
@@ -61,13 +65,23 @@ export default function Page() {
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
-        if (centerType && startDateTime && endDateTime) {
-            postCenter({ type: centerType, startDate: startDateTime, endDate: endDateTime })
-                .then(r => {
+        if (startDateTime && endDateTime) {
+            const centerData = {
+                type: centerType,
+                startDate: startDateTime,
+                endDate: endDateTime,
+            };
+
+            postCenter(centerData)
+                .then(response => {
+                    console.log('센터 생성 응답:', response);
                     closeConfirm();
                     showAlert('센터가 생성되었습니다.', '/account/culture_center');
                 })
-                .catch(e => console.log(e));
+                .catch(error => {
+                    console.error('센터 생성 오류:', error);
+                    showAlert('센터 생성 중 오류가 발생했습니다.');
+                });
         }
     }, [startDateTime, endDateTime]);
 
@@ -75,18 +89,26 @@ export default function Page() {
         const formData = new FormData();
         formData.append('file', file);
         saveImageList(formData)
-            .then(r => setUrl(r?.url))
+            .then(r => {
+                if (Array.isArray(r)) {
+                    const urls = r.map((item: any) => item.value); // item.value가 URL이라면
+                    setUrlList(urls);
+                } else {
+                    console.log('r is not an array:', r);
+                }
+            })
             .catch(e => console.log(e));
     }
+
+
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setCenterType(Number(event.target.value)); // 변환된 숫자값 설정
+        setCenterType(Number(event.target.value));
         setCenterTypeError('');
     };
 
 
     const submit = () => {
         const now = dayjs();
-
         const todayDate = now.format('YYYY-MM-DD');
 
         const startDate = todayDate;
@@ -98,13 +120,6 @@ export default function Page() {
         setStartDateTime(startDateString);
         setEndDateTime(endDateString);
     };
-
-
-
-
-    function onClose(type: number) {
-        setISModalOpen(type);
-    }
 
 
     const handleStartTimeChange = (time: Dayjs | string) => {
@@ -125,6 +140,15 @@ export default function Page() {
 
     const handleEndTimeError = (error: string) => handleTimeError(setEndTimeError, error);
 
+    const defaultUrls = [
+        '/slider_default.png',
+        '/slider_default.png',
+        '/slider_default.png',
+    ];
+
+    function urls(): string[] {
+        return urlList?.length === 0 ? defaultUrls : urlList;
+    }
 
     return (
         <Profile user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
@@ -145,23 +169,30 @@ export default function Page() {
                                 <option value={2}>스크린골프장</option>
                                 <option value={3}>도서관</option>
                             </select>
-                            <button className="w-[100px] h-[50px] ml-[30px] btn btn-xl btn-accent" disabled={centerTypeError !== ''} onClick={() => finalConfirm('센터 생성', '센터를 만들겠습니까?', '생성완료', submit)}>
-                                센터 생성
-                            </button>
                         </div>
-                        <div className="w-[600px] h-[450px] mt-[50px] border">
+                        <div className="w-[600px] h-[100px] justify-center items-center mt-[50px] flex flex-col">
                             <StaticTimePickerLandscape
                                 onStartTimeChange={handleStartTimeChange}
                                 onEndTimeChange={handleEndTimeChange}
                                 onEndTimeError={handleEndTimeError}
                                 onStartTimeError={handleStartTimeError} />
                         </div>
+                        <div className="w-[600px] h-[330px] flex items-end">
+                            <button className="w-[600px] flex h-[50px] btn btn-xl btn-accent" disabled={centerTypeError !== ''} onClick={() => finalConfirm('센터 생성', '센터를 만들겠습니까?', '생성완료', submit)}>
+                                센터 생성
+                            </button>
+                        </div>
+
                     </div>
-                    <div className="relative w-[500px] h-[550px] ml-[100px] flex justify-center items-center mb-10">
-                        {/* 나중에 사진 미리보기 추가할 예정 */}
-                        <div className="w-[128px] h-[128px] rounded-full opacity-30 absolute hover:bg-gray-500" onClick={() => document.getElementById('file')?.click()}></div>
-                        <img src={url ? url : '/logo.png'} alt='Profile Image' className='w-[128px] h-[128px] rounded-full' />
-                        <input id='file' hidden type='file' onChange={e => e.target.files && Change(e.target.files?.[0])} />
+                    <div className="ml-16 h-[500px] w-[550px]">
+                        {/* {urlList.map((url, urlIndex) => (
+                                <img key={urlIndex} src={url} alt={`center_image_${urlIndex}`} className="w-[100px] h-[100px]" />
+                            ))} */}
+                        <Slider urlList={urls()} />
+                        <div className="mt-2 ml-[200px]">
+                            <div className="w-[150px] h-[50px] border-secondary text-black hover:bg-orange-200 hover:cursor-pointer btn bg-secondary" onClick={() => document.getElementById('file')?.click()}>이미지 첨부</div>
+                            <input id='file' hidden type='file' onChange={e => e.target.files && Change(e.target.files?.[0])} />
+                        </div>
                     </div>
                 </div>
             </div>
