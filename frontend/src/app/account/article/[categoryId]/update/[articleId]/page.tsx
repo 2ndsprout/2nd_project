@@ -165,8 +165,6 @@ export default function EditPage() {
                         }
                     }
                 }
-    
-                setUploadedImages(prev => [...prev, newImage]);
             } catch (error) {
                 console.error('Error uploading image:', error);
                 alert('이미지 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
@@ -190,8 +188,16 @@ export default function EditPage() {
                 matchVisual: false,
             },
         }),
-        [],
+        [isUsedItemsCategory],
     );
+
+    
+
+    const handleContentChange = (content: string) => {
+        if (!isUsedItemsCategory) {
+            setContent(content);
+        }
+    };
 
     useEffect(() => {
         const cleanupImages = async () => {
@@ -256,12 +262,9 @@ export default function EditPage() {
                         getUser(),
                         getArticle(Number(articleId))
                     ]);
-                    
-                    const isAdmin = userData.role === 'ADMIN';
-                    // const isSecurity = userData.role === 'SECURITY';
                     const isAuthor = PROFILE_ID === String(articleData.profileResponseDTO.id);
                     
-                    if (isAdmin || isAuthor) {
+                    if (isAuthor) {
                         setHasEditPermission(true);
                         setTitle(articleData.title);
                         setContent(articleData.content);
@@ -274,7 +277,7 @@ export default function EditPage() {
                             v: url
                         })) : []);
                     } else {
-                        setError('이 게시물을 수정할 권한이 없습니다, 관리자나 작성자만 수정할 수 있습니다.');
+                        setError('이 게시물을 수정할 권한이 없습니다. 작성자만 수정할 수 있습니다.');
                         setRedirectCountdown(3);
                     }
                 } catch (error) {
@@ -318,7 +321,9 @@ export default function EditPage() {
           }
     
         try {
-            let finalContent = quillInstance.current?.getEditor().root.innerHTML || '';
+            let finalContent = isUsedItemsCategory 
+                ? quillInstance.current?.getEditor().getText() || ''
+                : quillInstance.current?.getEditor().root.innerHTML || '';
     
             if (isUsedItemsCategory) {
                 finalContent += `[PRICE]${price}[/PRICE]`;
@@ -447,7 +452,7 @@ export default function EditPage() {
                 <QuillNoSSRWrapper
                     forwardedRef={quillInstance}
                     value={content}
-                    onChange={setContent}
+                    onChange={handleContentChange}
                     modules={modules}
                     theme="snow"
                     placeholder="내용을 입력해주세요."
