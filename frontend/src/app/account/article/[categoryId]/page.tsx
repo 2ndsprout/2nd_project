@@ -69,6 +69,10 @@ export default function ArticleListPage() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [aptList, setAptList] = useState<AptInfo[]>([]);
     const [selectedAptId, setSelectedAptId] = useState(0);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [searchedKeyword, setSearchedKeyword] = useState('');
+    const [noResults, setNoResults] = useState(false);
     const router = useRouter();
 
     const USED_ITEMS_CATEGORY_ID = 3;
@@ -114,50 +118,81 @@ export default function ArticleListPage() {
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     const fetchArticles = async (isSearch: boolean = false) => {
+        setIsSearchLoading(true);
+        setNoResults(false);
+        setError('');
         try {
             let data: ArticlePage;
             if (isSearch && keyword.trim() !== '') {
-                data = await searchArticles({
-                    page: currentPage - 1,
-                    keyword: keyword.trim(),
-                    sort,
-                    categoryId: Number(categoryId),
-                    aptId: selectedAptId || undefined
-                });
+                try {
+                    data = await searchArticles({
+                        page: currentPage - 1,
+                        keyword: keyword.trim(),
+                        sort,
+                        categoryId: Number(categoryId),
+                        aptId: selectedAptId || undefined
+                    });
+                    setSearchedKeyword(keyword.trim());
+                } catch (searchError: any) {
+                    if (searchError.response && searchError.response.status === 403) {
+                        setNoResults(true);
+                        setArticleList([]);
+                        setTotalPages(0);
+                        setTotalElements(0);
+                        setIsSearchLoading(false);
+                        return;
+                    } else {
+                        throw searchError;
+                    }
+                }
             } else {
                 data = await getArticleList(
                     Number(categoryId),
                     selectedAptId || undefined,
                     currentPage - 1
-                ); // UserAPI의 getArticleList Header순서에 맞춰야함
+                );
+                setSearchedKeyword('');
             }
-
-            const allArticles = data.content;
-
-            const articlesWithPrice = allArticles.map(article => ({
-                ...article,
-                price: Number(categoryId) === USED_ITEMS_CATEGORY_ID ? extractPrice(article.content) : null
-            }));
-
-            // 페이지 크기에 맞게 데이터 자르기
-            const startIndex = 0;
-            const endIndex = Math.min(pageSize, articlesWithPrice.length);
-            const paginatedArticles = articlesWithPrice.slice(startIndex, endIndex);
-
-            const articlesWithCommentCount = await Promise.all(paginatedArticles.map(async (article) => {
-                const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
-                const commentCount = countTotalComments(commentResponse.content);
-                const loveResponse = await getLoveInfo(article.articleId);
-                return { ...article, commentCount, loveCount: loveResponse.count };
-            }));
-
-            setArticleList(articlesWithCommentCount);
-            setTotalPages(Math.ceil(data.totalElements / pageSize));
-            setTotalElements(data.totalElements);
-            setCurrentPage(data.number + 1);
-        } catch (error) {
+    
+            if (data.content.length === 0) {
+                if (isSearch) {
+                    setNoResults(true);
+                }
+                setArticleList([]);
+                setTotalPages(0);
+                setTotalElements(0);
+            } else {
+                const allArticles = data.content;
+                const articlesWithPrice = allArticles.map(article => ({
+                    ...article,
+                    price: Number(categoryId) === USED_ITEMS_CATEGORY_ID ? extractPrice(article.content) : null
+                }));
+    
+                const startIndex = 0;
+                const endIndex = Math.min(pageSize, articlesWithPrice.length);
+                const paginatedArticles = articlesWithPrice.slice(startIndex, endIndex);
+    
+                const articlesWithCommentCount = await Promise.all(paginatedArticles.map(async (article) => {
+                    const commentResponse = await getCommentList({ articleId: article.articleId, page: 0 });
+                    const commentCount = countTotalComments(commentResponse.content);
+                    const loveResponse = await getLoveInfo(article.articleId);
+                    return { ...article, commentCount, loveCount: loveResponse.count };
+                }));
+    
+                setArticleList(articlesWithCommentCount);
+                setTotalPages(Math.ceil(data.totalElements / pageSize));
+                setTotalElements(data.totalElements);
+                setCurrentPage(data.number + 1);
+                setNoResults(false);
+            }
+        } catch (error: any) {
             console.error('Error fetching articles:', error);
-            setError('게시물을 불러오는데 실패했습니다.');
+            setError('게시물을 불러오는 중 오류가 발생했습니다.');
+            setArticleList([]);
+            setTotalPages(0);
+            setTotalElements(0);
+        } finally {
+            setIsSearchLoading(false);
         }
     };
 
@@ -165,7 +200,7 @@ export default function ArticleListPage() {
         if (selectedAptId) {
             fetchArticles(isSearching);
         }
-    }, [categoryId, currentPage, isSearching, selectedAptId]);
+    }, [categoryId, currentPage, selectedAptId]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(Math.max(1, newPage));
@@ -174,60 +209,69 @@ export default function ArticleListPage() {
     const handleSearch = () => {
         setCurrentPage(1);
         setIsSearching(keyword.trim() !== '');
+        setSearchedKeyword(keyword.trim());
+        fetchArticles(true);
     };
 
     const handleReset = () => {
         setKeyword('');
         setSort(0);
         setIsSearching(false);
-        setCurrentPage(1);
+        setSearchedKeyword('');
+        setNoResults(false);
     };
 
     const handleAptChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedAptId(Number(event.target.value));
     };
 
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
-            <div className="flex flex-col min-h-screen">
-                <div className="flex flex-1 w-full">
-                    <div className="flex w-full h-full">
-                        <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
-                            <CategoryList userRole={user?.role} />
-                        </aside>
-                        <div className="flex-1 max-w-7xl p-10 ml-[400px]">
-                            {isAdmin && (
-                                <div className="mb-6">
-                                    <select
-                                        value={selectedAptId || ''}
-                                        onChange={handleAptChange}
-                                        className="p-2 bg-gray-700 rounded text-white"
-                                    >
-                                        {aptList.map(apt => (
-                                            <option key={apt.aptId} value={apt.aptId} disabled={apt.aptName === 'admin'}>
-                                                {apt?.aptName !== 'admin' ? apt?.aptName : '아파트를 선택해주세요'}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+        <div className="flex flex-col min-h-screen">
+            <div className="flex flex-1 w-full">
+                <div className="flex w-full h-full">
+                    <aside className="w-1/6 p-6 bg-gray-800 fixed absolute h-4/6">
+                        <CategoryList userRole={user?.role} />
+                    </aside>
+                    <div className="flex-1 max-w-7xl p-10 ml-[400px]">
+                        {isAdmin && (
+                            <div className="mb-6">
+                                <select
+                                    value={selectedAptId || ''}
+                                    onChange={handleAptChange}
+                                    className="p-2 bg-gray-700 rounded text-white"
+                                >
+                                    {aptList.map(apt => (
+                                        <option key={apt.aptId} value={apt.aptId} disabled={apt.aptName === 'admin'}>
+                                            {apt?.aptName !== 'admin' ? apt?.aptName : '아파트를 선택해주세요'}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                        <h2 className="text-2xl font-bold mb-6">
+                            {isAdmin ? (
+                                selectedAptId !== 1
+                                    ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
+                                    : '아파트를 선택해주세요.'
+                            ) : (
+                                `${user?.aptResponseDTO?.aptName || ''} 게시판`
                             )}
-                            <h2 className="text-2xl font-bold mb-6">
-                                {
-                                    isAdmin ? (
-                                        selectedAptId !== 1
-                                            ? `선택된 아파트: ${aptList.find(apt => apt.aptId === selectedAptId)?.aptName || ''}`
-                                            : '아파트를 선택해주세요.'
-                                    ) : (
-                                        `${user?.aptResponseDTO?.aptName || ''} 게시판`
-                                    )
-                                }
-                            </h2>
-                            {error ? (
-                                <p className="text-red-500">{error}</p>
-                            ) : selectedAptId === 1 ? ( <>
-                            </>
-                            ) : articleList.length === 0 ? (
-                                <p className="text-gray-400">등록된 게시물이 없습니다.</p>
+                        </h2>
+                        {isSearchLoading ? (
+                            <p className="text-gray-400 mt-4">검색 중...</p>
+                        ) : error ? (
+                            <p className="text-red-500 mt-4">{error}</p>
+                        ) : noResults ? (
+                            <p className="text-gray-400 mt-4">검색 결과가 없습니다.</p>
+                        ) : articleList.length === 0 ? (
+                            <p className="text-gray-400 mt-4">등록된 게시물이 없습니다.</p>
                             ) : Number(categoryId) === USED_ITEMS_CATEGORY_ID ? (
                                 <div className="grid grid-cols-3 gap-4">
                                     {articleList.map((article) => {
@@ -319,6 +363,7 @@ export default function ArticleListPage() {
                                         className="p-2 bg-gray-700 rounded text-white mr-2"
                                         value={keyword}
                                         onChange={(e) => setKeyword(e.target.value)}
+                                        onKeyPress={handleKeyPress}
                                     />
                                     <select
                                         className="p-2 bg-gray-700 rounded text-white mr-2"
@@ -336,7 +381,7 @@ export default function ArticleListPage() {
                                     >
                                         검색
                                     </button>
-                                    {isSearching && (
+                                    {(isSearching || keyword !== '' || sort !== 0) && (
                                         <button
                                             className="p-2 bg-gray-600 rounded hover:bg-gray-400 text-white"
                                             onClick={handleReset}
@@ -349,9 +394,9 @@ export default function ArticleListPage() {
                                     등록
                                 </Link>
                             </div>
-                            {isSearching && keyword.trim() !== '' && (
+                            {!isSearchLoading && isSearching && searchedKeyword !== '' && !noResults && articleList.length > 0 && (
                                 <p className="mt-4 text-gray-400">
-                                    "{keyword}" 검색 결과 ({totalElements}건)
+                                    "{searchedKeyword}" 검색 결과 ({totalElements}건)
                                 </p>
                             )}
                             <div className="flex justify-center mt-6">
