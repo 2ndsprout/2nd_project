@@ -117,20 +117,22 @@ export default function Page() {
                 return defaultUrls; // defaultUrl을 항상 반환하여 string[] 보장
         }
     }
-
+    // const getLinkClass = (id: number) => {
+    //     return centerId === id ? "text-lg text-yellow-400 flex mb-2 hover:underline font-bold" : "flex mb-2 text-lg hover:underline";
+    // };
 
 
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="bg-black w-full min-h-screen text-white flex">
-                <aside className="w-1/6 p-6">
+            <aside className="w-1/6 p-6">
                     <div className="mt-5 ml-20 flex flex-col items-start">
-                        <h2 className="text-3xl font-bold mb-4" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
+                        <h2 className="text-3xl font-bold  mb-10" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>문화센터</h2>
                         <div className="mb-2">
-                            <div>
+                            <div >
                                 {centerList?.map((center) =>
-                                    <div key={center.id} >
-                                        <Link href={`/account/culture_center/${center.id}`} >
+                                    <div key={center.id}>
+                                        <Link href={`/account/culture_center/${center.id}`} className='text-lg flex mb-2 hover:underline font-bold hover:text-secondary'>
                                             {center?.type === 'GYM' ? '헬스장' : ''
                                                 || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
                                                     || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''

@@ -13,8 +13,7 @@ interface SliderProps {
 }
 
 const Slider = ({ urlList }: SliderProps) => {
-    const slideCount = urlList.length;
-    const shouldLoop = slideCount >= 3; // 슬라이드 수가 3개 이상일 때만 loop 활성화
+    const shouldLoop = urlList.length >= 3; // 슬라이드 수가 3개 이상일 때만 loop 활성화
 
     return (
         <>
@@ -33,16 +32,17 @@ const Slider = ({ urlList }: SliderProps) => {
                 navigation={true}
                 modules={[Zoom, Autoplay, Pagination, Navigation]}
                 className="mySwiper"
-                style={{ height: "100%", width: "50%", margin: "0px" }}
+                style={{ height: "100%", width: "100%", margin: "0px" }} // 슬라이드의 전체 너비를 차지하도록 설정
             >
                 {urlList.map((url, index) => (
-                    <SwiperSlide key={index}>
+                    <SwiperSlide key={index} style={{ width: '100%' }}> {/* 각 슬라이드의 너비 설정 */}
                         <div className="swiper-zoom-container" style={{ width: '100%', height: '100%' }}>
                             <img src={url} style={{ width: '100%', height: '100%' }} alt={`Slide ${index}`} className="object-cover m-auto" />
                         </div>
                     </SwiperSlide>
                 ))}
             </Swiper>
+
         </>
     );
 }

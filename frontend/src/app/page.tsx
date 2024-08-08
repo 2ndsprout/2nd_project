@@ -42,9 +42,9 @@ export default function Page() {
           .then(r => {
             setProfile(r);
             getCategoryList()
-              .then(r => 
+              .then(r =>
                 setCategories(r))
-              .catch(e => 
+              .catch(e =>
                 console.log(e))
             getCenterList()
               .then(r => {
@@ -146,7 +146,9 @@ export default function Page() {
   return (
     <Main user={user} profile={profile} centerList={centerList} isLoading={isLoading}>
       <div className="mt-10 flex w-[1920px] justify-between h-[480px] px-0 px-10">
-        <Slider urlList={displayUrls} />
+        <div className="w-1/2">
+          <Slider urlList={displayUrls} />
+        </div>
         <Calendar lessons={lessons} height={480} width={900} />
       </div>
       <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full px-16">
