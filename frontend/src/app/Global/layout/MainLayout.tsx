@@ -224,9 +224,9 @@ export default function Main(props: Readonly<PageInterface>) {
                 <div className='h-full w-full flex flex-col justify-between my-auto px-2 text-lg'
                   onMouseEnter={() => openHover(setBoardHover)}
                   onMouseLeave={() => closeHover(setBoardHover)}>
-                  <a href='/account/article/1' className='hover:text-secondary text-sm'>공지사항</a>
-                  <a href='/account/article/2' className='hover:text-secondary text-sm'>자유게시판</a>
-                  <a href='/account/article/3' className='hover:text-secondary text-sm'>중고장터</a>
+                  <a href='/account/article/2' className='hover:text-secondary text-sm'>공지사항</a>
+                  <a href='/account/article/3' className='hover:text-secondary text-sm'>자유게시판</a>
+                  <a href='/account/article/4' className='hover:text-secondary text-sm'>중고장터</a>
                 </div>
               </DropDown>
               <DropDown open={manageHover} onClose={() => !setManageHover} className='fixed z-[950] border-x-1 border-b-1 border-black rounded-b-xl bg-gray-700' background='main' button='manage' defaultDirection={Direction.DOWN} height={35} width={180} y={14} x={-20}>

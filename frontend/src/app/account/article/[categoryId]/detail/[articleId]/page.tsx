@@ -122,14 +122,6 @@ export default function ArticleDetail() {
         }
     }, [user, article, PROFILE_ID]);
 
-//     useEffect(() => {
-//     if (categoryId) {
-//         setIsUsedItemsCategory(Number(categoryId) === USED_ITEMS_CATEGORY_ID);
-//         console.log("Category ID:", categoryId);
-//         console.log("Is Used Items Category:", Number(categoryId) === USED_ITEMS_CATEGORY_ID);
-//     }
-// }, [categoryId]);
-
     useEffect(() => {
         if (article) {
             console.log("Full article object:", article);
@@ -264,8 +256,8 @@ export default function ArticleDetail() {
                         <p className="text-sm text-gray-400 mb-6 text-right">{getDateTimeFormat(article.createDate)}</p>
                     </div>
                     <div className="flex w-full">
-                        <div className="w-[45%] p-6">
-                            <div className="w-full h-[400px]">
+                        <div className="w-[45%] mr-6">
+                            <div className="w-full h-[600px]">
                             <Slider urlList={imageUrls} />
                             </div>
                         </div>
