@@ -33,7 +33,6 @@ export default function Page() {
     const [centerTypeError, setCenterTypeError] = useState('센터 타입을 입력해주세요.');
     const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
     const [endTimeError, setEndTimeError] = useState('종료 시간을 설정해 주세요.');
-    const [isModalOpen, setISModalOpen] = useState(-1);
     const { alertState, showAlert, closeAlert } = useAlert();
 
     useEffect(() => {
@@ -66,13 +65,23 @@ export default function Page() {
     }, [ACCESS_TOKEN, PROFILE_ID]);
 
     useEffect(() => {
-        if (centerType && startDateTime && endDateTime) {
-            postCenter({ type: centerType, startDate: startDateTime, endDate: endDateTime })
-                .then(r => {
+        if (startDateTime && endDateTime) {
+            const centerData = {
+                type: centerType,
+                startDate: startDateTime,
+                endDate: endDateTime,
+            };
+
+            postCenter(centerData)
+                .then(response => {
+                    console.log('센터 생성 응답:', response);
                     closeConfirm();
                     showAlert('센터가 생성되었습니다.', '/account/culture_center');
                 })
-                .catch(e => console.log(e));
+                .catch(error => {
+                    console.error('센터 생성 오류:', error);
+                    showAlert('센터 생성 중 오류가 발생했습니다.');
+                });
         }
     }, [startDateTime, endDateTime]);
 
@@ -93,14 +102,13 @@ export default function Page() {
 
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setCenterType(Number(event.target.value)); // 변환된 숫자값 설정
+        setCenterType(Number(event.target.value));
         setCenterTypeError('');
     };
 
 
     const submit = () => {
         const now = dayjs();
-
         const todayDate = now.format('YYYY-MM-DD');
 
         const startDate = todayDate;
@@ -112,13 +120,6 @@ export default function Page() {
         setStartDateTime(startDateString);
         setEndDateTime(endDateString);
     };
-
-
-
-
-    function onClose(type: number) {
-        setISModalOpen(type);
-    }
 
 
     const handleStartTimeChange = (time: Dayjs | string) => {
