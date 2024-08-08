@@ -107,18 +107,9 @@ export default function ArticleDetail() {
         console.log("PROFILE_ID:", PROFILE_ID);
         
         if (user && article && PROFILE_ID) {
-            const isAdmin = user.role === 'ADMIN';
-            const isSecurity = user.role === 'SECURITY';
             const isAuthor = PROFILE_ID === String(article.profileResponseDTO.id);
             
-            console.log("Is Admin:", isAdmin);
-            console.log("Is Security:", isSecurity);
-            console.log("Is Author:", isAuthor);
-            console.log("Current Profile ID:", PROFILE_ID);
-            console.log("Article Author ID:", article.profileResponseDTO.id);
-            // 콘솔 로그 권한 확인용
-            
-            setHasEditPermission(isAdmin || isSecurity || isAuthor);
+            setHasEditPermission(isAuthor);
         }
     }, [user, article, PROFILE_ID]);
 
