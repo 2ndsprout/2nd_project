@@ -57,7 +57,7 @@ export default function Page() {
     const [aptId, setAptId] = useState(0);
     const [apt, setApt] = useState(null as any);
     const [status, setStatus] = useState(0);
-    const [TotalElements, setTotalElements] = useState(null as any);
+    const [TotalElements, setTotalElements] = useState(0);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
@@ -194,6 +194,12 @@ export default function Page() {
     };
 
     useEffect(() => {
+        getProposeList(status, page)
+            .then(r => {
+                console.log(r);
+                setTotalElements(r.totalElements);
+                setProposeList(r.content);
+            })
         if (ACCESS_TOKEN)
             getUser()
                 .then(r => {
@@ -201,11 +207,6 @@ export default function Page() {
                     if (r?.role !== 'ADMIN') {
                         window.location.href = '/';
                     }
-                    getProposeList(status, page)
-                        .then(r => {
-                            setTotalElements(r.totalElements);
-                            setProposeList(r.content);
-                        })
                 })
                 .catch(e => console.log(e));
         if (PROFILE_ID) {
@@ -214,6 +215,7 @@ export default function Page() {
                     setProfile(r);
                     getCenterList()
                         .then(r => {
+                            console.log(r);
                             setCenterList(r);
                         })
                         .catch(e => console.log(e));
@@ -549,13 +551,13 @@ export default function Page() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {proposeList.map((propose, proposeIndex) => (
+                                {proposeList.map((propose, index) => (
                                     <tr
                                         key={propose.id}
                                         className="hover:text-secondary text-center hover:cursor-pointer"
                                         onClick={() => { user?.role !== 'ADMIN' ? onPassword(propose.id) : onAdmin(propose.id) }}
                                     >
-                                        <td>{TotalElements - proposeIndex}</td>
+                                        <td>{TotalElements - index}</td>
                                         <td className="font-bold truncate w-[500px]">{propose.aptName}</td>
                                         <td className="truncate w-[800px]">{user?.role !== 'ADMIN' ? (<FontAwesomeIcon icon={faLock} className="mr-3" />) : null}{propose.title}</td>
                                         {status == 0 ? <td className="text-sm w-[500px]">{getDateTimeFormat(propose.createDate)}</td> :
@@ -637,7 +639,7 @@ export default function Page() {
                                         type="text"
                                         defaultValue={title}
                                         disabled={!update}
-                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : 'border border-black rounded-xl'}`}
                                         onChange={e => { if (first) setFirst(false); setTitle(e.target.value); validateInput('title', (e.target as HTMLInputElement).value); }}
                                         onFocus={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if (e.target.value === '') setTitleError('제목을 입력해주세요.') }}
                                         onKeyUp={(e) => { validateInput('title', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setTitleError('제목을 입력해주세요.') }}
@@ -647,7 +649,7 @@ export default function Page() {
                                         type="text"
                                         defaultValue={aptName}
                                         disabled={!update}
-                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : 'border border-black rounded-xl'}`}
                                         onChange={e => { if (first) setFirst(false); setAptName(e.target.value); validateInput('aptName', (e.target as HTMLInputElement).value); }}
                                         onFocus={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if (e.target.value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
                                         onKeyUp={(e) => { validateInput('aptName', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setAptNameError('아파트 이름을 입력해주세요.') }}
@@ -678,7 +680,7 @@ export default function Page() {
                                             type="text"
                                             defaultValue={min}
                                             disabled={!update}
-                                            className={`ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center ${!update ? 'text-gray-500' : ''}`}
+                                            className={`ml-3 font-bold bg-white h-[55px] text-xl w-1/2 content-center ${!update ? 'text-gray-500' : 'border border-black rounded-xl'}`}
                                             onChange={e => { if (first) setFirst(false); setMin(Number(e.target.value)); validateInput('min', (e.target as HTMLInputElement).value); }}
                                             onFocus={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if (e.target.value === '') setMinError('시작 동 번호를 입력해주세요.') }}
                                             onKeyUp={(e) => { validateInput('min', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMinError('시작 동 번호를 입력해주세요.') }}
@@ -688,7 +690,7 @@ export default function Page() {
                                             type="text"
                                             defaultValue={max}
                                             disabled={!update}
-                                            className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                            className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : 'border border-black rounded-xl'}`}
                                             onChange={e => { if (first) setFirst(false); setMax(Number(e.target.value)); validateInput('max', (e.target as HTMLInputElement).value); }}
                                             onFocus={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if (e.target.value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
                                             onKeyUp={(e) => { validateInput('max', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setMaxError('끝 동 번호를 입력해주세요.') }}
@@ -698,7 +700,7 @@ export default function Page() {
                                         type="text"
                                         defaultValue={h}
                                         disabled={!update}
-                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : 'border border-black rounded-xl'}`}
                                         onChange={e => { if (first) setFirst(false); setH(Number(e.target.value)); validateInput('h', (e.target as HTMLInputElement).value); }}
                                         onFocus={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if (e.target.value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
                                         onKeyUp={(e) => { validateInput('h', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setHError('아파트의 총 층 수를 입력해주세요.') }}
@@ -707,7 +709,7 @@ export default function Page() {
                                         type="text"
                                         defaultValue={w}
                                         disabled={!update}
-                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : ''}`}
+                                        className={`ml-3 font-bold bg-white h-[55px] text-xl w-full content-center ${!update ? 'text-gray-500' : 'border border-black rounded-xl'}`}
                                         onChange={e => { if (first) setFirst(false); setW(Number(e.target.value)); validateInput('w', (e.target as HTMLInputElement).value); }}
                                         onFocus={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if (e.target.value === '') setWError('층당 세대수를 입력해주세요.') }}
                                         onKeyUp={(e) => { validateInput('w', (e.target as HTMLInputElement).value); if ((e.target as HTMLInputElement).value === '') setWError('층당 세대수를 입력해주세요.') }}

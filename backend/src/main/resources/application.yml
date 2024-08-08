@@ -10,6 +10,9 @@ spring:
           auth: true
           starttls:
             enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
   web:
     resources:
       static-locations:
@@ -19,7 +22,6 @@ spring:
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
-  profiles:
     include: oauth
   application:
     name: apt_project
