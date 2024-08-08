@@ -11,6 +11,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import TagInput from '../../tag/TagInput';
 import Slider from '@/app/Global/component/ArticleSlider';
+import EditableSlider from '@/app/Global/component/EditableSlider';
 
 interface Tag {
     id: number;
@@ -198,16 +199,20 @@ export default function Page() {
             return;
         }
     
-        if (isUsedItemsCategory && !price) {
-            setError('중고장터 게시물의 경우 가격을 입력해주세요.');
-            return;
+        if (isUsedItemsCategory && (!price || usedItemImages.length === 0)) {
+          if (!price) {
+              setError('중고장터 게시물의 경우 가격을 입력해주세요.');
+          } else if (usedItemImages.length === 0) {
+              setError('중고장터 게시물의 경우 이미지를 한 장 이상 첨부해주세요.');
+          }
+          return;
         }
     
         try {
             let finalContent = quillInstance.current?.getEditor().root.innerHTML || '';
     
             if (isUsedItemsCategory) {
-                finalContent += `<p>[PRICE]${price}[/PRICE]</p>`;
+                finalContent += `[PRICE]${price}[/PRICE]`;
                 usedItemImages.forEach(imgUrl => {
                     finalContent += `<img src="${imgUrl}" style="display:none;">`;
                 });
@@ -269,6 +274,10 @@ export default function Page() {
           return () => clearTimeout(timer);
         }
       }, [isUsedItemsCategory]);
+
+      const handleRemoveImage = (index: number) => {
+        setUsedItemImages(prev => prev.filter((_, i) => i !== index));
+      };
 
     const renderContent = () => {
         const quillStyle = {
@@ -334,7 +343,7 @@ export default function Page() {
           return (
             <div className="flex space-x-4">
               <div className="w-1/2 flex flex-col">
-                <ConstrainedSlider urlList={usedItemImages} />
+              <EditableSlider urlList={usedItemImages} onRemove={handleRemoveImage} />
                 <button
                   onClick={imageHandler}
                   className="w-1/5 mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
