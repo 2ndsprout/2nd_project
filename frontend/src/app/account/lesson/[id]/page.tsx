@@ -1,6 +1,6 @@
 'use client';
 
-import { getProfile, getUser, getLesson, postLesson, postLessonRequest, getCenterList, deleteLesson } from "@/app/API/UserAPI";
+import { getProfile, getUser, getLesson, postLesson, postLessonRequest, getCenterList, deleteLesson, getLessonRequestList } from "@/app/API/UserAPI";
 import { redirect, useParams, useRouter } from "next/navigation";
 import AlertModal from "@/app/Global/component/AlertModal";
 import Calendar from "@/app/Global/component/Calendar";
@@ -22,9 +22,10 @@ export default function Page() {
     const [lessonList, setLessonList] = useState([] as any[]);
     const [targetLesson, setTargetLesson] = useState(null as any);
     const [error, setError] = useState('');
+    const [have, setHave] = useState(false);
     const { confirmState, finalConfirm, closeConfirm } = useConfirm();
-    const { alertState, showAlert, closeAlert } = useAlert();
     const [centerList, setCenterList] = useState([] as any[]);
+    const { alertState, showAlert, closeAlert } = useAlert();
     const countTotalLesson = (lessonList: any[]): number => {
         return lessonList.reduce((total, lesson) => {
             return total + 1 + countTotalLesson(lessonList || []);
@@ -42,6 +43,14 @@ export default function Page() {
                 getProfile()
                     .then(r => {
                         setProfile(r);
+                        getLessonRequestList()
+                        .then(r => {
+                            r.forEach((r: any) => {
+                                if (lessonId == r.lessonResponseDTO.id) {
+                                    setHave(true);
+                                }
+                            });
+                        })
                     })
                     .catch(e => console.log(e));
                 getCenterList()
@@ -130,7 +139,8 @@ export default function Page() {
                         </div>
 
                         <div className="w-[1200px] h-[80px] justify-end items-start flex">
-                            {targetLesson?.profileResponseDTO?.name !== profile.name ? <button
+                            {have === false ? targetLesson?.profileResponseDTO?.name !== profile.name? 
+                            <button
                                 id='submit'
                                 className='bg-transparent  p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 justify-center flex items-end text-white'
                                 onClick={() => finalConfirm(targetLesson?.name, '해당 레슨을 신청하시겠습니까?', '신청',() => Submit())}
@@ -151,7 +161,7 @@ export default function Page() {
                                 >
                                     삭제
                                 </button>
-                            </div>}
+                            </div> : <></>}
                         </div>
                     </div>
                 ) : (
