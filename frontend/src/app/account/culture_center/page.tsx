@@ -46,25 +46,25 @@ export default function Page() {
                                 setLibUrlList([]);
                                 setGolfUrlList([]);
                                 r.forEach((r: any) => {
-                                    switch (r.type) {
+                                    switch (r?.type) {
                                         case 'GYM':
                                             r.imageListResponseDTOS?.forEach((image: any) => {
-                                                setGymUrlList(prev => [...prev, image.value]);
+                                                setGymUrlList(prev => [...prev, image?.value]);
                                             });
                                             break;
                                         case 'SWIMMING_POOL':
                                             r.imageListResponseDTOS?.forEach((image: any) => {
-                                                setSwimUrlList(prev => [...prev, image.value]);
+                                                setSwimUrlList(prev => [...prev, image?.value]);
                                             });
                                             break;
                                         case 'LIBRARY':
                                             r.imageListResponseDTOS?.forEach((image: any) => {
-                                                setLibUrlList(prev => [...prev, image.value]);
+                                                setLibUrlList(prev => [...prev, image?.value]);
                                             });
                                             break;
                                         case 'SCREEN_GOLF':
                                             r.imageListResponseDTOS?.forEach((image: any) => {
-                                                setGolfUrlList(prev => [...prev, image.value]);
+                                                setGolfUrlList(prev => [...prev, image?.value]);
                                             });
                                             break;
                                         default:
@@ -131,8 +131,8 @@ export default function Page() {
                         <div className="mb-2">
                             <div >
                                 {centerList?.map((center) =>
-                                    <div key={center.id}>
-                                        <Link href={`/account/culture_center/${center.id}`} className='text-lg flex mb-2 hover:underline font-bold hover:text-secondary'>
+                                    <div key={center?.id}>
+                                        <Link href={`/account/culture_center/${center?.id}`} className='text-lg flex mb-2 hover:underline font-bold hover:text-secondary'>
                                             {center?.type === 'GYM' ? '헬스장' : ''
                                                 || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
                                                     || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''
@@ -146,16 +146,16 @@ export default function Page() {
                 </aside>
                 <div className="w-4/6 p-6 mt-[50px] flex flex-col space-y-10">
                     {centerList?.map((center) =>
-                        <div key={center.id} >
+                        <div key={center?.id} >
                             <div className="bg-gray-800 p-4 rounded-lg flex items-center h-[200px]">
                                 <div className="w-[200px] h-full rounded-t-lg">
                                     <CenterSlider urlList={urlList(center?.type)} />
                                 </div>
                                 <div className="flex flex-col h-full w-full">
                                     <div className="text-xl font-bold mt-4 flex items-start w-full h-1/3 ml-[50px] text-orange-400">{center?.type === 'GYM' ? '헬스장' : '' || center?.type === 'SWIMMING_POOL' ? '수영장' : '' || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : '' || center?.type === 'LIBRARY' ? '도서관' : ''}</div>
-                                    <label className="flex ml-[50px]">{getTimeFormat(center.startDate)} ~ {getTimeFormat(center.endDate)}</label>
+                                    <label className="flex ml-[50px] text-lg"><span className="text-lg font-bold text-orange-400 mr-2">운영시간 : </span> {getTimeFormat(center?.startDate)} ~ {getTimeFormat(center?.endDate)}</label>
                                 </div>
-                                <Link href={`/account/culture_center/${center.id}`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 flex justify-center text-white w-[130px]">
+                                <Link href={`/account/culture_center/${center?.id}`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 flex justify-center text-white w-[130px]">
                                     레슨 목록
                                 </Link>
                             </div>

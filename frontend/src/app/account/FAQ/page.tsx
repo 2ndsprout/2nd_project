@@ -239,7 +239,7 @@ export default function Page() {
                 <div className="w-[1500px] flex flex-col items-center">
                     <div className="flex">
                         <h2 className="w-[1000px] text-3xl font-bold mb-4 mt-10 ml-[-40px]" style={{ color: 'oklch(80.39% .194 70.76 / 1)' }}>FAQ</h2>
-                        <button className="w-[100px] text-lg font-bold mb-4 mt-10 bg-success rounded-lg h-[50px] hover:bg-green-700" onClick={postFAQ}>글 생성</button>
+                        {user?.role === 'ADMIN' || user?.role === 'SECURITY' ? <button className="w-[100px] text-lg font-bold mb-4 mt-10 bg-success rounded-lg h-[50px] hover:bg-green-700" onClick={postFAQ}>글 생성</button> : null}
                     </div>
                     {articleList?.map((article) => (
                         <div key={article?.articleId} className="flex justify-center items-center ml-[-40px] mr-[20px] flex-col">
