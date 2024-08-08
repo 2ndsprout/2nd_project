@@ -258,14 +258,14 @@ const CommentList: React.FC<CommentListProps> = ({ articleId }) => {
                         {hasEditPermission(comment.profileResponseDTO.id) && (
                             <>
                                 {editingCommentId === comment.id ? (
-                                    <button onClick={() => finalConfirm(user?.username, '해당 댓글을 수정하시겠습니까?', '수정', () => handleEditComment(comment.id))} className="mr-2 text-blue-500">저장</button>
+                                    <button onClick={() => finalConfirm('댓글 수정', '해당 댓글을 수정하시겠습니까?', '수정', () => handleEditComment(comment.id))} className="mr-2 text-blue-500">저장</button>
                                 ) : (
                                     <button onClick={() => {
                                         setEditingCommentId(comment.id);
                                         setEditContent(comment.content);
                                     }} className="mr-2 text-blue-500">수정</button>
                                 )}
-                                <button onClick={() => finalConfirm(user?.username, '해당 댓글을 삭제하시겠습니까?', '삭제', () => handleDeleteComment(comment.id))} className="mr-2 text-red-500">삭제</button>
+                                <button onClick={() => finalConfirm('댓글 삭제', '해당 댓글을 삭제하시겠습니까?', '삭제', () => handleDeleteComment(comment.id))} className="mr-2 text-red-500">삭제</button>
                             </>
                         )}
                         <ConfirmModal title={confirmState?.title} content={confirmState?.content} confirm={confirmState?.confirm} show={confirmState?.show} onConfirm={confirmState?.onConfirm} onClose={closeConfirm} />
