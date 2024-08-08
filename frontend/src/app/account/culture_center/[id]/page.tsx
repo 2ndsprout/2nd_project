@@ -151,8 +151,8 @@ export default function Page() {
                         <div className="mb-2">
                             <div >
                                 {centerList?.map((center) =>
-                                    <div key={center.id}>
-                                        <Link href={`/account/culture_center/${center.id}`} className={getLinkClass(center.id)}>
+                                    <div key={center?.id}>
+                                        <Link href={`/account/culture_center/${center?.id}`} className={getLinkClass(center?.id)}>
                                             {center?.type === 'GYM' ? '헬스장' : ''
                                                 || center?.type === 'SWIMMING_POOL' ? '수영장' : ''
                                                     || center?.type === 'SCREEN_GOLF' ? '스크린 골프장' : ''
@@ -173,14 +173,16 @@ export default function Page() {
                                 <th className="ml-[270px] text-orange-400 w-[100px] flex justify-center border-b">수업 기간</th>
                             </tr>
                         </thead>
-                        {lessonList?.length != 0 ? lessonList.map((lesson, index) => (
+                        {lessonList?.length != 0 ? lessonList?.map((lesson, index) => (
                             <tbody key={index}>
                                 <tr className="bg-gray-800 p-2 rounded-lg w-[1000px] flex items-center mr-[200px] h-[120px] hover:cursor-pointer"
                                     onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
-                                    <td className="w-[200px]"><img src={lesson.profileResponseDTO?.url ? lesson.profileResponseDTO.url : '/user.png'} className="w-full h-full" alt="profile" /></td>
-                                    <td className="w-[300px] h-1/3 flex items-center justify-center">{lesson.profileResponseDTO.name}</td>
-                                    <td className="text-xl font-bold items-center justify-center w-[1200px] text-orange-300 flex overflow-hidden overflow-ellipsis whitespace-nowrap">{lesson.name}</td>
-                                    <td className="flex h-3/4 w-[500px] items-center justify-end mr-5">{getDateFormat(lesson.startDate)} ~ {getDateFormat(lesson.endDate)}</td>
+                                    <td className="w-[200px]">
+                                        <img src={lesson?.profileResponseDTO?.url ? lesson?.profileResponseDTO?.url : '/user.png'} className="w-full h-full rounded-full" alt="profile" />
+                                        </td>
+                                    <td className="w-[300px] h-1/3 flex items-center justify-center">{lesson?.profileResponseDTO?.name}</td>
+                                    <td className="text-xl font-bold items-center justify-center w-[1200px] text-orange-300 flex overflow-hidden overflow-ellipsis whitespace-nowrap">{lesson?.name}</td>
+                                    <td className="flex h-3/4 w-[500px] items-center justify-end mr-5">{getDateFormat(lesson?.startDate)} ~ {getDateFormat(lesson?.endDate)}</td>
                                 </tr>
                             </tbody>
                         )) : <tbody>
@@ -192,7 +194,7 @@ export default function Page() {
                         </tbody>}
                     </table>
                     <div className="flex w-[400px] mr-[70px] mt-[50px]">
-                        {lessonList && lessonList.length > 0 ? (
+                        {lessonList && lessonList?.length > 0 ? (
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={totalPages}

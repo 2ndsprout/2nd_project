@@ -192,7 +192,7 @@ export default function Main(props: Readonly<PageInterface>) {
                   onMouseLeave={() => closeHover(setCenterHover)}>
                   문화센터
                 </a>
-                <a id="board" href="/account/article/1" className="btn btn-ghost text-xl hover:text-secondary"
+                <a id="board" href="/account/article/2" className="btn btn-ghost text-xl hover:text-secondary"
                   onMouseEnter={() => openHover(setBoardHover)}
                   onMouseLeave={() => closeHover(setBoardHover)}>
                   게시판
