@@ -156,7 +156,7 @@ export default function Page() {
                                     <label className="flex ml-[50px]">{getTimeFormat(center.startDate)} ~ {getTimeFormat(center.endDate)}</label>
                                 </div>
                                 <Link href={`/account/culture_center/${center.id}`} className="p-2.5 bg-yellow-600 rounded hover:bg-yellow-400 flex justify-center text-white w-[130px]">
-                                    수강신청
+                                    레슨 목록
                                 </Link>
                             </div>
                         </div>
