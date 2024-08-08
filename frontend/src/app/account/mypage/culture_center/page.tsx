@@ -13,6 +13,8 @@ import AlertModal from "@/app/Global/component/AlertModal";
 import Slider from "@/app/Global/component/Slider";
 import { url } from "inspector";
 import CenterSlider from "@/app/Global/component/CenterSlider";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
 
 export default function Page() {
@@ -34,6 +36,8 @@ export default function Page() {
     const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
     const [endTimeError, setEndTimeError] = useState('종료 시간을 설정해 주세요.');
     const { alertState, showAlert, closeAlert } = useAlert();
+    const [centerTypeName, setCenterTypeName] = useState('' as string);
+
 
     useEffect(() => {
         if (ACCESS_TOKEN) {
@@ -71,19 +75,40 @@ export default function Page() {
                 startDate: startDateTime,
                 endDate: endDateTime,
             };
-
-            postCenter(centerData)
-                .then(response => {
-                    console.log('센터 생성 응답:', response);
-                    closeConfirm();
-                    showAlert('센터가 생성되었습니다.', '/account/culture_center');
-                })
-                .catch(error => {
-                    console.error('센터 생성 오류:', error);
-                    showAlert('센터 생성 중 오류가 발생했습니다.');
-                });
+            const centerTypeName = centerName(centerType);
+            const existingCenter = centerList.find(center => center.type === centerTypeName);
+            if (existingCenter) {
+                closeConfirm();
+                showAlert('이미 있는 센터 타입입니다.', '/account/mypage/culture_center');
+            } else {
+                postCenter(centerData)
+                    .then(response => {
+                        console.log('센터 생성 응답:', response);
+                        closeConfirm();
+                        showAlert('센터가 생성되었습니다.', '/account/culture_center');
+                    })
+                    .catch(error => {
+                        console.error('센터 생성 오류:', error);
+                        showAlert('센터 생성 중 오류가 발생했습니다.');
+                    });
+            }
         }
-    }, [startDateTime, endDateTime]);
+    }, [startDateTime, endDateTime, centerTypeName]);
+
+    function centerName(type: number): string {
+        switch (type) {
+            case 0:
+                return 'GYM';
+            case 1:
+                return 'SWIMMING_POOL';
+            case 2:
+                return 'SCREEN_GOLF';
+            case 3:
+                return 'LIBRARY';
+            default:
+                return '';
+        }
+    }
 
     function Change(file: File) {
         const formData = new FormData();
@@ -145,6 +170,10 @@ export default function Page() {
         '/slider_default.png',
         '/slider_default.png',
     ];
+    const allErrors = () => {
+        const errors = [centerTypeError, startTimeError, endTimeError];
+        return errors.find(error => error !== '') || '';
+    };
 
     function urls(): string[] {
         return urlList?.length === 0 ? defaultUrls : urlList;
@@ -156,11 +185,21 @@ export default function Page() {
                 <label className='text-xl font-bold'><label className='text-xl text-secondary font-bold'>센터</label> 생성</label>
                 <div className="mt-9 w-[1300px] border-2 h-[700px] rounded-lg overflow-x-hidden p-[40px] items-center flex">
                     <div className="w-[600px] h-[550px] flex flex-col">
+                        <div className="w-[600px] h-[50px] flex justify-center">
+                            {allErrors() !== '' ? <div className="badge flex justify-center badge-warning gap-2 w-[350px] p-3">
+                                <span className="text-sm"><FontAwesomeIcon icon={faTriangleExclamation} /> {allErrors()}</span>
+                            </div> : null}
+                        </div>
                         <div className="flex flex-row w-[600px]">
                             <select
                                 id="role"
                                 defaultValue={-1}
                                 onChange={handleChange}
+                                onFocus={(e) => {
+                                    if(!-1)
+                                    setCenterTypeError(e.target.value);
+                                    if (e.target.value === '') setCenterTypeError('센터 타입을 입력해주세요.');
+                                }}
                                 className="text-black text-lg w-[650px] h-[50px] bg-white border border-gray-400 rounded-lg p-2.5"
                             >
                                 <option value={-1} disabled>센터 타입을 선택하세요</option>
@@ -175,7 +214,8 @@ export default function Page() {
                                 onStartTimeChange={handleStartTimeChange}
                                 onEndTimeChange={handleEndTimeChange}
                                 onEndTimeError={handleEndTimeError}
-                                onStartTimeError={handleStartTimeError} />
+                                onStartTimeError={handleStartTimeError}
+                            />
                         </div>
                         <div className="w-[600px] h-[330px] flex items-end">
                             <button className="w-[600px] flex h-[50px] btn btn-xl btn-accent" disabled={centerTypeError !== ''} onClick={() => finalConfirm('센터 생성', '센터를 만들겠습니까?', '생성완료', submit)}>
@@ -185,9 +225,6 @@ export default function Page() {
 
                     </div>
                     <div className="ml-16 h-[500px] w-[550px]">
-                        {/* {urlList.map((url, urlIndex) => (
-                                <img key={urlIndex} src={url} alt={`center_image_${urlIndex}`} className="w-[100px] h-[100px]" />
-                            ))} */}
                         <Slider urlList={urls()} />
                         <div className="mt-2 ml-[200px]">
                             <div className="w-[150px] h-[50px] border-secondary text-black hover:bg-orange-200 hover:cursor-pointer btn bg-secondary" onClick={() => document.getElementById('file')?.click()}>이미지 첨부</div>
