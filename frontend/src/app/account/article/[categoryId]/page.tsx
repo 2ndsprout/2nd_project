@@ -359,7 +359,7 @@ export default function ArticleListPage() {
                                             <tr key={article?.articleId} className="border-b border-gray-700">
                                                 <td className="p-4 text-left">
                                                     <Link href={`/account/article/${categoryId}/detail/${article?.articleId}`} className="hover:underline">
-                                                        [공지]{article?.title}
+                                                        <span className="text-secondary">[공지]</span>{article?.title}
                                                     </Link>
                                                 </td>
                                                 <td className="flex p-4 text-center">

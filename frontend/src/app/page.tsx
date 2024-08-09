@@ -152,31 +152,45 @@ export default function Page() {
         <Calendar lessons={lessons} height={480} width={900} />
       </div>
       <div className="w-[1400px] mt-5 flex justify-between items-start text-center mx-auto w-full px-16">
-        {categories?.slice(0, 3).map((category) => (
-          <div key={category.id} className="flex flex-col">
-            <label className="text-start text-secondary font-bold text-xl pb-3 hover:text-primary hover:cursor-pointer">{category?.name}</label>
-            <table className="table">
-              <thead>
-                <tr className="h-[40px] border-b-2 border-gray-500">
-                  <th className="w-[100px] text-primary">번호</th>
-                  <th className="w-[150px]">작성자</th>
-                  <th className="w-[200px]">제목</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {getCategoryData(category.id)?.slice(0, 5).map((article, articleIndex) =>
-                  <tr key={article.articleId} className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer" onClick={() => handleRowClick(category.id, article.articleId)}>
-                    <td>{getArticleIndex(category.id) - articleIndex}</td>
-                    <td>{article.profileResponseDTO.name}</td>
-                    <td><div className="w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary">{article.title}</div></td>
+        {categories
+          ?.filter(category => category.name !== "FAQ")
+          .slice(0, 3)
+          .map((category) => (
+            <div key={category.id} className="flex flex-col">
+              <label className="text-start text-secondary font-bold text-xl pb-3 hover:text-primary hover:cursor-pointer">
+                {category?.name}
+              </label>
+              <table className="table">
+                <thead>
+                  <tr className="h-[40px] border-b-2 border-gray-500">
+                    <th className="w-[100px] text-primary">번호</th>
+                    <th className="w-[150px]">작성자</th>
+                    <th className="w-[200px]">제목</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        ))}
+                </thead>
+                <tbody className="text-sm">
+                  {getCategoryData(category.id)
+                    ?.slice(0, 5)
+                    .map((article, articleIndex) => (
+                      <tr
+                        key={article.articleId}
+                        className="border-gray-500 border-b-[1px] hover:text-primary hover:cursor-pointer"
+                        onClick={() => handleRowClick(category.id, article.articleId)}
+                      >
+                        <td>{getArticleIndex(category.id) - articleIndex}</td>
+                        <td>{article.profileResponseDTO.name}</td>
+                        <td>
+                          <div className="w-[250px] overflow-hidden overflow-ellipsis whitespace-nowrap hover:text-secondary">
+                            {article.title}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
       </div>
-
     </Main>
   );
 }

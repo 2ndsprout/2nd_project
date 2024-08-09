@@ -178,8 +178,8 @@ export default function Page() {
                                 <tr className="bg-gray-800 p-2 rounded-lg w-[1000px] flex items-center mr-[200px] h-[120px] hover:cursor-pointer"
                                     onClick={() => router.push(`/account/lesson/${lesson.id}`)}>
                                     <td className="w-[200px]">
-                                        <img src={lesson?.profileResponseDTO?.url ? lesson?.profileResponseDTO?.url : '/user.png'} className="w-full h-full rounded-full" alt="profile" />
-                                        </td>
+                                        <img src={lesson?.profileResponseDTO?.url ? lesson?.profileResponseDTO?.url : '/user.png'} className="w-[64px] h-[64px] rounded-full" alt="profile" />
+                                    </td>
                                     <td className="w-[300px] h-1/3 flex items-center justify-center">{lesson?.profileResponseDTO?.name}</td>
                                     <td className="text-xl font-bold items-center justify-center w-[1200px] text-orange-300 flex overflow-hidden overflow-ellipsis whitespace-nowrap">{lesson?.name}</td>
                                     <td className="flex h-3/4 w-[500px] items-center justify-end mr-5">{getDateFormat(lesson?.startDate)} ~ {getDateFormat(lesson?.endDate)}</td>
