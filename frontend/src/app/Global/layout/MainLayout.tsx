@@ -237,12 +237,6 @@ export default function Main(props: Readonly<PageInterface>) {
                 </div>
               </DropDown>
               <div className="navbar-end">
-                <div className='flex items-center border-2 border-gray-300 rounded-full'>
-                  <input id="keyword" type='text' className='self-center text-sm bg-transparent h-[40px] w-[300px] outline-none p-3' defaultValue={props?.keyword} placeholder='검색' onKeyDown={e => { if (e.key === 'Enter') document.getElementById('search')?.click() }}></input>
-                </div>
-                <button id='search' onClick={() => { const value = (document.getElementById('keyword') as HTMLInputElement)?.value; location.href = '/search?keyword=' + (value ? value : '') }}>
-                  <FontAwesomeIcon icon={faMagnifyingGlass} className='rounded-full mr-3 p-2' size="xl" />
-                </button>
                 <button id="user"
                   onMouseEnter={() => openHover(setUserHover)}
                   onMouseLeave={() => closeHover(setUserHover)} className="pl-5 mr-[50px] rounded-full flex flex-col">

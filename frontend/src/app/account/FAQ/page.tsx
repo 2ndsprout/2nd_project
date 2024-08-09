@@ -213,10 +213,10 @@ export default function Page() {
             case 'content':
                 checkInput(
                     value,
-                    /^[0-9가-힣a-zA-Z\s.,!?@#$%^&*()_\-+=\[\]{}|;:'",<>?/]{2,200}$/,
+                    /^.{2,500}$/,
                     () => setContentError(''),
                     (e) => setContentError(e),
-                    '내용은 200자 이내로 입력 가능합니다.'
+                    '내용은 2자 이상 500자 이내로 입력 가능합니다.'
                 );
                 break;
             default:
