@@ -863,6 +863,7 @@ public class MultiService {
                     .categoryName(article.getCategory().getName())
                     .createDate(this.dateTimeTransfer(article.getCreateDate()))
                     .modifyDate(this.dateTimeTransfer(article.getModifyDate()))
+                    .profileResponseDTO(this.profileResponseDTO(profile))
                     .build();
             articleResponseDTOList.add(articleResponseDTO);
         }
