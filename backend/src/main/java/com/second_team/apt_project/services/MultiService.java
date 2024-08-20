@@ -981,7 +981,7 @@ public class MultiService {
 
     private ArticleResponseDTO getArticleResponseDTO(Article article, List<TagResponseDTO> responseDTOList) {
         String profileUrl = this.profileUrl(article.getProfile().getUser().getUsername(), article.getProfile().getId());
-        Optional<MultiKey> _multiKey = multiKeyService.get(article.getId().toString());
+        Optional<MultiKey> _multiKey = multiKeyService.get(ImageKey.ARTICLE.getKey(article.getId().toString()));
         List<String> urlList = new ArrayList<>();
         if (_multiKey.isPresent()) {
             for (String keyName : _multiKey.get().getVs()) {
@@ -989,9 +989,11 @@ public class MultiService {
                 _fileSystem.ifPresent(fileSystem -> urlList.add(fileSystem.getV()));
             }
         }
+        int commentSize = commentService.findByArticleId(article.getId());
+        int count = loveService.countLoveByArticle(article.getId());
 
         return ArticleResponseDTO.builder()//
-                .articleId(article.getId()).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getUser().getUsername()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).urlList(urlList).build();
+                .articleId(article.getId()).loveSize(count).commentSize(commentSize).title(article.getTitle()).content(article.getContent()).createDate(this.dateTimeTransfer(article.getCreateDate())).modifyDate(this.dateTimeTransfer(article.getModifyDate())).categoryName(article.getCategory().getName()).profileResponseDTO(ProfileResponseDTO.builder().id(article.getProfile().getId()).username(article.getProfile().getUser().getUsername()).url(profileUrl).name(article.getProfile().getName()).build()).tagResponseDTOList(responseDTOList).topActive(article.getTopActive()).urlList(urlList).build();
     }
 
     private void updateArticleContent(Article article, MultiKey multiKey) {
@@ -1150,8 +1152,8 @@ public class MultiService {
         int count = loveService.countLoveByArticle(article.getId());
 
         return LoveResponseDTO.builder()
-                .count(count)
                 .isLoved(isLoved)
+                .count(count)
                 .build();
     }
 
@@ -1168,8 +1170,8 @@ public class MultiService {
         int count = loveService.countLoveByArticle(article.getId());
 
         return LoveResponseDTO.builder()
-                .count(count)
                 .isLoved(isLoved)
+                .count(count)
                 .build();
     }
 

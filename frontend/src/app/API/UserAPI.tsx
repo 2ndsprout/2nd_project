@@ -492,7 +492,7 @@ export const deleteComment = async (data: number) => {
 
 export interface GetCommentListProps {
     articleId: number;
-    page: number;
+    page?: number;
 }
 
 export const getCommentList = async ({ articleId, page }: GetCommentListProps) => {

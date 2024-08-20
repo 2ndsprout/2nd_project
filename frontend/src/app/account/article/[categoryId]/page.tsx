@@ -17,6 +17,7 @@ export default function ArticleListPage() {
     const [CategoryList, setCategoryList] = useState([] as any[]);
     const [user, setUser] = useState<any>(null);
     const [aptId, setAptId] = useState(0);
+    const [loveCount, setLoveCount] = useState(0);
     const [error, setError] = useState('');
     const [profile, setProfile] = useState<any>(null);
     const ACCESS_TOKEN = typeof window === 'undefined' ? null : localStorage.getItem('accessToken');
@@ -68,6 +69,7 @@ export default function ArticleListPage() {
                         getArticleList(Number(categoryId), aptId)
                             .then(r => {
                                 setArticleList(r?.content);
+                                setTotalPages(r?.totalPages);
                             }).catch(e => console.error("게시물 목록 가져오기 실패:", e));
                         getTopArticleList(Number(categoryId), aptId)
                             .then(r => {
@@ -90,6 +92,17 @@ export default function ArticleListPage() {
         return Number(categoryId) === id ? "text-lg text-secondary flex mb-2 hover:underline font-bold" : "font-bold flex mb-2 text-lg hover:underline";
     };
 
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+
+        getArticleList(Number(categoryId), user.aptResponseDTO.aptId, newPage - 1) // 테트트 때멘 아파트 아이디 넣고  FAQ는 SECURITY 담당이니 추후에 APTID 는 빼야함
+            .then(r => {
+                setArticleList(r.content);
+                setTotalPages(r.totalPages);
+            })
+            .catch(e => console.log(e));
+    };
+
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="flex min-h-screen">
@@ -107,31 +120,75 @@ export default function ArticleListPage() {
                         </div>
                     </div>
                 </aside>
-                <div className="flex-col ml-[100px] mt-[50px] flex w-4/6 h-[1000px]">
-                    <div className="text-lg border-b h-[50px] flex flex-row text-yellow-300">
-                        <div className="ml-[50px] w-[700px]">제목</div>
-                        <div className="flex w-[300px]">작성자</div>
-                        <div className="flex w-[100px] flex justify-end">작성일자</div>
+                {Number(categoryId) === 2 && (
+                    <div className="flex-col ml-[100px] mt-[50px] flex w-4/6 h-[1500px]">
+                        <div>
+                            <div className="text-lg border-b h-[50px] flex flex-row text-yellow-300">
+                                <div className="ml-[50px] w-[700px]">제목</div>
+                                <div className="flex w-[300px]">작성자</div>
+                                <div className="flex w-[100px] flex justify-end">작성일자</div>
+                            </div>
+                            {topArticleList.map((topArticle) =>
+                                <div key={topArticle?.articleId} className="flex flex-row mt-[5px] border-b border-gray-600 p-[10px]">
+                                    <a className="flex flex-row" href={`/account/article/${categoryId}/detail/${topArticle?.articleId}`}>
+                                        <div className="flex w-[730px]"><div className="text-yellow-500 mr-[10px]">[공지]</div> {topArticle.title}</div>
+                                        <div className="w-[300px]">{topArticle.profileResponseDTO.name}</div>
+                                        <div className="w-[200px] justify-end">{getDateTimeFormat(topArticle.createDate)}</div>
+                                    </a>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {topArticleList.map((topArticle) =>
-                        <div key={topArticle?.id} className="flex flex-row border-b border-gray-600 p-[10px]">
-                            <a className="flex flex-row" href={`/account/article/${categoryId}/detail/${topArticle?.articleId}`}>
-                                <div className="flex w-[730px]"><div className="text-yellow-500 mr-[10px]">[공지]</div> {topArticle.title}</div>
-                                <div className="w-[300px] justify-center">{topArticle.profileResponseDTO.name}</div>
-                                <div className="w-[200px] justify-end">{getDateTimeFormat(topArticle.createDate)}</div>
-                            </a>
+                )}
+                {Number(categoryId) === 3 && (
+                    <div className="flex-col ml-[100px] mt-[50px] flex w-4/6 h-[1500px]">
+                        <div>
+                            <div className="text-lg border-b h-[50px] flex flex-row text-yellow-300">
+                                <div className="ml-[50px] w-[700px]">제목</div>
+                                <div className="flex w-[300px]">작성자</div>
+                                <div className="flex w-[100px] flex justify-end">작성일자</div>
+                            </div>
+                            {topArticleList.map((topArticle) =>
+                                <div key={topArticle?.articleId} className="flex flex-row mt-[5px] border-b border-gray-600 p-[10px]">
+                                    <a className="flex flex-row" href={`/account/article/${categoryId}/detail/${topArticle?.articleId}`}>
+                                        <div className="flex w-[730px]"><div className="text-yellow-500 mr-[10px]">[공지]</div> {topArticle.title}</div>
+                                        <div className="w-[300px]">{topArticle.profileResponseDTO.name}</div>
+                                        <div className="w-[200px] justify-end">{getDateTimeFormat(topArticle.createDate)}</div>
+                                    </a>
+                                </div>
+                            )}
+                            {articleList.map((article) =>
+                                <div key={article?.articleId} className="flex flex-row border-b mt-[5px] border-gray-600 p-[10px]">
+                                    <a className="flex flex-row" href={`/account/article/${categoryId}/detail/${article?.articleId}`}>
+                                        <div className="flex w-[630px]">{article.title}</div>
+                                        {article.loveSize > 0 ? (
+                                            <div className="w-[50px] flex flex-row"><img className="w-[15px] mt-[5px] h-[15px]" src="/full-like.png"></img><div className="flex justify-center itmes-center w-[20px] h-full ml-[3px]">{article.loveSize}</div></div>
+                                        ) : (<div className="w-[50px] flex itmes-center justify-center flex-row"></div>)}
+                                        {article.commentSize > 0 ? (
+                                            <div className="w-[50px] flex flex-row"><img className="flex items-center mt-[5px] w-[15px] h-[15px] " src="/icon-comment.png"></img><div className="flex justify-center itmes-center w-[20px] h-full ml-[3px]">{article.commentSize}</div></div>
+                                        ) : (<div className="w-[50px] flex itmes-center justify-center flex-row"></div>)}
+                                        <div className="w-[300px]">{article.profileResponseDTO.name}</div>
+                                        <div className="w-[200px] justify-end">{getDateTimeFormat(article.createDate)}</div>
+                                    </a>
+                                </div>
+                            )}
                         </div>
-                    )}
-                    {articleList.map((article) =>
-                        <div key={article?.id} className="flex flex-row border-b border-gray-600 p-[10px]">
-                            <a className="flex flex-row" href={`/account/article/${categoryId}/detail/${article?.articleId}`}>
-                            <div className="flex w-[730px]">{article.title}</div>
-                            <div className="w-[300px] justify-center">{article.profileResponseDTO.name}</div>
-                            <div className="w-[200px] justify-end">{getDateTimeFormat(article.createDate)}</div>
-                            </a>
+                        <div className="flex justify-center mt-6">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+                {Number(categoryId) === 4 && (
+                    <div className="flex-col ml-[100px] mt-[50px] flex w-4/6 h-[1500px]">
+                        <div>
+                            asd
+                        </div>
+                    </div>
+                )}
             </div>
         </Main>
     );
