@@ -19,4 +19,6 @@ public interface CommentRepositoryCustom {
     List<Comment> findByArticle(Long articleId);
 
     List<Comment> findByProfile(Long profileId);
+
+    int findByArticleId(Long id);
 }

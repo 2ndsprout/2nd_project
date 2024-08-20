@@ -1,6 +1,5 @@
 package com.second_team.apt_project.dtos;
 
-import com.second_team.apt_project.domains.Love;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,9 +23,11 @@ public class ArticleResponseDTO {
     private Boolean topActive;
     private List<TagResponseDTO> tagResponseDTOList;
     private Page<CommentResponseDTO> commentResponseDTOList;
+    private int commentSize;
+    private int loveSize;
 
     @Builder
-    public ArticleResponseDTO(Long articleId, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList, Boolean topActive,Page<CommentResponseDTO> commentResponseDTOList) {
+    public ArticleResponseDTO(Long articleId,int loveSize,int commentSize, String title, String content, Long createDate, Long modifyDate, String categoryName, ProfileResponseDTO profileResponseDTO, List<String> urlList, List<TagResponseDTO> tagResponseDTOList, Boolean topActive,Page<CommentResponseDTO> commentResponseDTOList) {
         this.articleId = articleId;
         this.title = title;
         this.content = content;
@@ -38,5 +39,7 @@ public class ArticleResponseDTO {
         this.urlList = urlList;
         this.tagResponseDTOList = tagResponseDTOList;
         this.commentResponseDTOList = commentResponseDTOList;
+        this.commentSize = commentSize;
+        this.loveSize = loveSize;
     }
 }

@@ -49,4 +49,9 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         return jpaQueryFactory.selectFrom(qComment).where(qComment.profile.id.eq(profileId)).fetch();
     }
 
+    @Override
+    public int findByArticleId(Long id) {
+        return jpaQueryFactory.selectFrom(qComment).where(qComment.article.id.eq(id)).fetch().size();
+    }
+
 }

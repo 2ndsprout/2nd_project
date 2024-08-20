@@ -73,4 +73,7 @@ public class CommentService {
         return commentRepository.findByProfile(profileId);
     }
 
+    public int findByArticleId(Long id) {
+        return commentRepository.findByArticleId(id);
+    }
 }

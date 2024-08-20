@@ -284,6 +284,7 @@ export const updateArticle = async (data: UpdateArticleProps) => {
     return response.data;
 }
 
+
 export const deleteArticle = async (data: number) => {
     await UserApi.delete('/api/article', { headers: { 'ArticleId': data } });
 }
@@ -492,7 +493,7 @@ export const deleteComment = async (data: number) => {
 
 export interface GetCommentListProps {
     articleId: number;
-    page: number;
+    page?: number;
 }
 
 export const getCommentList = async ({ articleId, page }: GetCommentListProps) => {
