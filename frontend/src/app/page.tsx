@@ -140,8 +140,6 @@ export default function Page() {
         setCurrentPage(Math.max(1, newPage));  // 페이지 번호가 1 미만이 되지 않도록 보장
     };
 
-
-
     return (
         <Main user={user} profile={profile} isLoading={isLoading} centerList={centerList}>
             <div className="bg-black w-full min-h-screen text-white flex h-full">

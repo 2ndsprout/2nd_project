@@ -247,6 +247,11 @@ export const getArticleList = async (categoryId: number, aptId?: number, page?: 
     return response.data;
 }
 
+export const getTopArticleList = async (categoryId: number, aptId?:number) => {
+    const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId': categoryId, 'AptId': aptId } });
+    return response.data;
+}
+
 export const getArticle = async (data: number) => {
     const response = await UserApi.get('/api/article', { headers: { 'ArticleId': data } });
     return response.data
@@ -278,6 +283,7 @@ export const updateArticle = async (data: UpdateArticleProps) => {
     const response = await UserApi.put(`/api/article`, data);
     return response.data;
 }
+
 
 export const getTopArticleList = async (categoryId: number, aptId?:number) => {
     const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId': categoryId, 'AptId': aptId } });

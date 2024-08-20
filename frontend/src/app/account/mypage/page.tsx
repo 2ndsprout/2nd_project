@@ -107,8 +107,8 @@ export default function Page() {
             <div className="mt-0 flex flex-col items-center relative">
               <label className='text-xs font-bold text-red-500 pb-5 absolute top-[-1.5rem]'>{error}</label>
               <input type="text" defaultValue={name} onChange={e => setName(e.target.value)} className='input input-bordered input-lg text-black' placeholder="이름을 입력해주세요"
-                onFocus={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
-                onKeyUp={e => checkInput(e, '^[가-힣]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
+                onFocus={e => checkInput(e, '^[가-힣a-zA-Z0-9]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))}
+                onKeyUp={e => checkInput(e, '^[가-힣a-zA-Z0-9]{1,6}$', () => setError(''), () => setError('프로필 이름은 6자 내외 한글만 가능합니다.'))} />
               <button className='btn btn-xl btn-accent mt-10 text-black' disabled={!!error} onClick={() => finalConfirm(profile.name, '프로필을 수정하시겠습니까?', '수정', update)}>프로필 수정</button>
               <button
                 onClick={() => finalConfirm(profile.name, '프로필을 삭제하시겠습니까?', '삭제', deleteProfiles)}

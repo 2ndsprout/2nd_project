@@ -295,9 +295,9 @@ export default function ArticleDetail() {
                     </div>
                 </div>
             )}
-            <div className="w-full mt-6">
+            {article?.topActive === false ? <div className="w-full mt-6">
                 <CommentList articleId={Number(articleId)} />
-            </div>
+            </div> : null}
         </div>
     );
     
@@ -316,9 +316,9 @@ export default function ArticleDetail() {
                 <aside className="w-1/6 p-6 flex flex-col items-start">
                     {hasEditPermission && (
                         <div className="relative" id="dropdown">
-                            <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
+                            {article?.topActive === false ? <button onClick={toggleDropdown} className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full hover:bg-gray-600">
                                 <span className="text-white">⁝</span>
-                            </button>
+                            </button> : null}
                             {dropdownOpen && (
                                 <div className="absolute mt-2 bg-gray-800 rounded shadow-lg overflow-hidden">
                                     <div className="flex flex-col w-20">

@@ -1,6 +1,8 @@
 'use client'
 
+
 import { getArticleList, getAptList, getCenterList, getCategoryList, getTopArticleList, getCommentList, getLoveInfo, getProfile, getUser, searchArticles, getCategory } from "@/app/API/UserAPI";
+
 import CategoryList from "@/app/Global/component/CategoryList";
 import { getDate, getDateFormat, getDateTime, getDateTimeFormat } from "@/app/Global/component/Method";
 import Pagination from "@/app/Global/component/Pagination";
@@ -87,6 +89,7 @@ export default function ArticleListPage() {
             redirect('/account/login');
         const interval = setInterval(() => { setIsLoading(true); clearInterval(interval) }, 100);
     }, [ACCESS_TOKEN, PROFILE_ID, categoryId]);
+
 
     const getLinkClass = (id: number) => {
         return Number(categoryId) === id ? "text-lg text-secondary flex mb-2 hover:underline font-bold" : "font-bold flex mb-2 text-lg hover:underline";

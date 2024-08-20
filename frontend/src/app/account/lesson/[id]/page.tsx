@@ -118,7 +118,7 @@ export default function Page() {
                         <div className="flex mt-[30px]">
                             <div className="flex flex-col w-[500px]">
                                 <div className="ml-[20px] mb-[15px]">
-                                    <img src={targetLesson.profileResponseDTO?.url ? targetLesson.profileResponseDTO.url : '/user.png'} className="my-[15px] w-[200px] flex h-[200px] justify-center rounded-full" alt="profile" />
+                                    <img src={targetLesson?.profileResponseDTO?.url ? targetLesson?.profileResponseDTO?.url : '/user.png'} className="my-[15px] w-[200px] flex h-[200px] justify-center rounded-full" alt="profile" />
                                 </div>
                                 <div className="flex flex-col justify-center items-start m-[20px] gap-1">
                                     <span className="text-2xl font-bold mb-4 "><span className="border-b text-secondary">프로그램 명</span></span>
