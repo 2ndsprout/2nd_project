@@ -23,6 +23,10 @@ dayjs.extend(isSameOrBefore);
 
 const DatePickerComponent = dynamic(() => import('@/app/Global/component/DatePicker'), { ssr: false });
 
+const TiptapEditor = dynamic(() => import('@/app/Global/component/Tiptap'), {
+    ssr: false,
+  });
+
 export default function Page() {
 
     const quillInstance = useRef<ReactQuill>(null);
@@ -44,7 +48,7 @@ export default function Page() {
     const [isLoading, setIsLoading] = useState(false);
     const [lessonName, setLessonName] = useState('');
     const [nameError, setNameError] = useState('레슨 제목을 작성해주세요.');
-    const [lessonContent, setLessonContent] = useState(`<p>휴무일: ex) 월,금</p><p><br></p><p><br></p><p>내용: </p><p><br></p><p><br></p><p>최대 인원:</p>`);
+    const [lessonContent, setLessonContent] = useState('');
     const [lessonStartDate, setLessonStartDate] = useState(null as any);
     const [dateError, setDateError] = useState('날짜를 선택해주세요.');
     const [startTimeError, setStartTimeError] = useState('시작 시간을 설정해 주세요.');
@@ -226,6 +230,12 @@ export default function Page() {
         'align',
         'image',
     ];
+
+    const handleContentChange = (newContent: string) => {
+        setLessonContent(newContent);
+    };
+
+
     useEffect(() => {
         if (ACCESS_TOKEN) {
             getUser()
@@ -363,20 +373,8 @@ export default function Page() {
                             className="h-[50px] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         />
                         <div className="mt-5 h-[450px] block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" >
-                            <QuillNoSSRWrapper
-                                forwardedRef={quillInstance}
-                                value={lessonContent}
-                                onChange={(e: any) => {
-                                    setLessonContent(e);
-                                    if (first) {
-                                        setFirst(false);
-                                    }
-                                }}
-                                modules={modules}
-                                theme="snow"
-                                className='w-full h-[385px]'
-                                placeholder="내용을 입력해주세요."
-                            />
+                            <TiptapEditor
+                            onChange={handleContentChange}/>
                         </div>
                         <button className="mt-[20px] btn btn-active btn-secondary text-lg text-black"
                             disabled={first || !!allErrors()}

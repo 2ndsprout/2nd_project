@@ -285,11 +285,6 @@ export const updateArticle = async (data: UpdateArticleProps) => {
 }
 
 
-export const getTopArticleList = async (categoryId: number, aptId?:number) => {
-    const response = await UserApi.get('/api/article/topActive', { headers: { 'CategoryId': categoryId, 'AptId': aptId } });
-    return response.data;
-}
-
 export const deleteArticle = async (data: number) => {
     await UserApi.delete('/api/article', { headers: { 'ArticleId': data } });
 }
